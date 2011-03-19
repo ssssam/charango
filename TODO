@@ -1,3 +1,98 @@
 Charango 0.3.0 ...
 
+* Share the vala bindings for librdf
 
+Ontology info needs to be stored and INDEXED. Things won't be fast enough
+unless we can access a property with just an index.
+
+So each Ontology gives Classes, and ultimately a heirarchy. We can index these,
+and then as properties are added index those too. No problem, really.
+
+WHERE FROM is a slight issue - we can get them on disk from various locations
+(apps own dir, tracker dir) or from the net (canonical sources).
+
+There can be discrepencies/version mismatches, so this is important stuff .. I
+guess we should check things when they are stored (perhaps optionally) that they
+map to the ontologies stored by *that* storage backend. Ie. we could check that the
+data fits an installed Tracker ontology.
+
+
+So we need:
+* Model
+  Charango.Source, Charango.Model, Charango.Store
+  -> Charango.GenericStore, Charango.TrackerStore, Charango.SQLiteStore
+* View ..
+  Charango.View,
+* Schema ..
+  Charango.Schema, Charango.Ontology
+
+* Other stuff..
+  in the Ontology, we have Classes and Properties
+  in the data store, we have Resources ..
+
+Backends: pluggable on run or compile?
+ie. if charango is built without tracker support, do we allow calliope to link to .trackerStore?
+-> certainly don't want a hard dep on tracker, what about win32? etc.
+-> I guess a store needs an available? method
+
+I'm rethinking not requiring the Tracker dep. Surely implementing a simple RDF store
+using SQLite is basically reimplementing tracker without the DBUS? Since the only
+place it's really hard to expect tracker is win32, surely we can just build it there
+using some hacks if necessary.
+
+
+
+So Store pushes changes to View, through the traditional notify 'signal'?
+HOWEVER, can we even get change notifications from Tracker?
+Yes, we get them via dbus
+I guess we can emit our own automatically to speed up local view updates
+We only get inserts and deletes, but I think updates are actually deletes and inserts so
+maybe this will work out okay. ...
+
+
+MemoryStore:
+- what is rdf storage? we kind of need to be DYNAMIC :( can't ask the user to define
+  in advance what classes will be stored. HOWEVER we should maintain a list so that
+  the view can tell what's valid, and we CAN know from the class what properties it
+  can contain.
+- tracker just has a table for each class really, so a row for each resource. It's all good.
+- how hard is it to write an rdf store really?
+
+
+Is the generic store concept right for what you want this library to do? Actually yes,
+I don't see why Tracker is the only RDF store Charango could work for. We can't easily
+use their data structures anyway.
+
+
+How much of librdf / Redland are we reinventing?
+A bit, but the problem is we want to give a more object orientated view on the RDF store.
+There's nothing stopping it storing arbitary predicates, BUT since we want to create a
+view there's no real way to do it from anything other than resources, simple properties
+and resource->resource links ...
+So the best we could do is reuse its storage backend. Even then it would be hacky to
+get the notifications right.
+
+I'm wondering if it's actually a good idea to base things on Redland, and just ignore
+its store API (or embrace and extend :) because we get a lot of good stuff like parsing
+and dumping completely for free. That said, the Tracker guys don't need it. They seem to
+do basically everything with SPARQL.
+
+Perhaps that's why they don't need Redland?
+
+
+* I'm slightly confused about the difference between tracker:Namespace and tracker:Ontology
+at the moment. Maybe Owl can shed some light. Currently I believe they are basically
+interchangable.
+
+--------------------------------------
+
+Fixes in other projects
+-----------------------
+
+waf
+	Add gtester support to waf
+
+Vala
+	Use built-in test support:
+	  https://asabil.wordpress.com/2009/01/23/vala-and-unit-testing/
+	Update raptor.vapi in upstream Vala

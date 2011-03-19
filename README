@@ -1,2 +1,5 @@
-Charango is a data view library. It is currently internal to Calliope, as its development is still
-closely linked.
+Charango is an object-based RDF store and data view library. It is currently
+internal to Calliope, as its development is still closely linked.
+
+Charango is designed for use with Tracker, although this is really just a soft
+dependency (aside from their ontology, which is still required).

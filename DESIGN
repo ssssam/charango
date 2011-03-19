@@ -1,0 +1,37 @@
+Charango 0.3.0 - design
+------------------------
+
+Charango is essentially an RDF-based data model & view.
+
+Terminology I currently use
+---------------------------
+
+How to do describe what is basically an object or entry?
+So a 'resource' - is an rdf:
+rdf:Instance: instance of a Class ..
+
+so we either want to call it Instance, or Resource ..
+
+an Instance of an rdfs:Class.
+
+
+Ontology sources
+----------------
+
+The Charango.Context needs a full class heirarchy. This needs to come from
+somewhere: either on disk or the web. Theoretically we could query them from
+Tracker too, but they may as well be supplied on disk if they're going to be
+supplied.
+
+How easy is it to add new ontologies to Tracker?
+
+Tracker run-time extension of ontologies is PLANNED:
+  http://www.mail-archive.com/tracker-list@gnome.org/msg05852.html
+but currently only possible at install-time. I guess when Charango connects to
+Tracker it needs to check if all ontologies are available then, and in future
+it would be able to add them at runtime. Of course getting Music Ontology
+included would be cool but not sure if they will do this :) If not, Calliope
+will be able to install it itself at least.
+
+Charango lazily loads classes from the ontologies, because there are often lots
+that aren't relevant.
