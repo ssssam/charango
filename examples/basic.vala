@@ -22,14 +22,33 @@ extern static const string SRCDIR;
 public int main (string[] args) {
 	var context = new Charango.Context ();
 	/* FIXME: make relocatable */
-	/* FIXME: or, use tracker ones! We don't need to query them via sparql at all!!! */
 	var path = Path.build_filename (SRCDIR, "charango", "data", "ontologies", null);
+
 	try {
 		context.add_local_ontology_source (path);
+		context.add_local_ontology_source ("/usr/local/share/tracker/ontologies");
 	}
-	catch (FileError error) {
-		print ("Unable to find ontologies: %s\n", error.message);
+		catch (FileError error) {
+			print ("Unable to find ontologies: %s\n", error.message);
+			return 1;
+		}
+
+	/* Music Ontology doesn't set a prefix, would be nice if we could work it
+	 * out from the turtle file.
+	 */
+	//context.set_ontology_prefix ("http://purl.org/ontology/mo/", "mo");
+
+	try {
+		context.load ();
 	}
+		catch (FileError error) {
+			print ("Unable to find ontologies: %s\n", error.message);
+			return 1;
+		}
+		catch (ParseError error) {
+			print ("Parse error loading ontology data: %s\n", error.message);
+			return 2;
+		}
 
 	/*var artist_mo = new Charango.Entity(context, "mo:MusicArtist");
 	entity.set_string ("rdf:about",

@@ -15,8 +15,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using GLib;
-
 /**
  * Charango.Entity: a data 'object'
  * 
@@ -40,7 +38,16 @@ public class Charango.Entity: GLib.Object {
 
 public Entity (Context  context,
                string   class_uri_string) {
-	Charango.Class rdfs_class = context.get_rdfs_class (class_uri_string);
+	Charango.Class rdfs_class;
+
+	try {
+		rdfs_class = context.get_class_by_uri_string (class_uri_string);
+	}
+		catch (ParseError e) {
+			warning ("%s", e.message);
+			return;
+		}
+
 	rdfs_class.dump ();
 }
 

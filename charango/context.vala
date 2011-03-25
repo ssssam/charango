@@ -17,6 +17,12 @@
 
 using Rdf;
 
+public errordomain Charango.ParseError {
+	PARSE_ERROR,
+	DUPLICATED_ONTOLOGY,
+	UNKNOWN_NAMESPACE
+}
+
 /**
  * Charango.Context: global state object
  *
@@ -30,37 +36,98 @@ public class Charango.Context: GLib.Object {
  * in some order which has the World freed first, and then things which still have librdf
  * objects. Thus, everything is double freed :(
  */
-Rdf.World *redland;
+internal Rdf.World *redland;
 
+bool loading = false;
+
+List<string>   local_sources = null;
 List<Ontology> ontology_list = null;
+
+internal int max_class_id = 0;
 
 public Context() {
 	redland = new Rdf.World();
+
+	ontology_list.prepend (new RdfOntology (this));
+	ontology_list.prepend (new RdfsOntology (this));
+	ontology_list.prepend (new TrackerOntology (this));
 }
 
 /**
- * add_local_ontology_source: Read ontology data from files in a local path
+ * add_local_ontology_source():
  * @path: location to search for files
  *
- * Loads all of the files in @path as RDF ontology files. The files will be
- * parsed using the <link rel="http://librdf.org/raptor/">Raptor</a> library's
- * Turtle parser.
+ * Adds @path as a location to search for RDF ontology files when Context.load()
+ * is called.
  */
-public void add_local_ontology_source (string base_path)
+public void add_local_ontology_source (string path)
             throws FileError {
-	var dir = Dir.open (base_path);
+	/* FIXME: test for existance */
 
-	do {
-		var file_name = dir.read_name();
-		if (file_name == null)
-			break;
-
-		var ontology = new Ontology.from_file (redland, file_name, base_path);
-		ontology_list.prepend (ontology);
-	} while (true);
+	local_sources.prepend (path);
 }
 
-Ontology? get_ontology_for_prefix (string prefix) {
+/**
+ * load():
+ *
+ * Loads on-disk ontologies into memory.
+ */
+public void load ()
+            throws FileError, ParseError {
+	var parser = new Rdf.Parser (redland, "turtle", null, null);
+
+	loading = true;
+
+	foreach (string base_path in local_sources) {
+		var dir = Dir.open (base_path);
+
+		do {
+			var file_name = dir.read_name();
+			if (file_name == null)
+				break;
+
+			var storage = new Rdf.Storage (redland, null, null, null);
+			var model = new Rdf.Model (redland, storage, null);
+
+			var file_path = GLib.Path.build_filename (base_path, file_name, null);
+			var file_uri = new Rdf.Uri.from_filename (redland, file_path),
+			    base_uri = new Rdf.Uri.from_filename (redland, base_path);
+
+			parser.parse_into_model (file_uri, base_uri, model);
+
+			var ontology_node = get_ontology_node_from_model (redland, model, file_name);
+
+			if (ontology_node == null)
+				// Ignored
+				continue;
+
+			var ontology = get_ontology_by_namespace (ontology_node.get_uri().as_string());
+
+			// It's allowed for an ontology to already exist when we find it in
+			// a file, but only if it's built in! Otherwise, we have duplicate
+			// and possibly conflicting definitions.
+
+			if (ontology == null) {
+				ontology = new Ontology (this);
+				ontology_list.prepend (ontology);
+			} else
+				if (ontology.builtin == false)
+					throw new ParseError.DUPLICATED_ONTOLOGY
+					            ("%s: ontology %s is already defined\n",
+					             file_path, ontology.uri);
+
+			ontology.load_from_model ((owned)model, ontology_node);
+		} while (true);
+	}
+
+	// Resolve all URI's
+	foreach (Ontology ontology in ontology_list)
+		ontology.complete_load ();
+
+	loading = false;
+}
+
+internal Ontology? get_ontology_by_prefix (string prefix) {
 	/* FIXME: there must be a better way to search lists in vala */
 	foreach (Ontology c in ontology_list) {
 		if (c.prefix == prefix)
@@ -69,32 +136,27 @@ Ontology? get_ontology_for_prefix (string prefix) {
 	return null;
 }
 
-internal Charango.Class? get_rdfs_class (string class_uri_string) {
-	/* FIXME: most certainly not a standards-compliant way of parsing a URI ... */
-	Ontology? ontology = null;
-	string? fragment = null;
-
-	if (class_uri_string.index_of_char ('#') == -1) {
-		/* See if it's abbreviated */
-		var colon_pos = class_uri_string.index_of_char (':');
-		if (colon_pos == -1) {
-			warning ("invalid class URI: %s\n", class_uri_string);
-			return null;
+public Ontology? get_ontology_by_namespace (string namespace_string) {
+	/* FIXME: there must be a better way to search lists in vala */
+	foreach (Ontology c in ontology_list) {
+		if (c.uri == namespace_string) {
+			return c;
 		}
-
-		string prefix = class_uri_string[0:colon_pos];
-		ontology = get_ontology_for_prefix (prefix);
-		if (ontology == null) {
-			warning ("unknown ontology prefix: %s\n", prefix);
-			return null;
-		}
-
-		fragment = class_uri_string[colon_pos+1: class_uri_string.length];
-	} else {
-		warning ("FIXME: full uris not yet supported\n");
 	}
+	return null;
+}
 
-	return ontology.get_rdfs_class (fragment);
+public Charango.Class? get_class_by_uri (Rdf.Uri uri) {
+	return get_class_by_uri_string (uri.as_string ());
+}
+
+public Charango.Class? get_class_by_uri_string (string uri_string)
+                       throws ParseError                           {
+	Ontology ontology;
+	string   name;
+
+	parse_string_as_resource (this, uri_string, out ontology, out name);
+	return ontology.get_class_by_name (name);
 }
 
 public void dump () {
