@@ -48,21 +48,23 @@ namespace Rdf {
 		[CCode (cname = "librdf_world_set_digest")]
 		public void set_digest (string name);
 
-		/* Missing: get/set feature */
-		/*REDLAND_API
-		librdf_node* librdf_world_get_feature(librdf_world* world, librdf_uri *feature);
-		REDLAND_API
-		int librdf_world_set_feature(librdf_world* world, librdf_uri *feature, librdf_node* value);*/
+		[CCode (cname = "librdf_world_get_feature")]
+		public unowned Rdf.Node get_feature (Uri feature);
+		[CCode (cname = "librdf_world_set_feature")]
+		public unowned Rdf.Node set_feature (Uri feature, Node feature_value);
 
+		/* These have shorter names because we can't provide convenience
+		 * macros, unlike the C api
+		 */
 		[CCode (cname = "librdf_get_concept_resource_by_index")]
-		public unowned Node get_concept_resource_by_index (Concept idx);
+		public unowned Node concept (Concept idx);
 		[CCode (cname = "librdf_get_concept_uri_by_index")]
-		public unowned Uri get_concept_uri_by_index (Concept idx);
+		public unowned Uri concept_uri (Concept idx);
 
 		[CCode (cname = "librdf_get_concept_ms_namespace")]
-		public unowned Uri get_concept_ms_namespace ();
+		public unowned Uri ms_namespace ();
 		[CCode (cname = "librdf_get_concept_schema_namespace")]
-		public unowned Uri get_concept_schema_namespace ();
+		public unowned Uri schema_namespace ();
 	}
 
 	/***************************************************************************
@@ -243,11 +245,11 @@ namespace Rdf {
 		[CCode (cname = "librdf_model_get_targets")]
 		public Iterator? get_targets (Node source, Node arc);
 		[CCode (cname = "librdf_model_get_source")]
-		public unowned Node get_source (Node arc, Node target);
+		public Node get_source (Node arc, Node target);
 		[CCode (cname = "librdf_model_get_arc")]
-		public unowned Node get_arc (Node source, Node target);
+		public Node get_arc (Node source, Node target);
 		[CCode (cname = "librdf_model_get_target")]
-		public unowned Node get_target (Node source, Node arc);
+		public Node get_target (Node source, Node arc);
 
 		[CCode (cname = "librdf_model_get_arcs_in")]
 		public Iterator? get_arcs_in (Node node);
@@ -323,6 +325,7 @@ namespace Rdf {
 	 * Node
 	 */
 
+	[CCode (cname = "librdf_node_type")]
 	public enum NodeType {
 		UNKNOWN,
 		RESOURCE,
@@ -338,6 +341,8 @@ namespace Rdf {
 	public class Node {
 		[CCode (cname = "librdf_new_node")]
 		public Node (World world);
+		[CCode (cname = "librdf_new_node_from_node")]
+		public Node.from_node (Node node);
 		[CCode (cname = "librdf_new_node_from_blank_identifier")]
 		public Node.from_blank_identifier (World world, string? identifier);
 		[CCode (cname = "librdf_new_node_from_uri_string")]
@@ -513,7 +518,7 @@ namespace Rdf {
 		[CCode (cname = "librdf_new_statement")]
 		public Statement (World world);
 		[CCode (cname = "librdf_new_statement_from_nodes")]
-		public Statement.from_nodes (World world, Node? subject, Node? predicate, Node? object);
+		public Statement.from_nodes (World world, owned Node? subject, owned Node? predicate, owned Node? object);
 
 		/* Static allocation stuff .. 
 		REDLAND_API
@@ -522,12 +527,12 @@ namespace Rdf {
 		void librdf_statement_clear(librdf_statement *statement);*/
 
 		[CCode (cname = "librdf_statement_get_subject")]
-		public /* const */ Node get_subject ();
+		public unowned Node get_subject ();
 		[CCode (cname = "librdf_statement_set_subject")]
 		public void set_subject (Node node);
 
 		[CCode (cname = "librdf_statement_get_predicate")]
-		public /* const */ Node get_predicate ();
+		public unowned Node get_predicate ();
 		[CCode (cname = "librdf_statement_set_predicate")]
 		public void set_predicate (Node node);
 
