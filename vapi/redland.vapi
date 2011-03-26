@@ -227,7 +227,7 @@ namespace Rdf {
 		public bool has_arc_out (Node node, Node property);
 
 		[CCode (cname = "librdf_model_as_stream")]
-		public unowned Stream /* FIXME: is it unowned? Docs are unclear */ as_stream ();
+		public Stream as_stream ();
 
 		[CCode (cname = "librdf_model_find_statements")]
 		public Stream? find_statements (Statement statement);
@@ -276,7 +276,7 @@ namespace Rdf {
 		public int context_remove_statements (Node context);
 
 		[CCode (cname = "librdf_model_context_as_stream")]
-		public unowned Stream? /* FIXME: is it unowned? Docs are unclear */ context_as_stream (Node context);
+		public Stream? context_as_stream (Node context);
 		[CCode (cname = "librdf_model_contains_context")]
 		public bool contains_context (Node context);
 
@@ -325,7 +325,7 @@ namespace Rdf {
 	 * Node
 	 */
 
-	[CCode (cname = "librdf_node_type")]
+	[CCode (cname = "librdf_node_type", cprefix = "LIBRDF_NODE_TYPE_")]
 	public enum NodeType {
 		UNKNOWN,
 		RESOURCE,
@@ -425,7 +425,6 @@ namespace Rdf {
 	/* Missing:
 	REDLAND_API
 	void librdf_parser_register_factory(librdf_world *world, const char *name, const char *label, const char *mime_type, const unsigned char *uri_string, void (*factory) (librdf_parser_factory*));
-
 	REDLAND_API
 	int librdf_parser_enumerate(librdf_world* world, const unsigned int counter, const char **name, const char **label);
 	REDLAND_API
@@ -445,24 +444,25 @@ namespace Rdf {
 		[CCode (cname = "LIBRDF_PARSER_FEATURE_WARNING_COUNT")]
 		public static const string FEATURE_WARNING_COUNT;
 
+		[CCode (cname = "librdf_parser_guess_name2")]
+		// FIXME: correct param types?
+		public static unowned string guess_name (World world, string? mime_type, uint8 *content, uint8 *identifier);
+
 		[CCode (cname = "librdf_new_parser")]
 		public Parser (World world, string? name, string? mime_type, Uri? type_uri);
 		[CCode (cname = "librdf_new_parser_from_factory")]
 		public Parser.from_factory (World world, ParserFactory factory);
 
-		/* REDLAND_API
-		librdf_stream* librdf_parser_parse_as_stream(librdf_parser* parser, librdf_uri* uri, librdf_uri* base_uri);
-		*/
+		[CCode (cname = "librdf_parser_parse_as_stream")]
+		public Stream parse_as_stream (Uri uri, Uri? base_uri);
 		[CCode (cname = "librdf_parser_parse_into_model")]
 		public int parse_into_model (Uri uri, Uri? base_uri, Model model);
-		/* REDLAND_API
-		librdf_stream* librdf_parser_parse_string_as_stream(librdf_parser* parser, const unsigned char* string, librdf_uri* base_uri);
-		*/
+		[CCode (cname = "librdf_parser_parse_string_as_stream")]
+		public Stream parse_string_as_string (string data, Uri? base_uri);
 		[CCode (cname = "librdf_parser_parse_string_into_model")]
 		public int parse_string_into_model (string data, Uri? base_uri, Model model);
-		/* REDLAND_API
-		librdf_stream* librdf_parser_parse_file_handle_as_stream(librdf_parser* parser, FILE* fh, int close_fh, librdf_uri* base_uri);
-		*/
+		[CCode (cname = "librdf_parser_parse_file_handle_as_stream")]
+		public Stream parse_file_as_stream (FileStream file_stream, int close_fh, Uri? base_uri);
 		[CCode (cname = "librdf_parser_parse_file_handle_into_model")]
 		public int parse_file_stream_into_model (FileStream file_stream, int close_fh,
 		                                         Uri? base_uri, Model model);
@@ -486,10 +486,6 @@ namespace Rdf {
 		public int set_feature (Uri feature, Node feature_value);
 		[CCode (cname = "librdf_parser_get_accept_header")]
 		public unowned string? get_accept_header ();
-
-		/*REDLAND_API
-		const char* librdf_parser_guess_name2(librdf_world* world, const char *mime_type, const unsigned char *buffer, const unsigned char *identifier);
-		*/
 
 		[CCode (cname = "librdf_parser_get_namespaces_seen_prefix")]
 		public unowned string? get_namespaces_seen_prefix (int namespace_index);
