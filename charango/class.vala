@@ -144,8 +144,8 @@ public string comment;
  * one is kept separately to save on a pointer dereference. main_parent may be
  * null only for rdf:Resource.
  */
-public Class?      main_parent = null;
-public List<Class> parent_list = null;
+internal Class?      main_parent = null;
+internal List<Class> parent_list = null;
 
 public bool builtin = false;
 
@@ -250,6 +250,12 @@ public void load (Rdf.Model         model,
 public int register_property (Charango.Property property) {
 	//print ("%s: register property %s\n", this.name, property.name);
 	return property_count ++;
+}
+
+public List<Class> get_parent_list () {
+	List<Class> list = this.parent_list.copy();
+	list.prepend (main_parent);
+	return list;
 }
 
 public string to_string () {

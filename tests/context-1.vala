@@ -27,6 +27,8 @@ public ContextTest() {
 	// FIXME: vala bug https://bugzilla.gnome.org/show_bug.cgi?id=645178
 	Test.add_data_func ("/charango/context/local-ontology-sources",
 	                    this.test_local_ontology_sources);
+	Test.add_data_func ("/charango/context/heirarchy",
+	                    this.test_heirarchy);
 	Test.add_data_func ("/charango/context/external-references",
 	                    this.test_external_references);
 	Test.add_data_func ("/charango/context/live",
@@ -50,7 +52,55 @@ public void test_local_ontology_sources () {
 	assert (error_was_thrown);
 }
 
-/* external-references: predicates about resources in other ontologies that we
+/* heirarchy:
+ * 
+ * Simple test of class inheritance
+ */
+public void test_heirarchy () {
+	var context = new Charango.Context ();
+	List<Warning> warning_list;
+
+	try {
+		var test_ontology_file = test_ontology_dir + "test-heirarchy.ontology";
+		context.load_ontology_file (test_ontology_file);
+		context.load (out warning_list);
+	}
+		catch (FileError e) { error (e.message); }
+		catch (ParseError e) { error (e.message); }
+
+	assert (warning_list.length() == 0);
+
+	Charango.Class c;
+	List<Charango.Class> parent_list;
+
+	c = context.get_class_by_uri_string_noerror ("test_heirarchy:Monkey");
+	assert (c.name == "Monkey");
+
+		parent_list = c.get_parent_list ();
+		assert (parent_list.length() == 1);
+		c = parent_list.data;
+		assert (c.name == "Animal");
+
+			parent_list = c.get_parent_list ();
+			assert (parent_list.length() == 1);
+			c = parent_list.data;
+			assert (c.name == "Class");
+
+	c = context.get_class_by_uri_string_noerror ("test_heirarchy:Chicken");
+	assert (c.name == "Chicken");
+
+		parent_list = c.get_parent_list ();
+		assert (parent_list.length() == 2);
+		c = parent_list.data;
+		assert (c.name == "Animal");
+
+		c = parent_list.next.data;
+		assert (c.name == "Food");
+}
+
+/* external-references:
+ *
+ * Predicates about resources in other ontologies that we
  * do not know are permitted, but useless at least for Charango. An example:
  *   http://www.semanticoverflow.com/questions/1653/
  * We must be able to parse them, identify them and ignore them.
@@ -71,7 +121,8 @@ public void test_external_references () {
 	assert (warning_list.length() == 1);
 }
 
-/* live: test the real ontology data parses */
+/* live:
+ * Test the real ontology data parses */
 public void test_live () {
 	var context = new Charango.Context();
 

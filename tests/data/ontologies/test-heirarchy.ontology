@@ -1,0 +1,20 @@
+# /charango/context/heirarchy:
+#
+
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl> .
+@prefix test_heirarchy: <http://example.com/test-heirarchy#> .
+
+test_heirarchy: a owl:Ontology ;
+	rdfs:label "test_heirarchy" .
+
+test_heirarchy:Animal a rdfs:Class .
+
+test_heirarchy:Food a rdfs:Class .
+
+test_heirarchy:Monkey a rdfs:Class ;
+	rdfs:subClassOf test_heirarchy:Animal .
+
+test_heirarchy:Chicken a rdfs:Class ;
+	rdfs:subClassOf test_heirarchy:Animal ,
+	                test_heirarchy:Food .

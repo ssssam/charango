@@ -1,4 +1,5 @@
 # /charango/context/external-references:
+#
 # Make sure definitions to ontologies that are not known in the current context
 # are handled correctly (the correct behaviour is just to ignore them)
 
