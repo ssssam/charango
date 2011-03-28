@@ -52,9 +52,11 @@ def build(bld):
 		example = bld (features = 'c cprogram',
 		               source = file,
 		               target = file.change_ext('').get_bld(),
+		               packages = 'charango',
 		               use = 'charango',
-		               install_path = None,
-		               vapi_dirs = charango_vapi_dirs)
+		               includes = ['.', './charango'],
+		               vapi_dirs = charango_vapi_dirs,
+		               install_path = None)
 
 	# Build tests
 	#
