@@ -33,13 +33,13 @@ public int main (string[] args) {
 			return 1;
 		}
 
-	/* Music Ontology doesn't set a prefix, would be nice if we could work it
-	 * out from the turtle file.
-	 */
-	//context.set_ontology_prefix ("http://purl.org/ontology/mo/", "mo");
-
 	try {
 		context.load ();
+
+		// Music Ontology doesn't set a prefix, would be nice if we could work it
+		// out from the turtle file.
+		//
+		context.set_ontology_prefix ("http://purl.org/ontology/mo/", "mo");
 	}
 		catch (FileError error) {
 			print ("Unable to find ontologies: %s\n", error.message);
@@ -50,8 +50,8 @@ public int main (string[] args) {
 			return 2;
 		}
 
-	/*var artist_mo = new Charango.Entity(context, "mo:MusicArtist");
-	entity.set_string ("rdf:about",
+	var artist_mo = new Charango.Entity(context, "mo:MusicArtist");
+	/*entity.set_string ("rdf:about",
 	                   "http://musicbrainz.org/artist/ac241ded-3430-4f42-8451-f78667cc2f52");
 	entity.set_string ("foaf:name", "The Aggrolites");
 	entity.set_string ("ov:sortName", "Aggrolites, The");*/

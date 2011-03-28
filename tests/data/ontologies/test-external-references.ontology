@@ -1,0 +1,15 @@
+# /charango/context/external-references:
+# Make sure definitions to ontologies that are not known in the current context
+# are handled correctly (the correct behaviour is just to ignore them)
+
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl> .
+@prefix externalreferences: <http://example.com/test-external-references#> .
+
+externalreferences: a owl:Ontology ;
+	rdfs:label "test_externalreferences" .
+
+<http://example.com/test-non-existant-namespace#Hat> a rdfs:Class .
+
+externalreferences:Sombrero a rdfs:Class ;
+	rdfs:subClassOf <http://example.com/test-non-existant-namespace#Hat> .

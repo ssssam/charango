@@ -49,10 +49,10 @@ public Entity (Context  context,
 		}
 
 	rdfs_class.dump ();
+	rdfs_class.dump_heirarchy ();
 }
 
-/* We can have slow (string arc names) and fast (indexed arc names) now. Names?
- * */
+/* We can have slow (string arc names) and fast (indexed arc names) now. Names? */
 public void set_string (string predicate,
                         string object) {
 	

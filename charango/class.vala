@@ -25,8 +25,12 @@ public class Charango.Property: GLib.Object {
 
 Ontology ontology;
 
+/* Annotation properties have no defined domain; one will be set when the
+ * property is set on an entity.
+ */
+public bool annotation = true;
+public int id = -1;
 public Charango.Class domain;
-public int            id;
 
 public string name;
 public string label;
@@ -57,8 +61,6 @@ public void load (Rdf.Model model)
 		unowned Rdf.Statement statement = stream.get_object ();
 		unowned Rdf.Node arc = statement.get_predicate ();
 
-		//print ("object type: %i\n", statement.get_object().get_type());
-
 		if (arc.equals (redland->concept (Rdf.Concept.S_label))) {
 			// rdfs:label - human-readable name
 			unowned Rdf.Node label_node = statement.get_object ();
@@ -73,9 +75,10 @@ public void load (Rdf.Model model)
 			if (domain != null)
 				domain_list.append (domain);
 			else
-				throw new ParseError.PARSE_ERROR ("Unknown domain for property %s: %s",
-				                                  this_node.to_string(),
-				                                  domain_node.to_string());
+				throw new ParseError.ONTOLOGY_ERROR
+				            ("Unknown domain for property %s: %s",
+				             this_node.to_string(),
+				             domain_node.to_string());
 		}
 
 		stream.next ();
@@ -83,17 +86,20 @@ public void load (Rdf.Model model)
 
 	// Add to domain (class) to get an id. Each Charango.Property only exists in
 	// one domain, because id's are class specific. For multiple domains we
-	// duplicate the this Property object.
-	if (domain_list.length() == 0)
-		throw new ParseError.PARSE_ERROR ("No domain listed for property %s",
-		                                  this_node.to_string());
-	this.set_domain (domain_list.data);
+	// duplicate the this Property object. Annotation properties may not have a
+	// domain; when set on an entity, the property is added to that class.
+	//
+	if (domain_list.length() > 0) {
+		this.annotation = false;
+		this.set_domain (domain_list.data);
 
-	unowned List<Charango.Class> domain_node = domain_list.next;
-	while (domain_node != null) {
-		Charango.Property duplicate = this.copy ();
-		duplicate.set_domain (domain_node.data);
-		domain_node = domain_node.next;
+		unowned List<Charango.Class> domain_node = domain_list.next;
+		while (domain_node != null) {
+			Charango.Property duplicate = this.copy ();
+			duplicate.annotation = false;
+			duplicate.set_domain (domain_node.data);
+			domain_node = domain_node.next;
+		}
 	}
 }
 
@@ -130,6 +136,16 @@ public class Charango.Class: GLib.Object {
 
 public int id;
 public string name;
+public string label;
+public string comment;
+
+/* RDF allows for multiple inheritance, which poses far few problems in pure
+ * data than it does when coding. Since 99% of classes have one parent, this
+ * one is kept separately to save on a pointer dereference. main_parent may be
+ * null only for rdf:Resource.
+ */
+public Class?      main_parent = null;
+public List<Class> parent_list = null;
 
 public bool builtin = false;
 
@@ -140,35 +156,88 @@ int property_count = 0;
 /* Only stored while awaiting load */
 unowned Rdf.Node? this_node;
 
-public Class (Ontology _ontology,
-              Rdf.Node _this_node,
-              int      _id) {
+public Class (Charango.Ontology _ontology,
+              int               _id,
+              string            _name) {
 	ontology = _ontology;
-	this_node = _this_node;
 	id = _id;
-
-	// Get name from uri fragment
-	unowned string uri_string = this_node.get_uri().as_string ();
-	int fragment_start = uri_string.index_of_char('#');
-	return_if_fail (fragment_start > -1);
-	return_if_fail (fragment_start < uri_string.length - 1);
-	name = uri_string[fragment_start + 1: uri_string.length];
+	name = _name;
 }
 
-public Class.internal (int _id, string _name) {
+public Class.internal (Charango.Ontology _ontology,
+                       int               _id,
+                       string            _name) {
+	/* FIXME: is it possible to chain to the default constructor? */
+	ontology = _ontology;
 	id = _id;
 	name = _name;
 	builtin = true;
 }
 
-public void load (Rdf.Model model) {
-	// Find all our properties from the ontology
-	var statement = new Rdf.Statement.from_nodes (ontology.context.redland,
+public void set_node (Rdf.Node node) {
+	this_node = node;
+}
+
+public void load (Rdf.Model model)
+            throws ParseError      {
+	Context context = ontology.context;
+	Rdf.World *redland = context.redland;
+
+	// Find more data on this class from the ontology
+	//
+	var template = new Rdf.Statement.from_nodes (ontology.context.redland,
 	                                              new Rdf.Node.from_node (this_node),
 	                                              null,
 	                                              null);
-	var stream = model.find_statements (statement);
-	/*stream.print (stdout); */
+	var stream = model.find_statements (template);
+
+	while (! stream.end()) {
+		unowned Rdf.Statement statement = stream.get_object ();
+		unowned Rdf.Node arc = statement.get_predicate ();
+
+		if (arc.equals (redland->concept (Rdf.Concept.S_label))) {
+			// rdfs:label - human-readable name
+			unowned Rdf.Node label_node = statement.get_object ();
+			label = label_node.get_literal_value ();
+		}
+		if (arc.equals (redland->concept (Rdf.Concept.S_comment))) {
+			// rdfs:comment - human-readable description
+			unowned Rdf.Node comment_node = statement.get_object ();
+			comment = comment_node.get_literal_value ();
+		}
+		else
+		if (arc.equals (redland->concept (Rdf.Concept.S_subClassOf))) {
+			// rdfs:subClassOf - parent class
+			unowned Rdf.Node parent_node = statement.get_object ();
+
+			if (parent_node.get_type() == Rdf.NodeType.RESOURCE) {
+				var parent = context.get_class_by_uri (parent_node.get_uri());
+				if (parent == null)
+					throw new ParseError.ONTOLOGY_ERROR
+					            ("%s rdf:subClassOf: unknown class %s",
+					             this.to_string(), parent_node.to_string ());
+
+				if (main_parent == null)
+					main_parent = parent;
+				else
+					parent_list.prepend (parent);
+			} else
+			if (parent_node.get_type() == Rdf.NodeType.BLANK) {
+				// No idea what to do here, see for example
+				// http://www.isi.edu/~pan/damltime/time-entry.owl#CalendarClockDescription
+				print ("warning: unhandled rdf:subClassOf triple in %s\n",
+				       this.to_string());
+			} else
+				throw new ParseError.PARSE_ERROR
+				            ("%s: rdf:subClassOf requires URI\n", this.to_string());
+		}
+
+		stream.next ();
+	}
+
+	if (main_parent == null)
+		// FIXME: should be able to access this by a fixed index
+		main_parent = context.get_class_by_uri (redland->concept_uri (Rdf.Concept.S_Class));
 
 	this_node = null;
 }
@@ -178,8 +247,40 @@ public int register_property (Charango.Property property) {
 	return property_count ++;
 }
 
+public string to_string () {
+	var builder = new StringBuilder();
+
+	if (ontology.prefix != null)
+		builder.append (ontology.prefix);
+	else
+		builder.append (ontology.uri);
+
+	builder.append (":");
+	builder.append (name);
+
+	return builder.str;
+}
+
 public void dump() {
-	print ("rdfs:Class %i '%s:%s'\n", id, ontology.prefix, name);
+	print ("rdfs:Class %i '%s:%s': %i properties\n", id, ontology.prefix, name, property_count);
+}
+
+public void dump_heirarchy (int indent = 0) {
+	if (indent > 0) {
+		for (int i=0; i<indent; i++)
+			print ("   ");
+		print ("-> ");
+	}
+	print ("%s:%s\n", ontology.prefix != null? ontology.prefix: ontology.uri, name);
+
+	// Only permitted for rdfs:Resource class
+	if (this.main_parent == null)
+		return;
+
+	this.main_parent.dump_heirarchy (indent + 1);
+
+	foreach (Class c in parent_list)
+		c.dump_heirarchy (indent + 1);
 }
 
 }

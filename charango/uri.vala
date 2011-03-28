@@ -17,30 +17,56 @@
 
 namespace Charango {
 
+public void parse_uri_as_resource_strings (string      uri_string,
+                                           out string  ontology_uri,
+                                           out string  fragment)
+            throws ParseError                                    {
+	ontology_uri = null;
+	fragment = null;
+
+	// Expand namespace abbreviations
+	if (uri_string.index_of_char ('/') == -1)
+		throw new ParseError.INVALID_URI
+		            ("parse_uri_as_resource_strings(): cannot parse %s; note " + 
+		             "this function cannot resolve prefixes.",
+		             uri_string);
+
+	var hash_index = uri_string.last_index_of_char ('#');
+
+	if (hash_index == -1)
+		// Some don't use the #fragment-identifier convention
+		hash_index = uri_string.last_index_of_char ('/');
+
+	if (hash_index <= 0 || hash_index > uri_string.length -1)
+		throw new ParseError.INVALID_URI
+		            ("Invalid URI: %s", uri_string);
+
+	ontology_uri = uri_string [0: hash_index + 1];
+	fragment = uri_string[hash_index + 1: uri_string.length];
+}
+
 public void parse_string_as_resource (Charango.Context context,
                                       string           input,
                                       out Ontology?    ontology,
                                       out string?      fragment)
-	        throws ParseError                                    {
+            throws ParseError                                    {
 	string uri_string;
 
 	ontology = null;
 	fragment = null;
 
-	/* Expand namespace abbreviations */
+	// Expand namespace abbreviations
 	if (input.index_of_char ('/') == -1) {
 		var colon_index = input.index_of_char (':');
-		if (colon_index < 1) {
-			warning ("Invalid URI: %s\n", input);
-			return;
-		}
+		if (colon_index < 1)
+			throw new ParseError.INVALID_URI
+			            ("parse_string_as_resource(): cannot parse %s", input);
 
 		string prefix = input[0:colon_index];
 		ontology = context.get_ontology_by_prefix (prefix);
-		if (ontology == null) {
+		if (ontology == null)
 			throw new ParseError.UNKNOWN_NAMESPACE
-			            ("Unknown prefix '%s' parsing %s\n", prefix, input);
-		}
+			            ("Unknown prefix '%s' parsing %s", prefix, input);
 
 		if (colon_index < input.length - 1) {
 			fragment = input[colon_index+1:input.length];
@@ -52,24 +78,27 @@ public void parse_string_as_resource (Charango.Context context,
 
 	return_if_fail (uri_string != null);
 
+	string ontology_namespace;
+	parse_uri_as_resource_strings (uri_string, out ontology_namespace, out fragment);
+
+	ontology = context.get_ontology_by_namespace (ontology_namespace);
+	if (ontology == null)
+		throw new ParseError.UNKNOWN_NAMESPACE
+		            ("Unable to find namespace for %s", uri_string);
+}
+
+public string? get_namespace_from_uri (string uri_string) {
 	var hash_index = uri_string.last_index_of_char ('#');
 
 	if (hash_index == -1)
-		/* Some don't use the #fragment-identifier convention */
 		hash_index = uri_string.last_index_of_char ('/');
 
-	/* Check for invalid URI's */
-	return_if_fail (hash_index > -1);
-	return_if_fail (hash_index < uri_string.length - 1);
+	// Check for invalid URI's
+	return_val_if_fail (hash_index > -1, null);
+	return_val_if_fail (hash_index < uri_string.length - 1, null);
 
-	var uri_namespace = uri_string [0: hash_index + 1];
+	return uri_string[0: hash_index + 1];
 
-	ontology = context.get_ontology_by_namespace (uri_namespace);
-	if (ontology == null)
-		throw new ParseError.UNKNOWN_NAMESPACE
-		            ("Unable to find namespace for %s\n", uri_string);
-
-	fragment = uri_string[hash_index + 1: uri_string.length];
 }
 
 public string? get_name_from_uri (string uri_string) {
@@ -78,7 +107,7 @@ public string? get_name_from_uri (string uri_string) {
 	if (hash_index == -1)
 		hash_index = uri_string.last_index_of_char ('/');
 
-	/* Check for invalid URI's */
+	// Check for invalid URI's
 	return_val_if_fail (hash_index > -1, null);
 	return_val_if_fail (hash_index < uri_string.length - 1, null);
 

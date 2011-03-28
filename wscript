@@ -10,7 +10,8 @@ from waflib import Logs
 from waflib import Options
 
 def build_library (bld, source='', target='', uselib='', packages='', includes='', vapi_dirs=''):
-	if True:
+	#if True:
+	if False:
 		bld (features  = 'c cshlib',
 		     source    = source,
 		     target    = target,
@@ -31,7 +32,7 @@ def build_library (bld, source='', target='', uselib='', packages='', includes='
 def build(bld):
 	charango_uselib = 'REDLAND'
 	charango_packages = 'redland'
-	charango_vapi_dirs = 'vapi'
+	charango_vapi_dirs = '. vapi'
 
 	# Build libraries
 	#
@@ -62,9 +63,11 @@ def build(bld):
 		test = bld (features = 'c cprogram',
 		            source = file,
 		            target = file.change_ext('').get_bld(),
+		            packages = 'charango',
 		            use = 'charango',
-		            install_path = None,
-		            vapi_dirs = charango_vapi_dirs)
+		            includes = ['.', './charango'],
+		            vapi_dirs = charango_vapi_dirs,
+		            install_path = None)
 
 		# Set unit_test flag selectively so user can call:
 		#   ./waf check --target=tests/foo-test
@@ -114,7 +117,6 @@ def gtester_run (bld, test_nodes):
 
 	if Logs.verbose > 1:
 		print gtester_params
-	print unicode (gtester_params)
 	pp = subprocess.Popen (gtester_params,
 	                       env = gtester_env)
 	result = pp.wait ()
