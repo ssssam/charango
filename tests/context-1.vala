@@ -57,14 +57,18 @@ public void test_local_ontology_sources () {
  */
 public void test_external_references () {
 	var context = new Charango.Context ();
+	List<Warning> warning_list;
 
 	try {
 		var test_ontology_file = test_ontology_dir + "test-external-references.ontology";
 		context.load_ontology_file (test_ontology_file);
-		context.load ();
+		context.load (out warning_list);
 	}
 		catch (FileError e) { error (e.message); }
 		catch (ParseError e) { error (e.message); }
+
+	// We should have one warning, about the unavailable external link
+	assert (warning_list.length() == 1);
 }
 
 /* live: test the real ontology data parses */
@@ -73,7 +77,7 @@ public void test_live () {
 
 	try {
 		context.add_local_ontology_source (SRCDIR + "/charango/data/ontologies");
-		context.load ();
+		context.load (null);
 	}
 		catch (FileError e) { error (e.message); }
 		catch (ParseError e) { error (e.message); }

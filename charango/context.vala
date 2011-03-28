@@ -17,14 +17,6 @@
 
 using Rdf;
 
-public errordomain Charango.ParseError {
-	PARSE_ERROR,
-	ONTOLOGY_ERROR,
-	INVALID_URI,
-	DUPLICATED_ONTOLOGY,
-	UNKNOWN_NAMESPACE
-}
-
 /**
  * Charango.Context: global state object
  *
@@ -182,9 +174,10 @@ internal Charango.Ontology add_external_ontology (string            namespace_ur
  *
  * Loads on-disk ontologies into memory.
  */
-public void load ()
+public void load (out List<Warning> warning_list)
             throws FileError, ParseError {
 	loading = true;
+	warning_list = null;
 
 	// Step 1: find the ontology definitions in our list of files
 	foreach (string base_path in local_sources) {
@@ -205,13 +198,13 @@ public void load ()
 	// Step 2: load classes and property definitions from the files
 	foreach (Ontology ontology in ontology_list) {
 		if (ontology.has_data ())
-			ontology.initial_load ();
+			ontology.initial_load (ref warning_list);
 	}
 
 	// Step 3: read class and property data from the files
 	foreach (Ontology ontology in ontology_list) {
 		if (ontology.has_data ())
-			ontology.complete_load ();
+			ontology.complete_load (ref warning_list);
 	}
 
 	loading = false;

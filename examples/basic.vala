@@ -26,7 +26,7 @@ public int main (string[] args) {
 
 	try {
 		context.add_local_ontology_source (path);
-		context.add_local_ontology_source ("/usr/local/share/tracker/ontologies");
+		//context.add_local_ontology_source ("/usr/local/share/tracker/ontologies");
 	}
 		catch (FileError error) {
 			print ("Unable to find ontologies: %s\n", error.message);
@@ -34,7 +34,7 @@ public int main (string[] args) {
 		}
 
 	try {
-		context.load ();
+		context.load (null);
 
 		// Music Ontology doesn't set a prefix, would be nice if we could work it
 		// out from the turtle file.
@@ -56,13 +56,13 @@ public int main (string[] args) {
 	entity.set_string ("foaf:name", "The Aggrolites");
 	entity.set_string ("ov:sortName", "Aggrolites, The");*/
 
-	var artist_nmm = new Charango.Entity (context, "nmm:Artist");
+	//var artist_nmm = new Charango.Entity (context, "nmm:Artist");
 	/*entity.set_string ("rdf:about",
 	                   "http://musicbrainz.org/artist/ac241ded-3430-4f42-8451-f78667cc2f52");
 	entity.set_string ("nmm:artistName", "The Aggrolites");
 	entity.set_string ("ov:sortName", "Aggrolites, The");*/
 
-	//artist_mo.dump ();
-	artist_nmm.dump ();
+	artist_mo.dump ();
+	//artist_nmm.dump ();
 	return 0;
 }

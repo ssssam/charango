@@ -178,7 +178,8 @@ public void set_node (Rdf.Node node) {
 	this_node = node;
 }
 
-public void load (Rdf.Model model)
+public void load (Rdf.Model         model,
+                  ref List<Warning> warning_list)
             throws ParseError      {
 	Context context = ontology.context;
 	Rdf.World *redland = context.redland;
@@ -195,19 +196,25 @@ public void load (Rdf.Model model)
 		unowned Rdf.Statement statement = stream.get_object ();
 		unowned Rdf.Node arc = statement.get_predicate ();
 
+		// rdfs:label - human-readable name
+		//
 		if (arc.equals (redland->concept (Rdf.Concept.S_label))) {
-			// rdfs:label - human-readable name
 			unowned Rdf.Node label_node = statement.get_object ();
 			label = label_node.get_literal_value ();
 		}
+
+		// rdfs:comment - human-readable description
+		//
+		else
 		if (arc.equals (redland->concept (Rdf.Concept.S_comment))) {
-			// rdfs:comment - human-readable description
 			unowned Rdf.Node comment_node = statement.get_object ();
 			comment = comment_node.get_literal_value ();
 		}
 		else
+
+		// rdfs:subClassOf - parent class
+		//
 		if (arc.equals (redland->concept (Rdf.Concept.S_subClassOf))) {
-			// rdfs:subClassOf - parent class
 			unowned Rdf.Node parent_node = statement.get_object ();
 
 			if (parent_node.get_type() == Rdf.NodeType.RESOURCE) {
@@ -217,12 +224,14 @@ public void load (Rdf.Model model)
 					main_parent = parent;
 				else
 					parent_list.prepend (parent);
-			} else
+			}
+			else
 			if (parent_node.get_type() == Rdf.NodeType.BLANK) {
 				// No idea what to do here, see for example
 				// http://www.isi.edu/~pan/damltime/time-entry.owl#CalendarClockDescription
-				print ("warning: unhandled rdf:subClassOf triple in %s\n",
-				       this.to_string());
+				var w = new Warning ("Unhandled rdf:subClassOf triple in %s",
+				                     this.to_string());
+				warning_list.append ((owned)w);
 			} else
 				throw new ParseError.PARSE_ERROR
 				            ("%s: rdf:subClassOf requires URI\n", this.to_string());

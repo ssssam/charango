@@ -120,7 +120,8 @@ internal Charango.Class add_class_placeholder (string class_name) {
 	return c;
 }
 
-void load_classes_from_iter (Rdf.Iterator iter)
+void load_classes_from_iter (Rdf.Iterator      iter,
+                             ref List<Warning> warning_list)
      throws ParseError                          {
 
 	while (! iter.end()) {
@@ -149,8 +150,11 @@ void load_classes_from_iter (Rdf.Iterator iter)
 				var o = context.get_ontology_by_namespace (class_namespace);
 				if (o == null) {
 					o = context.add_external_ontology (class_namespace, this);
-					print ("Warning: %s added external ref to ontology %s\n",
-					       this.source_file_name, class_namespace);
+
+					var w = new Warning ("%s links to unavailable ontology %s",
+					                     this.source_file_name,
+					                     class_namespace);
+					warning_list.append ((owned)w);
 				}
 
 				var c = o.get_class_by_name (class_name);
@@ -243,7 +247,7 @@ internal void load_from_model (owned Rdf.Model _model,
  * 
  * Read class and property definitions.
  * this.external */
-internal void initial_load ()
+internal void initial_load (ref List<Warning> warning_list)
          throws ParseError
 
          /* external ontologies have nothing to load from */
@@ -252,17 +256,15 @@ internal void initial_load ()
 {
 	Rdf.World *redland = context.redland;
 
-
-
 	// Read class list
 	Rdf.Iterator iter;
 	iter = model.get_sources (redland->concept (Concept.MS_type),
 	                          redland->concept (Concept.S_Class));
-	load_classes_from_iter (iter);
+	load_classes_from_iter (iter, ref warning_list);
 
 	iter = model.get_sources (redland->concept (Concept.MS_type),
 	                          get_owl_class (redland));
-	load_classes_from_iter (iter);
+	load_classes_from_iter (iter, ref warning_list);
 
 	// Read property list
 	iter = model.get_sources (redland->concept (Concept.MS_type),
@@ -271,12 +273,12 @@ internal void initial_load ()
 }
 
 /* complete_load: connect up the property and class objects */
-internal void complete_load ()
+internal void complete_load (ref List<Warning> warning_list)
          throws ParseError     {
 	try {
 		foreach (Class c in class_list)
 			if (c.builtin == false)
-				c.load (model);
+				c.load (model, ref warning_list);
 		foreach (Property p in property_list)
 			p.load (model);
 	}
