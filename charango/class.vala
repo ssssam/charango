@@ -146,6 +146,7 @@ public string comment;
  */
 internal Class?      main_parent = null;
 internal List<Class> parent_list = null;
+internal List<Class> child_list  = null;
 
 public bool builtin = false;
 
@@ -224,6 +225,8 @@ public void load (Rdf.Model         model,
 					main_parent = parent;
 				else
 					parent_list.prepend (parent);
+
+				parent.child_list.prepend (this);
 			}
 			else
 			if (parent_node.get_type() == Rdf.NodeType.BLANK) {
@@ -252,10 +255,15 @@ public int register_property (Charango.Property property) {
 	return property_count ++;
 }
 
-public List<Class> get_parent_list () {
+public List<Class> get_parents () {
 	List<Class> list = this.parent_list.copy();
+	foreach (Class c in list) c.ref();
 	list.prepend (main_parent);
 	return list;
+}
+
+public List<Class> get_children () {
+	return child_list.copy();
 }
 
 public string to_string () {

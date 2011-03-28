@@ -52,11 +52,38 @@ public void test_local_ontology_sources () {
 	assert (error_was_thrown);
 }
 
+void check_heirarchy (Charango.Class c,
+                      ... /* List of names children of c */) {
+	var va = va_list();
+
+	var children = c.get_children();
+	for (uint i=0; i<children.length(); i++) {
+		string name = va.arg();
+
+		// Check the class called 'name' appears in list of children of 'c'
+		unowned Charango.Class child = null;
+		foreach (unowned Charango.Class node in children)
+			if (node.name == name) {
+				child = node;
+				break;
+			}
+		assert (child != null);
+
+		// Check 'c' is in the child's parent list
+		unowned Charango.Class parent = null;
+		foreach (unowned Charango.Class node in child.get_parents())
+			if (node == c) {
+				parent = node;
+				break;
+			}
+		assert (parent != null);
+	}
+}
+
 /* heirarchy:
  * 
  * Simple test of class inheritance
- */
-public void test_heirarchy () {
+ */public void test_heirarchy () {
 	var context = new Charango.Context ();
 	List<Warning> warning_list;
 
@@ -71,31 +98,11 @@ public void test_heirarchy () {
 	assert (warning_list.length() == 0);
 
 	Charango.Class c;
-	List<Charango.Class> parent_list;
+	c = context.get_class_by_uri_string_noerror ("test_heirarchy:Animal");
+	check_heirarchy (c, "Monkey", "Chicken");
 
-	c = context.get_class_by_uri_string_noerror ("test_heirarchy:Monkey");
-	assert (c.name == "Monkey");
-
-		parent_list = c.get_parent_list ();
-		assert (parent_list.length() == 1);
-		c = parent_list.data;
-		assert (c.name == "Animal");
-
-			parent_list = c.get_parent_list ();
-			assert (parent_list.length() == 1);
-			c = parent_list.data;
-			assert (c.name == "Class");
-
-	c = context.get_class_by_uri_string_noerror ("test_heirarchy:Chicken");
-	assert (c.name == "Chicken");
-
-		parent_list = c.get_parent_list ();
-		assert (parent_list.length() == 2);
-		c = parent_list.data;
-		assert (c.name == "Animal");
-
-		c = parent_list.next.data;
-		assert (c.name == "Food");
+	c = context.get_class_by_uri_string_noerror ("test_heirarchy:Food");
+	check_heirarchy (c, "Chicken");
 }
 
 /* external-references:
