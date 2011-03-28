@@ -240,13 +240,28 @@ public Charango.Class? get_class_by_uri (Rdf.Uri uri)
 	return get_class_by_uri_string (uri.as_string ());
 }
 
-public Charango.Class? get_class_by_uri_string (string uri_string)
+public Charango.Class get_class_by_uri_string (string uri_string)
                        throws ParseError                           {
-	Ontology ontology;
-	string   name;
+	Charango.Ontology o;
+	Charango.Class    c;
+	string name;
 
-	parse_string_as_resource (this, uri_string, out ontology, out name);
-	return ontology.get_class_by_name (name);
+	parse_string_as_resource (this, uri_string, out o, out name);
+
+	c = o.get_class_by_name (name);
+
+	if (c == null) {
+		if (o.external)
+			// User needs to actually supply this ontology, we have got in this
+			// state because one ontology defined it as an external ontology to
+			// have a soft dep on it, but now we have found something with a
+			// hard dep
+			throw new ParseError.ONTOLOGY_ERROR ("Missing ontology %s", o.uri);
+		else
+			throw new ParseError.ONTOLOGY_ERROR ("Unknown class %s:%s", o.uri, name);
+	}
+
+	return c;
 }
 
 public Charango.Class? get_class_by_uri_string_noerror (string uri_string) {

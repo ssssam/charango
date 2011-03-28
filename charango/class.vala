@@ -211,11 +211,7 @@ public void load (Rdf.Model model)
 			unowned Rdf.Node parent_node = statement.get_object ();
 
 			if (parent_node.get_type() == Rdf.NodeType.RESOURCE) {
-				var parent = context.get_class_by_uri (parent_node.get_uri());
-				if (parent == null)
-					throw new ParseError.ONTOLOGY_ERROR
-					            ("%s rdf:subClassOf: unknown class %s",
-					             this.to_string(), parent_node.to_string ());
+				Charango.Class parent = context.get_class_by_uri (parent_node.get_uri());
 
 				if (main_parent == null)
 					main_parent = parent;

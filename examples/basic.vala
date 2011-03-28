@@ -46,7 +46,7 @@ public int main (string[] args) {
 			return 1;
 		}
 		catch (ParseError error) {
-			print ("Parse error loading ontology data: %s\n", error.message);
+			print ("Error loading ontology data: %s\n", error.message);
 			return 2;
 		}
 
