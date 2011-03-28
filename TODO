@@ -1,12 +1,29 @@
 Charango 0.3.0 ...
 
+Upstream
+--------
+
+* Parse error in 92-slo.ontology: False instead of false?
+  https://bugzilla.gnome.org/show_bug.cgi?id=645675
+
+To do
+------
+* Add internal warning stack so we can track which external refs are ignored
+
+-> disable static build, add a 'waf run' command similar to 'libtool exec' to fix ld_library_path.
+-> heirarchy test: context-1
+-> property add itself to the classes in its domain and get an id
+-> build class heirarchy so ids include subclass properties
+-> then examples/basic should work!
+
+-> write some tests
+
+Things still to handle:
+rdfs:isDefinedBy on classes (check it matches where we have added it :)
+
+
 * Share the vala bindings for librdf
 
-Ontology info needs to be stored and INDEXED. Things won't be fast enough
-unless we can access a property with just an index.
-
-So each Ontology gives Classes, and ultimately a heirarchy. We can index these,
-and then as properties are added index those too. No problem, really.
 
 WHERE FROM is a slight issue - we can get them on disk from various locations
 (apps own dir, tracker dir) or from the net (canonical sources).
@@ -14,7 +31,10 @@ WHERE FROM is a slight issue - we can get them on disk from various locations
 There can be discrepencies/version mismatches, so this is important stuff .. I
 guess we should check things when they are stored (perhaps optionally) that they
 map to the ontologies stored by *that* storage backend. Ie. we could check that the
-data fits an installed Tracker ontology.
+data fits an installed Tracker ontology. Or just check the lastModifiedDate property.
+
+Write a generic charango-driven browser for all semantic data sources!!!
+See: nepomukshell/ nepsak from KDE
 
 
 So we need:
@@ -40,7 +60,10 @@ using SQLite is basically reimplementing tracker without the DBUS? Since the onl
 place it's really hard to expect tracker is win32, surely we can just build it there
 using some hacks if necessary.
 
-
+Truth is Tracker don't want custom ontologies, and it is "illegal" according to pvanhoof
+to add them :) We don't really have a choice though, either we have to use a different
+store or hack music ontology onto tracker ... I guess it might be too slow anyway, who
+knows.
 
 So Store pushes changes to View, through the traditional notify 'signal'?
 HOWEVER, can we even get change notifications from Tracker?
@@ -48,7 +71,6 @@ Yes, we get them via dbus
 I guess we can emit our own automatically to speed up local view updates
 We only get inserts and deletes, but I think updates are actually deletes and inserts so
 maybe this will work out okay. ...
-
 
 MemoryStore:
 - what is rdf storage? we kind of need to be DYNAMIC :( can't ask the user to define
@@ -58,41 +80,94 @@ MemoryStore:
 - tracker just has a table for each class really, so a row for each resource. It's all good.
 - how hard is it to write an rdf store really?
 
-
 Is the generic store concept right for what you want this library to do? Actually yes,
 I don't see why Tracker is the only RDF store Charango could work for. We can't easily
 use their data structures anyway.
 
-
-How much of librdf / Redland are we reinventing?
-A bit, but the problem is we want to give a more object orientated view on the RDF store.
-There's nothing stopping it storing arbitary predicates, BUT since we want to create a
-view there's no real way to do it from anything other than resources, simple properties
-and resource->resource links ...
-So the best we could do is reuse its storage backend. Even then it would be hacky to
-get the notifications right.
-
 I'm wondering if it's actually a good idea to base things on Redland, and just ignore
 its store API (or embrace and extend :) because we get a lot of good stuff like parsing
-and dumping completely for free. That said, the Tracker guys don't need it. They seem to
-do basically everything with SPARQL.
+and dumping completely for free.
 
-Perhaps that's why they don't need Redland?
+Views thoughts:
+ -> is the fundamental structure still the same? ie. the configuration lists the Classes
+    in an order in which they can be connected. The view then has a set of columns to
+    extract from the resources on each line to actually display.
+    So the presentation and structure are separate in effetc.
+    I think this is the right thing to do still because:
+      - reordering columns is easy
+      - the config makes more sense
+      - it generally just seems a better way now I think about it
 
-
-* I'm slightly confused about the difference between tracker:Namespace and tracker:Ontology
-at the moment. Maybe Owl can shed some light. Currently I believe they are basically
-interchangable.
-
+General things
 --------------------------------------
 
+* I don't like the _noerror variants of some functions, but I don't like having
+  ugly try { } catch { } blocks around all my code either. And I don't like the
+  "unhandled exception" warnings, but only sometimes because other times I do
+  want it. Handle this one, Vala!
+
+* Don't distribute ontologies with charango. That should be up to the
+  applications that use them (since it's their API) or Tracker (if they want to
+  delegate the responsibility)
+
+Minor things
+--------------------------------------
+
+* Core
+	Should we store namespace URI's with the trailing # and / or without? The
+	overwhelming convention seems to be that they should have the #, but it
+	feels slightly weird to require that ..
+
+* Tests
+	Use valadate? http://gitorious.org/valadate/pages/Home
+	It is a lot like what we use now but needs a new runner and the test to be
+	linked as a library (which seems annoying because you can't run the test as
+	an exe). Has some nice API extensions like wait_for_signal() and stuff.
+
+Blue sky things
+--------------------------------------
+
+* Thought experiment: how hard would it be to handle live updates to the
+  known set of ontologies? I doubt there's a real use case since this is a
+  library for the desktop but let's think: to remove a class, just replace its
+  instance with a tombstone and prevent its use .. to add one, it's even easier.
+  From a storage point of view the problem is much harder but from our position
+  as a view library we just need update the view :)
+  
 Fixes in other projects
 -----------------------
 
-waf
+* waf
 	Add gtester support to waf
 
-Vala
+* Vala
 	Use built-in test support:
 	  https://asabil.wordpress.com/2009/01/23/vala-and-unit-testing/
-	Update raptor.vapi in upstream Vala
+	or valadata?
+
+	Update raptor.vapi in upstream Vala, merge redland.vapi
+
+* Tracker
+	Some of our ontology state code is duplicated in Tracker, although also have
+	their own additions like notification tracking. We each have our own
+	requirements, but maybe a standardised grdf library (I'd like to call it
+	Greenland :) could become the superclass for both of us.
+
+	Issues:
+	  -> the redland dependency: I guess they don't like it because the more libs
+	  you link to the slower you are, which isn't bad reasoning. Also it doesn't
+	  do a huge amount more for us than parse. I basically like it because we
+	  can read ontologies from the internet.
+	  -> name ideas :) I like Facts (good namespace). Or Greenland, but we can't
+	  really use gl_ namespace :) GRDF sounds like a dog dying.
+	  -> a big win on the Tracker side is that they cache the ontologies in a
+	     GVDB. This is a good idea. GRDF would be a good place to put the shared
+	     ontologies too since it would be a smaller dep than the whole of tracker? 
+	     Although they do like to be in control, maybe they could still be but
+	     just in charge of the ontologies for the whole desktop instead of just
+	     in tracker.. since obviously we need to agree on them regardless. This is
+	     some pretty blue sky thinking!
+	  -> it could become a bit more generic and be a generic data/sharing/SOA
+	     library .. maybe built on top of libsoup ! This would need a new name
+	     I guess, like SoaLib or libdata or something like that. Why do you
+	     always worry about names!

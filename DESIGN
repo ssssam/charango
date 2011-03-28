@@ -1,7 +1,22 @@
 Charango 0.3.0 - design
 ------------------------
 
-Charango is essentially an RDF-based data model & view.
+Charango is essentially an RDF-based data model & view. Here are some of the
+key design decisions.
+
+Context:
+	* Stores all known ontology data so that we can index it. Addressing
+	  ontology resources by integer id's is vital when querying tens of
+	  thousands of resources to build a view.
+	  
+	* Ontologies cannot change during execution. Charango is for desktop
+	  applications and ontologies are essentially API, which does not normally
+	  change during runtime.
+
+	* Ontology info can only be read from disk. This is probably necessary for
+	  applications to provide any stability guarantees. In practice apps should
+	  ship their required ontologies or depend on Tracker's.
+
 
 Terminology I currently use
 ---------------------------
@@ -14,14 +29,10 @@ so we either want to call it Instance, or Resource ..
 
 an Instance of an rdfs:Class.
 
+How about namespace is a uri string while ontology is a Charango.Ontology object.
 
 Ontology sources
 ----------------
-
-The Charango.Context needs a full class heirarchy. This needs to come from
-somewhere: either on disk or the web. Theoretically we could query them from
-Tracker too, but they may as well be supplied on disk if they're going to be
-supplied.
 
 How easy is it to add new ontologies to Tracker?
 
@@ -32,6 +43,3 @@ Tracker it needs to check if all ontologies are available then, and in future
 it would be able to add them at runtime. Of course getting Music Ontology
 included would be cool but not sure if they will do this :) If not, Calliope
 will be able to install it itself at least.
-
-Charango lazily loads classes from the ontologies, because there are often lots
-that aren't relevant.
