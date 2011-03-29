@@ -65,15 +65,23 @@ public void load (Rdf.Model model)
 		else
 		if (arc.equals (redland->concept (Rdf.Concept.S_domain))) {
 			unowned Rdf.Node domain_node = statement.get_object ();
-			Class? domain = null;
-			domain = context.get_class_by_uri (domain_node.get_uri());
-			if (domain != null)
-				domain_list.append (domain);
-			else
-				throw new ParseError.ONTOLOGY_ERROR
-				            ("Unknown domain for property %s: %s",
-				             this_node.to_string(),
-				             domain_node.to_string());
+			if (domain_node.is_resource ()) {
+				Class? domain = null;
+				domain = context.get_class_by_uri (domain_node.get_uri());
+				if (domain != null)
+					domain_list.append (domain);
+				else
+					throw new ParseError.ONTOLOGY_ERROR
+					            ("Unknown domain for property %s: %s",
+					             this_node.to_string(),
+					             domain_node.to_string());
+			} else
+			if (domain_node.is_blank ()) {
+				// FIXME: handle lists here
+			} else {
+				throw new ParseError.PARSE_ERROR
+				            ("%s: rdf:domain requires URI\n", this.to_string());
+			}
 		}
 
 		stream.next ();
@@ -195,7 +203,7 @@ public void load (Rdf.Model         model,
 		if (arc.equals (redland->concept (Rdf.Concept.S_subClassOf))) {
 			unowned Rdf.Node parent_node = statement.get_object ();
 
-			if (parent_node.get_type() == Rdf.NodeType.RESOURCE) {
+			if (parent_node.is_resource ()) {
 				Charango.Class parent = context.get_class_by_uri (parent_node.get_uri());
 
 				if (main_parent == null)
@@ -206,7 +214,7 @@ public void load (Rdf.Model         model,
 				parent.child_list.prepend (this);
 			}
 			else
-			if (parent_node.get_type() == Rdf.NodeType.BLANK) {
+			if (parent_node.is_blank ()) {
 				// No idea what to do here, see for example
 				// http://www.isi.edu/~pan/damltime/time-entry.owl#CalendarClockDescription
 				var w = new Warning ("Unhandled rdf:subClassOf triple in %s",

@@ -256,19 +256,37 @@ internal void initial_load (ref List<Warning> warning_list)
 {
 	Rdf.World *redland = context.redland;
 
-	// Read class list
+	// Read class list, use each triple of either form:
+	//   C :type rdfs:Class
+	//   C :type owl:Class
 	Rdf.Iterator iter;
 	iter = model.get_sources (redland->concept (Concept.MS_type),
 	                          redland->concept (Concept.S_Class));
 	load_classes_from_iter (iter, ref warning_list);
 
 	iter = model.get_sources (redland->concept (Concept.MS_type),
-	                          get_owl_class (redland));
+	                          get_owl_class_concept (redland));
 	load_classes_from_iter (iter, ref warning_list);
 
-	// Read property list
+	// Read property list, use each triple of one of these forms:
+	//  C :type rdf:Property
+	//  C :type owl:ObjectProperty
+	//  C :type owl:DatatypeProperty
+	// Note that the last two are mutually exclusive (and both imply the first).
+	//
+	// FIXME: enforce the rules of them, ie. mark the property as datatype-only
+	// or object-relationship-only. Although it's hard to think of a reason to
+	// enforce it when it's not a requirement to even use Owl.
 	iter = model.get_sources (redland->concept (Concept.MS_type),
 	                          redland->concept (Concept.MS_Property));
+	load_properties_from_iter (iter);
+
+	iter = model.get_sources (redland->concept (Concept.MS_type),
+	                          get_owl_datatype_property_concept (redland));
+	load_properties_from_iter (iter);
+
+	iter = model.get_sources (redland->concept (Concept.MS_type),
+	                          get_owl_object_property_concept (redland));
 	load_properties_from_iter (iter);
 }
 
