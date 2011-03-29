@@ -23,26 +23,37 @@ using Rdf;
 
 namespace Charango {
 
-public Rdf.Node get_owl_ontology_class (Rdf.World redland) {
+public Rdf.Node get_owl_ontology_concept (Rdf.World redland) {
 	return new Rdf.Node.from_uri_string
 	                     (redland, "http://www.w3.org/2002/07/owl#Ontology");
 }
 
-public Rdf.Node get_owl_class (Rdf.World redland) {
+public Rdf.Node get_owl_class_concept (Rdf.World redland) {
 	return new Rdf.Node.from_uri_string
 	                     (redland, "http://www.w3.org/2002/07/owl#Class");
 }
-public Rdf.Node get_tracker_ontology_class (Rdf.World redland) {
+
+public Rdf.Node get_owl_datatype_property_concept (Rdf.World redland) {
+	return new Rdf.Node.from_uri_string
+	                     (redland, "http://www.w3.org/2002/07/owl#DatatypeProperty");
+}
+
+public Rdf.Node get_owl_object_property_concept (Rdf.World redland) {
+	return new Rdf.Node.from_uri_string
+	                     (redland, "http://www.w3.org/2002/07/owl#ObjectProperty");
+}
+
+public Rdf.Node get_tracker_ontology_concept (Rdf.World redland) {
 	return new Rdf.Node.from_uri_string
 	                     (redland, "http://www.tracker-project.org/ontologies/tracker#Ontology");
 }
 
-public Rdf.Node get_dsc_ontology_class (Rdf.World redland) {
+public Rdf.Node get_dsc_ontology_concept (Rdf.World redland) {
 	return new Rdf.Node.from_uri_string
 	                     (redland, "http://www.tracker-project.org/temp/dsc#Ontology");
 }
 
-public Rdf.Node get_tracker_prefix_predicate (Rdf.World redland) {
+public Rdf.Node get_tracker_prefix_concept (Rdf.World redland) {
 	return new Rdf.Node.from_uri_string
 	                     (redland, "http://www.tracker-project.org/ontologies/tracker#prefix");
 }

@@ -38,15 +38,15 @@ Rdf.Node? get_ontology_node_from_model (Rdf.World *redland,
 	Rdf.Node? node = null;
 
 	node = model.get_source (redland->concept (Concept.MS_type),
-	                         get_owl_ontology_class (redland));
+	                         get_owl_ontology_concept (redland));
 
 	if (node == null)
 		node = model.get_source (redland->concept (Concept.MS_type),
-		                         get_tracker_ontology_class (redland));
+		                         get_tracker_ontology_concept (redland));
 
 	if (node == null) {
 		node = model.get_source (redland->concept (Concept.MS_type),
-		                         get_dsc_ontology_class (redland));
+		                         get_dsc_ontology_concept (redland));
 
 		if (node != null) {
 			// Tracker .description file, let's ignore this
@@ -227,7 +227,7 @@ internal void load_from_model (owned Rdf.Model _model,
 	//   - tracker:prefix
 	Rdf.Node prefix_node;
 	prefix_node = model.get_target (this_node,
-	                                get_tracker_prefix_predicate (redland));
+	                                get_tracker_prefix_concept (redland));
 	if (prefix_node == null)
 		prefix_node = model.get_target (this_node,
 		                                redland->concept (Concept.S_label));
