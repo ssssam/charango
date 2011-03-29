@@ -17,20 +17,12 @@
 
 /**
  * Charango.RdfsProperty:
- * Represents an Rdf:Property specific to one class. If the domain of the
- * property takes in more than one class, a different Rdf:Property object
- * will be created for each (because property id's are per-class).
+ * 
+ * Represents an Rdfs:Property
  */
 public class Charango.Property: GLib.Object {
 
 Ontology ontology;
-
-/* Annotation properties have no defined domain; one will be set when the
- * property is set on an entity.
- */
-public bool annotation = true;
-public int id = -1;
-public Charango.Class domain;
 
 public string name;
 public string label;
@@ -50,7 +42,7 @@ public void load (Rdf.Model model)
 	Context context = ontology.context;
 	Rdf.World *redland = context.redland;
 
-	List <Charango.Class> domain_list = null;
+	List<Charango.Class> domain_list = null;
 
 	var template = new Rdf.Statement.from_nodes (redland,
 	                                             new Rdf.Node.from_node (this_node),
@@ -61,14 +53,17 @@ public void load (Rdf.Model model)
 		unowned Rdf.Statement statement = stream.get_object ();
 		unowned Rdf.Node arc = statement.get_predicate ();
 
+		// rdfs:label - human-readable name
+		//
 		if (arc.equals (redland->concept (Rdf.Concept.S_label))) {
-			// rdfs:label - human-readable name
 			unowned Rdf.Node label_node = statement.get_object ();
 			label = label_node.get_literal_value ();
 		}
+
+		// rdfs:domain - classes of which this property is a member
+		//
 		else
 		if (arc.equals (redland->concept (Rdf.Concept.S_domain))) {
-			// rdfs:domain - classes of which this property is a member
 			unowned Rdf.Node domain_node = statement.get_object ();
 			Class? domain = null;
 			domain = context.get_class_by_uri (domain_node.get_uri());
@@ -84,39 +79,19 @@ public void load (Rdf.Model model)
 		stream.next ();
 	}
 
-	// Add to domain (class) to get an id. Each Charango.Property only exists in
-	// one domain, because id's are class specific. For multiple domains we
-	// duplicate the this Property object. Annotation properties may not have a
-	// domain; when set on an entity, the property is added to that class.
-	//
-	if (domain_list.length() > 0) {
-		this.annotation = false;
-		this.set_domain (domain_list.data);
-
-		unowned List<Charango.Class> domain_node = domain_list.next;
-		while (domain_node != null) {
-			Charango.Property duplicate = this.copy ();
-			duplicate.annotation = false;
-			duplicate.set_domain (domain_node.data);
-			domain_node = domain_node.next;
-		}
-	}
+	// Register this property with the classes in its specific domain and their
+	// subclasses. The property can still be set on other classes (annonation
+	// properties are intended to be used that way).
+	foreach (Charango.Class domain in domain_list)
+		domain.register_property (this);
 }
 
-public Property copy () {
-	Property copy = new Charango.Property (ontology, this_node);
-	copy.label = label;
-	return copy;
+public string to_string () {
+	return "%s:%s".printf (ontology.prefix ?? ontology.uri, name);
 }
 
-void set_domain (Charango.Class _domain) {
-	domain = _domain;
-	id = domain.register_property (this);
-}
-
-public void dump() {
-	print ("rdf:Property %i '%s:%s' in domain %s:%s\n",
-	       id, ontology.prefix, name, domain.ontology.prefix, domain.name);
+public void dump () {
+	print ("rdf:Property '%s'\n", this.to_string());
 }
 
 }
@@ -147,6 +122,8 @@ public string comment;
 internal Class?      main_parent = null;
 internal List<Class> parent_list = null;
 internal List<Class> child_list  = null;
+
+internal List<Property> property_list = null;
 
 public bool builtin = false;
 
@@ -250,9 +227,12 @@ public void load (Rdf.Model         model,
 	this_node = null;
 }
 
-public int register_property (Charango.Property property) {
-	//print ("%s: register property %s\n", this.name, property.name);
-	return property_count ++;
+public void register_property (Charango.Property property) {
+	property_list.append (property);
+	this.property_count ++;
+
+	foreach (Class c in this.child_list)
+		c.register_property (property);
 }
 
 public List<Class> get_parents () {
@@ -300,6 +280,11 @@ public void dump_heirarchy (int indent = 0) {
 
 	foreach (Class c in parent_list)
 		c.dump_heirarchy (indent + 1);
+}
+
+public void dump_properties () {
+	foreach (Property p in this.property_list)
+		print ("\t%i: %s\n", 0, p.to_string());
 }
 
 }

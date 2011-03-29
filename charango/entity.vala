@@ -50,6 +50,7 @@ public Entity (Context  context,
 
 	rdfs_class.dump ();
 	rdfs_class.dump_heirarchy ();
+	rdfs_class.dump_properties ();
 }
 
 /* We can have slow (string arc names) and fast (indexed arc names) now. Names? */
