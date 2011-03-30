@@ -371,14 +371,14 @@ namespace Rdf {
 		[CCode (cname = "librdf_node_get_type")]
 		public NodeType get_type ();
 		[CCode (cname = "librdf_node_get_literal_value")]
-		public unowned string? get_literal_value ();
+		public unowned string? get_literal_value ();  /* (as UTF8) */
 		/* Missing (as all 'counted' variants):
 		[CCode (cname = "librdf_node_get_literal_value_as_counted_string")]
 		public string get_literal_value_as_counted_string (out size_t len_p); */
 		[CCode (cname = "librdf_node_get_literal_value_as_latin1")]
-		public string? get_literal_value_as_latin1 ();
+		public uint8[]? get_literal_value_as_latin1 ();
 		[CCode (cname = "librdf_node_get_literal_value_language")]
-		public string? get_literal_value_language ();
+		public uint8[]? get_literal_value_language ();  /* ASCII result */
 		[CCode (cname = "librdf_node_get_literal_value_is_wf_xml")]
 		public bool get_literal_value_is_wf_xml ();
 		[CCode (cname = "librdf_node_get_literal_value_datatype_uri")]
