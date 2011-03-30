@@ -131,13 +131,14 @@ internal Class?      main_parent = null;
 internal List<Class> parent_list = null;
 internal List<Class> child_list  = null;
 
-internal List<Property> property_list = null;
+/* This class's known properties; property id is its index in this table.
+ * Annotation properties are added to this table when first used on the class.
+ */
+internal PtrArray    properties;
 
 public bool builtin = false;
 
 internal Ontology ontology;
-
-int property_count = 0;
 
 /* Only stored while awaiting load */
 unowned Rdf.Node? this_node;
@@ -148,15 +149,14 @@ public Class (Charango.Ontology _ontology,
 	ontology = _ontology;
 	id = _id;
 	name = _name;
+
+	properties = new PtrArray ();
 }
 
 public Class.internal (Charango.Ontology _ontology,
                        int               _id,
                        string            _name) {
-	/* FIXME: is it possible to chain to the default constructor? */
-	ontology = _ontology;
-	id = _id;
-	name = _name;
+	this (_ontology, _id, _name);
 	builtin = true;
 }
 
@@ -236,8 +236,14 @@ public void load (Rdf.Model         model,
 }
 
 public void register_property (Charango.Property property) {
-	property_list.append (property);
-	this.property_count ++;
+	// FIXME: this is probably actually an ontology warning rather than
+	// programmer error
+	this.properties.foreach ((p) => {
+		if (p == property)
+			return;
+	});
+
+	this.properties.add (property);
 
 	foreach (Class c in this.child_list)
 		c.register_property (property);
@@ -269,7 +275,7 @@ public string to_string () {
 }
 
 public void dump() {
-	print ("rdfs:Class %i '%s:%s': %i properties\n", id, ontology.prefix, name, property_count);
+	print ("rdfs:Class %i '%s:%s': %u properties\n", id, ontology.prefix, name, properties.len);
 }
 
 public void dump_heirarchy (int indent = 0) {
@@ -291,8 +297,9 @@ public void dump_heirarchy (int indent = 0) {
 }
 
 public void dump_properties () {
-	foreach (Property p in this.property_list)
-		print ("\t%i: %s\n", 0, p.to_string());
+	for (uint i=0; i<this.properties.len; i++) {
+		print ("\t%u: %s\n", i, ((Property)this.properties.index(i)).to_string());
+	}
 }
 
 }
