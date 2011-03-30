@@ -8,15 +8,51 @@ Upstream
 
 To do
 ------
-* Add internal warning stack so we can track which external refs are ignored
-
 -> disable static build, add a 'waf run' command similar to 'libtool exec' to fix ld_library_path.
--> heirarchy test: context-1
--> property add itself to the classes in its domain and get an id
--> build class heirarchy so ids include subclass properties
+
+-> store data values,
+ "a set of character strings called lexical forms and a mapping from that set to a set of values"
+  how? We can store:
+    rdf:XMLLiteral  (base type?)
+    
+    xsd values:
+      seems you can define your own ones of these with restrictions etc. How does that
+      affect us?
+      the rdf spec lists the good ones as:
+		xsd:string, xsd:boolean, xsd:decimal, xsd:float, xsd:double, xsd:dateTime, xsd:time,
+		xsd:date, xsd:gYearMonth, xsd:gYear, xsd:gMonthDay, xsd:gDay, xsd:gMonth, xsd:hexBinary,
+		xsd:base64Binary, xsd:anyURI, xsd:normalizedString, xsd:token, xsd:language, xsd:NMTOKEN,
+		xsd:Name, xsd:NCName, xsd:integer, xsd:nonPositiveInteger, xsd:negativeInteger, xsd:long,
+		xsd:int, xsd:short, xsd:byte, xsd:nonNegativeInteger, xsd:unsignedLong, xsd:unsignedInt,
+		xsd:unsignedShort, xsd:unsignedByte, xsd:positiveInteger
+      
+    object pointers (to things we know about)
+    uris to things that we don't
+
+  redland gives us:
+    -> uri's
+    -> nodes
+    -> string as latin1 or utf8
+    -> datatype uri
+
+  OWL makes things a lot harder :(
+
+  we basically need 
+
+  Property types are set with
+    rdfs:range
+  Custom types are defined in time-entry.owl, for one, .. which makes sense.
+  This is a strict property, violations are 'datatype clashes', 'XSD inconsistent'
+
+  Tracker SEEMS to only use:
+    xsd:string, xsd:integer, xsd:dateTime, xsd:double, xsd:boolean,  ..
+  which along with xsd:date are the only ones xsd defines.
+
 -> then examples/basic should work!
 
 -> write some tests
+
+-> write some of calliope :)
 
 Things still to handle:
 rdfs:isDefinedBy on classes (check it matches where we have added it :)
@@ -39,12 +75,16 @@ See: nepomukshell/ nepsak from KDE
 
 So we need:
 * Model
-  Charango.Source, Charango.Model, Charango.Store
+  Charango.Store
   -> Charango.GenericStore, Charango.TrackerStore, Charango.SQLiteStore
+  Charango.Source
+  -> for web API end points, maybe pluggable? Seems like overkill.
+  Charango.Union
+  -> for aggregated data sources.
+
 * View ..
-  Charango.View,
-* Schema ..
-  Charango.Schema, Charango.Ontology
+  Charango.View, Charango.TreeView .. in the distant future maybe some
+  cool faceted browing viewers :)
 
 * Other stuff..
   in the Ontology, we have Classes and Properties
