@@ -83,7 +83,8 @@ void check_heirarchy (Charango.Class c,
 /* heirarchy:
  * 
  * Simple test of class inheritance
- */public void test_heirarchy () {
+ */
+public void test_heirarchy () {
 	var context = new Charango.Context ();
 	List<Warning> warning_list;
 
