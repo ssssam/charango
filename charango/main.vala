@@ -25,6 +25,11 @@ public errordomain Charango.ParseError {
 	UNKNOWN_NAMESPACE
 }
 
+/* FIXME: some parse errors should be in herE */
+public errordomain Charango.OntologyError {
+	UNKNOWN_PROPERTY
+}
+
 /**
  * Charango.Warning:
  * 

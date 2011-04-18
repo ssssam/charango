@@ -16,95 +16,6 @@
  */
 
 /**
- * Charango.RdfsProperty:
- * 
- * Represents an Rdfs:Property
- */
-public class Charango.Property: GLib.Object {
-
-Ontology ontology;
-
-public string name;
-public string label;
-
-unowned Rdf.Node this_node;
-
-public Property (Ontology _ontology,
-                 Rdf.Node _this_node) {
-	ontology = _ontology;
-	this_node = _this_node;
-
-	name = get_name_from_uri (this_node.get_uri().as_string());
-}
-
-public void load (Rdf.Model model)
-                  throws ParseError {
-	Context context = ontology.context;
-	Rdf.World *redland = context.redland;
-
-	List<Charango.Class> domain_list = null;
-
-	var template = new Rdf.Statement.from_nodes (redland,
-	                                             new Rdf.Node.from_node (this_node),
-	                                             null,
-	                                             null);
-	var stream = model.find_statements (template);
-	while (! stream.end()) {
-		unowned Rdf.Statement statement = stream.get_object ();
-		unowned Rdf.Node arc = statement.get_predicate ();
-
-		// rdfs:label - human-readable name
-		//
-		if (arc.equals (redland->concept (Rdf.Concept.S_label))) {
-			unowned Rdf.Node label_node = statement.get_object ();
-			label = label_node.get_literal_value ();
-		}
-
-		// rdfs:domain - classes of which this property is a member
-		//
-		else
-		if (arc.equals (redland->concept (Rdf.Concept.S_domain))) {
-			unowned Rdf.Node domain_node = statement.get_object ();
-			if (domain_node.is_resource ()) {
-				Class? domain = null;
-				domain = context.get_class_by_uri (domain_node.get_uri());
-				if (domain != null)
-					domain_list.append (domain);
-				else
-					throw new ParseError.ONTOLOGY_ERROR
-					            ("Unknown domain for property %s: %s",
-					             this_node.to_string(),
-					             domain_node.to_string());
-			} else
-			if (domain_node.is_blank ()) {
-				// FIXME: handle lists here
-			} else {
-				throw new ParseError.PARSE_ERROR
-				            ("%s: rdf:domain requires URI\n", this.to_string());
-			}
-		}
-
-		stream.next ();
-	}
-
-	// Register this property with the classes in its specific domain and their
-	// subclasses. The property can still be set on other classes (annonation
-	// properties are intended to be used that way).
-	foreach (Charango.Class domain in domain_list)
-		domain.register_property (this);
-}
-
-public string to_string () {
-	return "%s:%s".printf (ontology.prefix ?? ontology.uri, name);
-}
-
-public void dump () {
-	print ("rdf:Property '%s'\n", this.to_string());
-}
-
-}
-
-/**
  * Charango.RdfsClass: represents an rdfs:Class
  */
 
@@ -235,6 +146,17 @@ public void load (Rdf.Model         model,
 	this_node = null;
 }
 
+public List<Class> get_parents () {
+	List<Class> list = this.parent_list.copy();
+	foreach (Class c in list) c.ref();
+	list.prepend (main_parent);
+	return list;
+}
+
+public List<Class> get_children () {
+	return child_list.copy();
+}
+
 public void register_property (Charango.Property property) {
 	// FIXME: this is probably actually an ontology warning rather than
 	// programmer error
@@ -249,15 +171,18 @@ public void register_property (Charango.Property property) {
 		c.register_property (property);
 }
 
-public List<Class> get_parents () {
-	List<Class> list = this.parent_list.copy();
-	foreach (Class c in list) c.ref();
-	list.prepend (main_parent);
-	return list;
-}
+public uint get_property_index (string property_name)
+            throws OntologyError                      {
+	for (uint i=0; i<properties.len; i++) {
+		Property p = (Property)properties.index(i);
 
-public List<Class> get_children () {
-	return child_list.copy();
+		if (p.name == property_name)
+			return i;
+	}
+
+	throw new OntologyError.UNKNOWN_PROPERTY
+	          ("Class %s has no property '%s'", this.to_string(), property_name);
+
 }
 
 public string to_string () {

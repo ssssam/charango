@@ -178,8 +178,7 @@ void load_properties_from_iter (Rdf.Iterator iter)
 		unowned Rdf.Node object = iter.get_object ();
 
 		if (object.get_type() == NodeType.RESOURCE) {
-			var rdfs_property = new Charango.Property (this,
-			                                           iter.get_object ());
+			var rdfs_property = new Charango.Property (this, object);
 			property_list.prepend (rdfs_property);
 		}
 		else

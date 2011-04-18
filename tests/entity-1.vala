@@ -3,7 +3,7 @@
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
+ *  the Free Software Foundation, either version 3 of te License, or
  *  (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -17,18 +17,60 @@
 
 using Charango;
 
-class EntityTest {
-	public EntityTest() {
-		Test.add_data_func ("/test/basic", this.test_basic);
-	}
+extern static const string SRCDIR;
 
-	public void test_basic () {
-		/*var entity = new Charango.Entity("mo:MusicArtist");
-		entity.set ("rdf:about",
-		            "http://musicbrainz.org/artist/ac241ded-3430-4f42-8451-f78667cc2f52");
-		entity.set ("foaf:name", "The Aggrolites");
-		entity.set ("ov:sortName", "Aggrolites, The");*/
+const string test_ontology_dir = SRCDIR + "/charango/tests/data/ontologies/";
+
+class EntityTest: GLib.Object {
+
+Charango.Context context;
+
+public EntityTest() {
+	Test.add_data_func ("/charango/entity/basic types", this.test_basic_types);
+}
+
+public void test_basic_types () {
+	List<Warning> warning_list;
+	// Fixture. FIXME: MUST be a better way to do all this
+	context = new Charango.Context ();
+
+	try {
+		var test_ontology_file = test_ontology_dir + "test-entity.ontology";
+		context.load_ontology_file (test_ontology_file);
+		context.load (out warning_list);
 	}
+		catch (FileError e) { error (e.message); }
+		catch (ParseError e) { error (e.message); }
+
+	assert (warning_list.length() == 0);
+
+	// The actual test
+	var entity = new Charango.Entity(context, "test_entity:BasicEntity");
+	entity.set_string ("string", "test");
+	entity.set_boolean ("boolean", true);
+	entity.set_integer ("integer", -1);
+	entity.set_double ("double", 0.1);
+
+	var date = Date();
+	date.set_dmy (7, DateMonth.APRIL, 2011);
+	entity.set_date ("date", date);
+
+	var datetime = new DateTime.now_local ();
+	entity.set_datetime ("dateTime", datetime);
+
+	entity.set_int32 ("int32", -2);
+	entity.set_float ("float", (float)1.0);
+
+	assert (entity.get_string ("string") == "test");
+	assert (entity.get_boolean ("boolean") == true);
+	assert (entity.get_integer ("integer") == -1);
+	assert (entity.get_double ("double") == 0.1);
+	assert (date.compare (entity.get_date ("date")) == 0);
+	assert (datetime.compare (entity.get_datetime ("dateTime")) == 0);
+	assert (entity.get_int32 ("int32") == -2);
+	assert (entity.get_float ("float") == 1.0);
+}
+
 }
 
 

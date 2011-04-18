@@ -15,12 +15,20 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+namespace Charango {
+
 /**
  * Charango.Entity: a data 'object'
  * 
  * More precisely, a #Charango.Entity is an instance of an rdfs:Class.
  */
-public class Charango.Entity: GLib.Object {
+public class Entity: GLib.Object {
+
+/* FIXME: would be nicer if we could store the values directly in the array,
+ * but that requires wrapping GArray in Vala which might be hard ..
+ */
+Charango.Class rdfs_class;
+GenericArray<Charango.Value?> data;
 
 /* In old Entry, we used to index properties with an int. Is that practical here?
  * IF entries were only one class we could use a sort of hashmap and speed things
@@ -38,8 +46,6 @@ public class Charango.Entity: GLib.Object {
 
 public Entity (Context  context,
                string   class_uri_string) {
-	Charango.Class rdfs_class;
-
 	try {
 		rdfs_class = context.get_class_by_uri_string (class_uri_string);
 	}
@@ -48,23 +54,292 @@ public Entity (Context  context,
 			return;
 		}
 
-	rdfs_class.dump ();
-	rdfs_class.dump_heirarchy ();
-	rdfs_class.dump_properties ();
+	this.data = new GenericArray<Charango.Value?>();
 }
 
-/* We can have slow (string arc names) and fast (indexed arc names) now. Names? */
+public Charango.Class get_rdfs_class () {
+	return rdfs_class;
+}
+
+/* FIXME: this is a horribly bloated amount of code. If only Vala had a macro
+ * language ... well, one day when you have lots of time, go on the Vala list
+ * and see if anyone has any ideas for good ways to reduce the amount of code
+ * here. Generics or some such.
+ */
 public void set_string (string predicate,
                         string object) {
-	
+	try {
+		set_string_by_index (rdfs_class.get_property_index (predicate), object);
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+	}
 }
 
-public void set_string_indexed (int    predicate_index,
-                                string object) {
-	
+public void set_boolean (string predicate,
+                         bool  object) {
+	try {
+		set_boolean_by_index (rdfs_class.get_property_index (predicate), object);
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+	}
+}
+
+public void set_integer (string predicate,
+                         int64  object) {
+	try {
+		set_integer_by_index (rdfs_class.get_property_index (predicate), object);
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+	}
+}
+
+public void set_double (string predicate,
+                        double object) {
+	try {
+		set_double_by_index (rdfs_class.get_property_index (predicate), object);
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+	}
+}
+
+public void set_date (string predicate,
+                      Date   object) {
+	try {
+		set_date_by_index (rdfs_class.get_property_index (predicate), object);
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+	}
+}
+
+public void set_datetime (string   predicate,
+                          DateTime object) {
+	try {
+		set_datetime_by_index (rdfs_class.get_property_index (predicate), object);
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+	}
+}
+
+public void set_int32 (string predicate,
+                       int32  object) {
+	try {
+		set_int32_by_index (rdfs_class.get_property_index (predicate), object);
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+	}
+}
+
+public void set_float (string predicate,
+                       float object) {
+	try {
+		set_float_by_index (rdfs_class.get_property_index (predicate), object);
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+	}
+}
+
+public void set_string_by_index (uint   predicate_index,
+                                 string object_literal) {
+	/* FIXME: check type fits */
+	/* FIXME: data.length should be a uint :) */
+	if (data.length <= predicate_index)
+		data.length = (int)(predicate_index + 1);
+
+	data[predicate_index] = Value.from_string (object_literal);
+}
+
+public void set_boolean_by_index (uint predicate_index,
+                                  bool object_literal) {
+	if (data.length <= predicate_index)
+		data.length = (int)(predicate_index + 1);
+
+	data[predicate_index] = Value.from_boolean (object_literal);
+}
+
+public void set_integer_by_index (uint  predicate_index,
+                                  int64 object_literal) {
+	/* FIXME: check type fits */
+	/* FIXME: data.length should be a uint :) */
+	if (data.length <= predicate_index)
+		data.length = (int)(predicate_index + 1);
+
+	data[predicate_index] = Value.from_int64 (object_literal);
+}
+
+public void set_double_by_index (uint   predicate_index,
+                                 double object_literal) {
+	/* FIXME: check type fits */
+	/* FIXME: data.length should be a uint :) */
+	if (data.length <= predicate_index)
+		data.length = (int)(predicate_index + 1);
+
+	data[predicate_index] = Value.from_double (object_literal);
+}
+
+public void set_date_by_index (uint predicate_index,
+                               Date object_literal) {
+	/* FIXME: check type fits */
+	/* FIXME: data.length should be a uint :) */
+	if (data.length <= predicate_index)
+		data.length = (int)(predicate_index + 1);
+
+	data[predicate_index] = Value.from_date (object_literal);
+}
+
+public void set_datetime_by_index (uint     predicate_index,
+                                   DateTime object_literal) {
+	/* FIXME: check type fits */
+	/* FIXME: data.length should be a uint :) */
+	if (data.length <= predicate_index)
+		data.length = (int)(predicate_index + 1);
+
+	data[predicate_index] = Value.from_datetime (object_literal);
+}
+
+public void set_int32_by_index (uint  predicate_index,
+                                int32 object_literal) {
+	/* FIXME: check type fits */
+	/* FIXME: data.length should be a uint :) */
+	if (data.length <= predicate_index)
+		data.length = (int)(predicate_index + 1);
+
+	data[predicate_index] = Value.from_int32 (object_literal);
+}
+
+public void set_float_by_index (uint  predicate_index,
+                                float object_literal) {
+	/* FIXME: check type fits */
+	/* FIXME: data.length should be a uint :) */
+	if (data.length <= predicate_index)
+		data.length = (int)(predicate_index + 1);
+
+	data[predicate_index] = Value.from_float (object_literal);
+}
+
+public unowned string? get_string (string predicate) {
+	try {
+		return get_string_by_index (rdfs_class.get_property_index (predicate));
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+		return null;
+	}
+}
+
+public unowned bool get_boolean (string predicate) {
+	try {
+		return get_boolean_by_index (rdfs_class.get_property_index (predicate));
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+		return false;
+	}
+}
+
+public unowned int64 get_integer (string predicate) {
+	try {
+		return get_integer_by_index (rdfs_class.get_property_index (predicate));
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+		return 0;
+	}
+}
+
+public unowned double get_double (string predicate) {
+	try {
+		return get_double_by_index (rdfs_class.get_property_index (predicate));
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+		return 0.0;
+	}
+}
+
+/* Practically this cannot be null, but vala bug prevents specifying that */
+public unowned Date? get_date (string predicate) {
+	try {
+		return get_date_by_index (rdfs_class.get_property_index (predicate));
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+		return null;
+	}
+}
+
+public unowned DateTime? get_datetime (string predicate) {
+	try {
+		return get_datetime_by_index (rdfs_class.get_property_index (predicate));
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+		return null;
+	}
+}
+
+public unowned int32 get_int32 (string predicate) {
+	try {
+		return get_int32_by_index (rdfs_class.get_property_index (predicate));
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+		return 0;
+	}
+}
+
+public unowned float get_float (string predicate) {
+	try {
+		return get_float_by_index (rdfs_class.get_property_index (predicate));
+	}
+	catch (OntologyError e) {
+		warning ("%s", e.message);
+		return (float)0.0;
+	}
+}
+
+public unowned string get_string_by_index (uint predicate_index) {
+	return data[predicate_index].get_string ();
+}
+
+public unowned bool get_boolean_by_index (uint predicate_index) {
+	return data[predicate_index].get_boolean ();
+}
+
+public unowned int64 get_integer_by_index (uint predicate_index) {
+	return data[predicate_index].get_int64 ();
+}
+
+public unowned double get_double_by_index (uint predicate_index) {
+	return data[predicate_index].get_double ();
+}
+
+public unowned Date? get_date_by_index (uint predicate_index) {
+	return data[predicate_index].get_date ();
+}
+
+public unowned DateTime get_datetime_by_index (uint predicate_index) {
+	return data[predicate_index].get_datetime ();
+}
+
+public unowned int32 get_int32_by_index (uint predicate_index) {
+	return data[predicate_index].get_int32 ();
+}
+
+public unowned float get_float_by_index (uint predicate_index) {
+	return data[predicate_index].get_float ();
 }
 
 public void dump () {
+}
+
 }
 
 }
