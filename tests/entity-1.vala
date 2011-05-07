@@ -26,7 +26,7 @@ class EntityTest: GLib.Object {
 Charango.Context context;
 
 public EntityTest() {
-	Test.add_data_func ("/charango/entity/basic types", this.test_primitive_types);
+	Test.add_data_func ("/charango/entity/primitive types", this.test_primitive_types);
 }
 
 public void test_primitive_types () {
