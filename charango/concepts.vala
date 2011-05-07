@@ -80,11 +80,8 @@ public class RdfsOntology: Ontology {
 		uri = "http://www.w3.org/2000/01/rdf-schema#";
 		prefix = "rdfs";
 
-		var rdfs_resource = new Class.internal (this, context.max_class_id ++, "Resource");
-		class_list.prepend (rdfs_resource);
-
-		var rdfs_class = new Class.internal (this, context.max_class_id ++, "Class");
-		class_list.prepend (rdfs_class);
+		class_list.prepend (new Class.internal (this, context.max_class_id ++, "Resource"));
+		class_list.prepend (new Class.internal (this, context.max_class_id ++, "Class"));
 
 		var rdfs_literal = new Class.internal (this, context.max_class_id ++, "Literal");
 		class_list.prepend (rdfs_literal);
