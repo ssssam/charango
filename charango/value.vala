@@ -55,7 +55,6 @@ namespace Charango {
 		public extern Value.from_double (double v);
 		public extern Value.from_date (GLib.Date v);
 		public extern Value.from_datetime (GLib.DateTime v);
-		public extern Value.from_int32 (int32 v);
 		public extern Value.from_float (float v);
 		public extern Value.from_entity (Entity v);
 
@@ -71,7 +70,6 @@ namespace Charango {
 		public extern double get_double ();
 		public extern unowned GLib.Date? get_date ();
 		public extern unowned GLib.DateTime get_datetime ();
-		public extern int32 get_int32 ();
 		public extern float get_float ();
 		public extern Entity get_entity ();
 	}
