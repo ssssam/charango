@@ -31,9 +31,13 @@ namespace Charango {
 		DATE,
 		DATETIME,
 
-		INT32,
 		FLOAT
 	}
+
+	public const string value_base_type_name[] = {
+		"resource", "string", "boolean", "integer", "double", "date",
+		"datetime", "float"
+	};
 
 	/* Charango.Value:
 	 *  * immutable; always call free() when discarding a value (FIXME: is there

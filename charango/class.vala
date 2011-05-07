@@ -171,8 +171,25 @@ public void register_property (Charango.Property property) {
 		c.register_property (property);
 }
 
-public uint get_property_index (string property_name)
-            throws OntologyError                      {
+public Charango.Property get_rdfs_property (string  property_name,
+                                            int    *p_index = null)
+                         throws OntologyError                       {
+	for (uint i=0; i<properties.len; i++) {
+		Property p = (Property)properties.index(i);
+
+		if (p.name == property_name) {
+			if (p_index != null)
+				*p_index = i;
+			return p;
+		}
+	}
+
+	throw new OntologyError.UNKNOWN_PROPERTY
+	      ("Class %s has no property '%s'", this.to_string(), property_name);
+}
+
+public uint get_rdfs_property_index (string property_name)
+            throws OntologyError                           {
 	for (uint i=0; i<properties.len; i++) {
 		Property p = (Property)properties.index(i);
 
@@ -182,7 +199,6 @@ public uint get_property_index (string property_name)
 
 	throw new OntologyError.UNKNOWN_PROPERTY
 	          ("Class %s has no property '%s'", this.to_string(), property_name);
-
 }
 
 public string to_string () {

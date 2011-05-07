@@ -17,6 +17,10 @@
 
 using Rdf;
 
+/* These are really programmer errors rather than runtime exceptions,
+ * because the ontologies are of course API. However, using exceptions
+ * simplifies the error checking.
+ */
 public errordomain Charango.ParseError {
 	PARSE_ERROR,
 	ONTOLOGY_ERROR,
@@ -27,7 +31,8 @@ public errordomain Charango.ParseError {
 
 /* FIXME: some parse errors should be in herE */
 public errordomain Charango.OntologyError {
-	UNKNOWN_PROPERTY
+	UNKNOWN_PROPERTY,
+	TYPE_MISMATCH
 }
 
 /**

@@ -66,10 +66,33 @@ public Charango.Class get_rdfs_class () {
  * and see if anyone has any ideas for good ways to reduce the amount of code
  * here. Generics or some such.
  */
+
+/* These functions warn on errors instead of throwing exceptions because the
+ * possible errors are ontology errors and the ontology is part of the
+ * application API. Exceptions are used elsewhere for convenience.
+ */
+
+int check_type_and_get_index_for_property (string                 predicate,
+                                           Charango.ValueBaseType type)
+           throws OntologyError {
+	int index = 0;
+	Charango.Property property = this.rdfs_class.get_rdfs_property (predicate, &index);
+
+	if (property.type != type)
+		throw new OntologyError.TYPE_MISMATCH
+		  ("Type mismatch: property '%s' expects %s but got %s",
+		   predicate,
+		   value_base_type_name[property.type],
+		   value_base_type_name[type]);
+
+	return index;
+}
+
 public void set_string (string predicate,
                         string object) {
 	try {
-		set_string_by_index (rdfs_class.get_property_index (predicate), object);
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.STRING);
+		set_string_by_index (index, object);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -79,7 +102,8 @@ public void set_string (string predicate,
 public void set_boolean (string predicate,
                          bool  object) {
 	try {
-		set_boolean_by_index (rdfs_class.get_property_index (predicate), object);
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.BOOLEAN);
+		set_boolean_by_index (index, object);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -89,7 +113,8 @@ public void set_boolean (string predicate,
 public void set_integer (string predicate,
                          int64  object) {
 	try {
-		set_integer_by_index (rdfs_class.get_property_index (predicate), object);
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.INT64);
+		set_integer_by_index (index, object);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -99,7 +124,8 @@ public void set_integer (string predicate,
 public void set_double (string predicate,
                         double object) {
 	try {
-		set_double_by_index (rdfs_class.get_property_index (predicate), object);
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DOUBLE);
+		set_double_by_index (index, object);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -109,7 +135,8 @@ public void set_double (string predicate,
 public void set_date (string predicate,
                       Date   object) {
 	try {
-		set_date_by_index (rdfs_class.get_property_index (predicate), object);
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATE);
+		set_date_by_index (index, object);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -119,7 +146,8 @@ public void set_date (string predicate,
 public void set_datetime (string   predicate,
                           DateTime object) {
 	try {
-		set_datetime_by_index (rdfs_class.get_property_index (predicate), object);
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATETIME);
+		set_datetime_by_index (index, object);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -129,17 +157,18 @@ public void set_datetime (string   predicate,
 public void set_float (string predicate,
                        float object) {
 	try {
-		set_float_by_index (rdfs_class.get_property_index (predicate), object);
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.FLOAT);
+		set_float_by_index (index, object);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
 	}
 }
 
+/* Fast variants: no type or bounds checking is done */
+
 public void set_string_by_index (uint   predicate_index,
                                  string object_literal) {
-	/* FIXME: check type fits */
-	/* FIXME: data.length should be a uint :) */
 	if (data.length <= predicate_index)
 		data.length = (int)(predicate_index + 1);
 
@@ -156,8 +185,6 @@ public void set_boolean_by_index (uint predicate_index,
 
 public void set_integer_by_index (uint  predicate_index,
                                   int64 object_literal) {
-	/* FIXME: check type fits */
-	/* FIXME: data.length should be a uint :) */
 	if (data.length <= predicate_index)
 		data.length = (int)(predicate_index + 1);
 
@@ -166,8 +193,6 @@ public void set_integer_by_index (uint  predicate_index,
 
 public void set_double_by_index (uint   predicate_index,
                                  double object_literal) {
-	/* FIXME: check type fits */
-	/* FIXME: data.length should be a uint :) */
 	if (data.length <= predicate_index)
 		data.length = (int)(predicate_index + 1);
 
@@ -176,8 +201,6 @@ public void set_double_by_index (uint   predicate_index,
 
 public void set_date_by_index (uint predicate_index,
                                Date object_literal) {
-	/* FIXME: check type fits */
-	/* FIXME: data.length should be a uint :) */
 	if (data.length <= predicate_index)
 		data.length = (int)(predicate_index + 1);
 
@@ -186,8 +209,6 @@ public void set_date_by_index (uint predicate_index,
 
 public void set_datetime_by_index (uint     predicate_index,
                                    DateTime object_literal) {
-	/* FIXME: check type fits */
-	/* FIXME: data.length should be a uint :) */
 	if (data.length <= predicate_index)
 		data.length = (int)(predicate_index + 1);
 
@@ -196,17 +217,16 @@ public void set_datetime_by_index (uint     predicate_index,
 
 public void set_float_by_index (uint  predicate_index,
                                 float object_literal) {
-	/* FIXME: check type fits */
-	/* FIXME: data.length should be a uint :) */
 	if (data.length <= predicate_index)
 		data.length = (int)(predicate_index + 1);
 
 	data[predicate_index] = Value.from_float (object_literal);
 }
 
+
 public unowned string? get_string (string predicate) {
 	try {
-		return get_string_by_index (rdfs_class.get_property_index (predicate));
+		return get_string_by_index (rdfs_class.get_rdfs_property_index (predicate));
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -216,7 +236,7 @@ public unowned string? get_string (string predicate) {
 
 public unowned bool get_boolean (string predicate) {
 	try {
-		return get_boolean_by_index (rdfs_class.get_property_index (predicate));
+		return get_boolean_by_index (rdfs_class.get_rdfs_property_index (predicate));
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -226,7 +246,7 @@ public unowned bool get_boolean (string predicate) {
 
 public unowned int64 get_integer (string predicate) {
 	try {
-		return get_integer_by_index (rdfs_class.get_property_index (predicate));
+		return get_integer_by_index (rdfs_class.get_rdfs_property_index (predicate));
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -236,7 +256,7 @@ public unowned int64 get_integer (string predicate) {
 
 public unowned double get_double (string predicate) {
 	try {
-		return get_double_by_index (rdfs_class.get_property_index (predicate));
+		return get_double_by_index (rdfs_class.get_rdfs_property_index (predicate));
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -247,7 +267,7 @@ public unowned double get_double (string predicate) {
 /* Practically this cannot be null, but vala bug prevents specifying that */
 public unowned Date? get_date (string predicate) {
 	try {
-		return get_date_by_index (rdfs_class.get_property_index (predicate));
+		return get_date_by_index (rdfs_class.get_rdfs_property_index (predicate));
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -257,7 +277,7 @@ public unowned Date? get_date (string predicate) {
 
 public unowned DateTime? get_datetime (string predicate) {
 	try {
-		return get_datetime_by_index (rdfs_class.get_property_index (predicate));
+		return get_datetime_by_index (rdfs_class.get_rdfs_property_index (predicate));
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -267,7 +287,7 @@ public unowned DateTime? get_datetime (string predicate) {
 
 public unowned float get_float (string predicate) {
 	try {
-		return get_float_by_index (rdfs_class.get_property_index (predicate));
+		return get_float_by_index (rdfs_class.get_rdfs_property_index (predicate));
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
