@@ -1,54 +1,113 @@
 Charango 0.3.0 ...
 
-Upstream
---------
+To do (stuff I won't really do)
+-------------------------------
 
-* Parse error in 92-slo.ontology: False instead of false?
-  https://bugzilla.gnome.org/show_bug.cgi?id=645675
+* Look at libmodel, how does that relate?
+  - interestingly. libmodel takes a very different approach, lower-level than
+  anything in charango. Other than the weird idea of having integers etc.
+  descend from GObject it's good stuff, but the best use for us would be as
+  a way to present views as an alternative to GtkTreeModel. Anything else
+  has no real use for me.
 
-To do
-------
+* look at meego music player, apparently everything has been done for you !!!!
+
 -> disable static build, add a 'waf run' command similar to 'libtool exec' to fix ld_library_path.
 
--> store data values,
- "a set of character strings called lexical forms and a mapping from that set to a set of values"
-  how? We can store:
-    rdf:XMLLiteral  (base type?)
-    
-    xsd values:
-      seems you can define your own ones of these with restrictions etc. How does that
-      affect us?
-      the rdf spec lists the good ones as:
-		xsd:string, xsd:boolean, xsd:decimal, xsd:float, xsd:double, xsd:dateTime, xsd:time,
-		xsd:date, xsd:gYearMonth, xsd:gYear, xsd:gMonthDay, xsd:gDay, xsd:gMonth, xsd:hexBinary,
-		xsd:base64Binary, xsd:anyURI, xsd:normalizedString, xsd:token, xsd:language, xsd:NMTOKEN,
-		xsd:Name, xsd:NCName, xsd:integer, xsd:nonPositiveInteger, xsd:negativeInteger, xsd:long,
-		xsd:int, xsd:short, xsd:byte, xsd:nonNegativeInteger, xsd:unsignedLong, xsd:unsignedInt,
-		xsd:unsignedShort, xsd:unsignedByte, xsd:positiveInteger
-      
-    object pointers (to things we know about)
-    uris to things that we don't
+-> Fix waf no longer keeping the vala c output because a c file is included in the build
 
-  redland gives us:
-    -> uri's
-    -> nodes
-    -> string as latin1 or utf8
-    -> datatype uri
+To do next
+----------
 
-  OWL makes things a lot harder :(
+Entity:
+* type system
+  - type information stored and checking before assignment
 
-  we basically need 
+  -> make the xsd basic types built-in classes
+
+  * DO YOU NEED an id system for classes/types when they are always in memory????????
+
+* Value storage is enourmously inefficient currently because we store all
+  integer values as a pointer to a heap-allocated 64 bit int. I guess the
+  ideal system is to dynamically store numeric values in the smallest
+  possible size, so word-size by default and then up to bigint if
+  necessary. I think I will just make the value union 8 bytes.
+
+I had  an idea (not sure if necessary) that we should have one giant 'Resource'
+hash table that could somehow identify a URI as type, class, property or entity.
+This could just be done with a pointer, if we gave maybe the base type values
+Vala object types as well.
+
+* avoid duplication of value in setter (see C code for entity.c)
+
+> store data values:
+  - read property type from ontology, & build type table from read types
+  - finish entity
 
   Property types are set with
     rdfs:range
   Custom types are defined in time-entry.owl, for one, .. which makes sense.
   This is a strict property, violations are 'datatype clashes', 'XSD inconsistent'
 
-  Tracker SEEMS to only use:
-    xsd:string, xsd:integer, xsd:dateTime, xsd:double, xsd:boolean,  ..
-  which along with xsd:date are the only ones xsd defines.
+* Since you're using Vala, why not use GValue since it's built in!!
+
+* Improve the look of the class & ontology classes, we can read rdf in a neater way :)
 
 -> then examples/basic should work!
+--------------------------------------------
+The tests are HORRIBLE! Let's just use valadate or improve gtest in vala or something.
+This is a joke!
+https://bugzilla.gnome.org/show_bug.cgi?id=645178
+-------------------------------------------
+
+* Thoughts on libmodel:
+  - need to investigate it properly of course
+  - aim to provide a generic data model on top of Tracker, but with other uses -
+    maybe aiming too high? surely tracker wasn't their only use case. Seems like
+    higher level abstractions ontop of eg. glist is a waste of time though. I
+    am probably missing something.
+  - not an object mapping like charango, more low level. charango forces a
+    specific way of working, but a fairly reasonable one
+  - maybe charango could integrate it? can't think of a need other than to
+    not have to write our own type system - need to see what libmodel does
+    here.
+
+Might be nice to have read-only entitys? You can't edit them unless (a) they're
+new or (b) they've been checked out. Then again, it's just a flag, it doesn't
+really allow us any easier logic.
+
+How could you possibly implement reference tracking?
+Vala REALLY needs #define etc ... much as they would probably hate it.
+There's simply no other way to do entity ref tracking in a transparent
+way, and it was REALLY useful. Wait actually you might be able to do
+it using default parameters, even if you have to write the actual
+Entity code in C. Better look into this business.
+
+* Handle librdf parse errors by calling librdf_world_set_logger(). Would be nice
+  if we could print as many errors as possible rather than just raising an
+  exception on the first one. I guess we could return them all to the context
+  as Warnings, then raise our own ParseError once the parser has completed
+  with a list of all the warnings. This seems kind of an abuse of Warning since
+  they aren't warnings, they are errors, we just don't want to fail on the first
+  one. Is there a better way? Yeah, make a separate ParseError class which we
+  accumulate in the logger .. this makes no sense though, and the errors could
+  come from anywhere, not just the parser. Options are:
+    - in the .vapi, provide a logger and have the World provide a simple error
+      query interface. Don't like this.
+    - link with the GLib logger somehow, then we can disable fail on errors
+      perhaps while we are parsing. Maybe. Seems like that's a winner for the
+      librdf warnings at least.
+    - I think eventually you will have to create a list of RedlandParseError
+      messages and query them after the parse, however you go about this
+      other stuff.
+--> librdf parse errors not caught :(
+  - Actually I just thought about this again, and the sensible thing to do is to
+    turn the parse errors into exceptions but then when we catch one, carry on
+    parsing. I constantly forget that exceptions are actually a pretty powerful
+    mechanism.
+
+-> We should start warning on unrecognised predicates for classes and properties too.
+
 
 -> write some tests
 
@@ -128,6 +187,28 @@ I'm wondering if it's actually a good idea to base things on Redland, and just i
 its store API (or embrace and extend :) because we get a lot of good stuff like parsing
 and dumping completely for free.
 
+Querying!!!:
+
+-> there is one method on musicsource that doesn't transfer too well:
+query_relations()
+
+it can do two things:
+relation_apid domain is local: for each SUBJECT (=local), return entities related by PREDICATE
+                               (relation id)
+   => we need to know subject type, subject id and predicate id
+relation_apid range is local:  for each OBJECT (=local), return each entity that refers to it
+                               with PREDICATE
+   => we need to know subject (=foreign) type, predicate id and object (=local) id
+
+Can these still be one function that takes subject type/id pair, predicate id and object id,
+with either object id or subject id being optional?
+or:
+  get_object_relations, get_subject_relations?
+  get_functional_relations, get_inverse_functional_relations?
+I like these, need to read a bit more about what they could be ...
+* Also, would it help to add foreach() variants of these? I'm not sure that it would
+  in these cases .. mostly view joins.
+
 Views thoughts:
  -> is the fundamental structure still the same? ie. the configuration lists the Classes
     in an order in which they can be connected. The view then has a set of columns to
@@ -137,6 +218,7 @@ Views thoughts:
       - reordering columns is easy
       - the config makes more sense
       - it generally just seems a better way now I think about it
+
 
 General things
 --------------------------------------
@@ -173,7 +255,14 @@ Blue sky things
   instance with a tombstone and prevent its use .. to add one, it's even easier.
   From a storage point of view the problem is much harder but from our position
   as a view library we just need update the view :)
-  
+
+* Would be cool to connect to Tracker at a lower level: the initial Tracker layer
+  will send SPARQL queries over DBUS to be rewritten in SQL, converted to VM code,
+  run in SQLite, parsed into GVariants, send back over DBus and then converted
+  into objects. Really we could just read the objects from the Tracker db
+  directly, we aren't doing any querying beyond simple SQL joins (well, complex
+  SQL joins) so it's just a matter of being a tracker hacker ...
+
 Fixes in other projects
 -----------------------
 

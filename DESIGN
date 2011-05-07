@@ -1,9 +1,29 @@
 Charango 0.3.0 - design
 ------------------------
 
-Charango is essentially an RDF-based data model & view. Here are some of the
-key design decisions.
+See README for an introduction to Charango.
 
+
+Key design decisions
+--------------------
+
+* Ontologies are part of the application itself. They are not user data, but code
+  that happens to be read at runtime and could support dynamic patching. Similar
+  to GtkBuilder .ui files and GSetting schemas. Notes:
+    - this is basically how Tracker works. "Ontologies are API" is how they
+      describe it.
+    - when communicating with other applications, things become a bit more messy.
+      Tracker eases the problem a lot because essentially all users of the tracker
+      store agree on an ontology and it can be depended on for API.
+    - I don't think we need to support communication with other applications that
+      don't want to standardise within Tracker. I hope it's never necessary :)
+    - the upshot of this is when properties are not found or type mismatches occur,
+      we can use warning() instead of having to report exceptions everywhere.
+
+
+Internal design
+----------------
+ 
 Context:
 	* Stores all known ontology data so that we can index it. Addressing
 	  ontology resources by integer id's is vital when querying tens of
@@ -18,18 +38,18 @@ Context:
 	  ship their required ontologies or depend on Tracker's.
 
 
-Terminology I currently use
----------------------------
+Charango refers to concepts by integer id's rather than URI whenever possible.
+The following indexing schemes exist:
 
-How to do describe what is basically an object or entry?
-So a 'resource' - is an rdf:
-rdf:Instance: instance of a Class ..
-
-so we either want to call it Instance, or Resource ..
-
-an Instance of an rdfs:Class.
-
-How about namespace is a uri string while ontology is a Charango.Ontology object.
+	* Entity ID's (per class): each classed resource has its own
+	  numbering system, so any entity can be identified as for example
+	  mo:Artist?15.
+	* Property ID's (per class): any rdfs:Property that is set for a class
+	  is indexed within the class, and this is how the value slot is
+	  identified.
+	* Type ID's (global): all Rdfs classes share this number space. Note
+	  that the Xsd literal types and derivations are themselves Rdfs
+	  classes.
 
 Ontology sources
 ----------------
