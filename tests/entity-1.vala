@@ -97,7 +97,8 @@ public void test_type_checking() {
 	 * requiring the programmer to put every property access in a try/catch
 	 * block when the errors are really programmer errors, not runtime exceptions.
 	 */
-	/* FIXME: glib-2.0.vapi has wrong prototypes */
+	/* FIXME: glib-2.0.vapi has wrong prototypes:
+	 * https://bugzilla.gnome.org/show_bug.cgi?id=649644 */
 	/*var old_fatal_mask = */Log.set_always_fatal (0);
 	/*var old_default_handler = */Log.set_default_handler (warning_counter);
 	warning_count = 0;
