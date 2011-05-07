@@ -32,6 +32,7 @@ Entity:
   ideal system is to dynamically store numeric values in the smallest
   possible size, so word-size by default and then up to bigint if
   necessary. I think I will just make the value union 8 bytes.
+ - especially since we probably mostly store strings :)
 
 I had  an idea (not sure if necessary) that we should have one giant 'Resource'
 hash table that could somehow identify a URI as type, class, property or entity.
@@ -52,6 +53,9 @@ Vala object types as well.
 * Since you're using Vala, why not use GValue since it's built in!!
 
 * Improve the look of the class & ontology classes, we can read rdf in a neater way :)
+
+* The store/source interface (beginnings are stashed)
+  
 
 -> then examples/basic should work!
 --------------------------------------------

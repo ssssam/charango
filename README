@@ -40,3 +40,26 @@ Philosophical Q & A
        implementation will query objects using SPARQL which is then rewritten as
        SQL and then converted to VM code before actually returning the objects.
        Hopefully you can link into tracker and at least avoid the SPARQL layer.
+
+* How does Charango relate to libmodel?
+  => Charango solves specific problems
+    - I want to store my data according to desktop and web standards, but
+      my only real option (Tracker) currently requires me to generate
+      SPARQL. A far simpler API to access resources and their properties
+      is ... expose the resources, and their properties. There's no
+      reason SPARQL API can't coexist with Charango.
+    - I want to have live, structured tree views on the data, which puts
+      a lot of constraints on the data store.
+  => libmodel is slightly weird, and nobody uses it
+    - making primitive types descend from GObject seems enourmously wasteful
+    - Rob mentioned that what you want, when communicating with
+      tracker-store, is just a key/value hash. That's basically what
+      Charango does, but conceptually a key/value hash suggests (to me)
+      unstructured data.
+    - the aim of killing GtkTreeModel is a noble one.
+  => there's no reason Charango couldn't run on top of libmodel if there
+     was reason to (and the reason would be Gtk widgets displaying data
+     in libmodel formats easily). The only overlap really is the type
+     system (always the way). In fact, Charango resources could inherit
+     from ModelDictionary and enforce the ontology, it would be a pretty
+     happy marriage.
