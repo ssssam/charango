@@ -126,16 +126,6 @@ public void set_datetime (string   predicate,
 	}
 }
 
-public void set_int32 (string predicate,
-                       int32  object) {
-	try {
-		set_int32_by_index (rdfs_class.get_property_index (predicate), object);
-	}
-	catch (OntologyError e) {
-		warning ("%s", e.message);
-	}
-}
-
 public void set_float (string predicate,
                        float object) {
 	try {
@@ -202,16 +192,6 @@ public void set_datetime_by_index (uint     predicate_index,
 		data.length = (int)(predicate_index + 1);
 
 	data[predicate_index] = Value.from_datetime (object_literal);
-}
-
-public void set_int32_by_index (uint  predicate_index,
-                                int32 object_literal) {
-	/* FIXME: check type fits */
-	/* FIXME: data.length should be a uint :) */
-	if (data.length <= predicate_index)
-		data.length = (int)(predicate_index + 1);
-
-	data[predicate_index] = Value.from_int32 (object_literal);
 }
 
 public void set_float_by_index (uint  predicate_index,
@@ -285,16 +265,6 @@ public unowned DateTime? get_datetime (string predicate) {
 	}
 }
 
-public unowned int32 get_int32 (string predicate) {
-	try {
-		return get_int32_by_index (rdfs_class.get_property_index (predicate));
-	}
-	catch (OntologyError e) {
-		warning ("%s", e.message);
-		return 0;
-	}
-}
-
 public unowned float get_float (string predicate) {
 	try {
 		return get_float_by_index (rdfs_class.get_property_index (predicate));
@@ -327,10 +297,6 @@ public unowned Date? get_date_by_index (uint predicate_index) {
 
 public unowned DateTime get_datetime_by_index (uint predicate_index) {
 	return data[predicate_index].get_datetime ();
-}
-
-public unowned int32 get_int32_by_index (uint predicate_index) {
-	return data[predicate_index].get_int32 ();
 }
 
 public unowned float get_float_by_index (uint predicate_index) {

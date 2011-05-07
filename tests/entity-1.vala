@@ -58,7 +58,6 @@ public void test_primitive_types () {
 	var datetime = new DateTime.now_local ();
 	entity.set_datetime ("dateTime", datetime);
 
-	entity.set_int32 ("int32", -2);
 	entity.set_float ("float", (float)1.0);
 
 	assert (entity.get_string ("string") == "test");
@@ -67,7 +66,6 @@ public void test_primitive_types () {
 	assert (entity.get_double ("double") == 0.1);
 	assert (date.compare (entity.get_date ("date")) == 0);
 	assert (datetime.compare (entity.get_datetime ("dateTime")) == 0);
-	assert (entity.get_int32 ("int32") == -2);
 	assert (entity.get_float ("float") == 1.0);
 }
 

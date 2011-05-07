@@ -1,0 +1,47 @@
+# /charango/context/entity:
+#
+# Context for checking entity properties work correctly.
+
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl> .
+@prefix test: <http://example.com/test#> .
+
+test: a owl:Ontology ;
+	rdfs:label "test_entity" .
+
+test:BasicEntity a rdfs:Class .
+
+# Tracker's subset of the xsd types
+
+test:string a rdf:Property ;
+	rdfs:range xsd:string ;
+	rdfs:domain test:BasicEntity .
+
+test:boolean a rdf:Property ;
+	rdfs:range xsd:boolean ;
+	rdfs:domain test:BasicEntity .
+
+test:integer a rdf:Property ;
+	rdfs:range xsd:integer ;
+	rdfs:domain test:BasicEntity .
+
+test:double a rdf:Property ;
+	rdfs:range xsd:double ;
+	rdfs:domain test:BasicEntity .
+
+test:date a rdf:Property ;
+	rdfs:range xsd:date ;
+	rdfs:domain test:BasicEntity .
+
+test:dateTime a rdf:Property ;
+	rdfs:range xsd:dateTime ;
+	rdfs:domain test:BasicEntity .
+
+
+# Others that we see used
+
+test:float a rdf:Property ;
+	rdfs:range xsd:float ;
+	rdfs:domain test:BasicEntity .
