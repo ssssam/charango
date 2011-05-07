@@ -9,25 +9,13 @@ import subprocess
 from waflib import Logs
 from waflib import Options
 
-def build_library (bld, source='', target='', uselib='', packages='', includes='', vapi_dirs=''):
+def build_library (bld, **kws):
 	#if True:
 	if False:
-		bld (features  = 'c cshlib',
-		     source    = source,
-		     target    = target,
-		     uselib    = uselib,
-		     packages  = packages,
-		     includes  = includes,
-		     vapi_dirs = vapi_dirs)
+		bld (features  = 'c cshlib', **kws)
 
 	if True:
-		bld (features  = 'c cstlib',
-		     source    = source,
-		     target    = target,
-		     uselib    = uselib,
-		     packages  = packages,
-		     includes  = includes,
-		     vapi_dirs = vapi_dirs)
+		bld (features  = 'c cstlib', **kws)
 
 def build(bld):
 	charango_uselib = 'REDLAND'
