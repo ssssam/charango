@@ -26,10 +26,10 @@ class EntityTest: GLib.Object {
 Charango.Context context;
 
 public EntityTest() {
-	Test.add_data_func ("/charango/entity/basic types", this.test_basic_types);
+	Test.add_data_func ("/charango/entity/basic types", this.test_primitive_types);
 }
 
-public void test_basic_types () {
+public void test_primitive_types () {
 	List<Warning> warning_list;
 	// Fixture. FIXME: MUST be a better way to do all this
 	context = new Charango.Context ();
