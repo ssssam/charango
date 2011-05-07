@@ -105,6 +105,10 @@ public void test_type_checking() {
 	entity.set_string ("integer", "This is not an integer");
 	assert (warning_count == 1);
 
+	warning_count = 0;
+	entity.get_integer ("string");
+	assert (warning_count == 1);
+
 	/*Log.set_always_fatal (old_fatal_mask);
 	Log.set_default_handler (old_default_handler);*/
 }

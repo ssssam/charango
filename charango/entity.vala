@@ -226,7 +226,8 @@ public void set_float_by_index (uint  predicate_index,
 
 public unowned string? get_string (string predicate) {
 	try {
-		return get_string_by_index (rdfs_class.get_rdfs_property_index (predicate));
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.STRING);
+		return get_string_by_index (index);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -236,7 +237,8 @@ public unowned string? get_string (string predicate) {
 
 public unowned bool get_boolean (string predicate) {
 	try {
-		return get_boolean_by_index (rdfs_class.get_rdfs_property_index (predicate));
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.BOOLEAN);
+		return get_boolean_by_index (index);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -246,7 +248,8 @@ public unowned bool get_boolean (string predicate) {
 
 public unowned int64 get_integer (string predicate) {
 	try {
-		return get_integer_by_index (rdfs_class.get_rdfs_property_index (predicate));
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.INT64);
+		return get_integer_by_index (index);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -256,7 +259,8 @@ public unowned int64 get_integer (string predicate) {
 
 public unowned double get_double (string predicate) {
 	try {
-		return get_double_by_index (rdfs_class.get_rdfs_property_index (predicate));
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DOUBLE);
+		return get_double_by_index (index);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -267,7 +271,8 @@ public unowned double get_double (string predicate) {
 /* Practically this cannot be null, but vala bug prevents specifying that */
 public unowned Date? get_date (string predicate) {
 	try {
-		return get_date_by_index (rdfs_class.get_rdfs_property_index (predicate));
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATE);
+		return get_date_by_index (index);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -277,7 +282,8 @@ public unowned Date? get_date (string predicate) {
 
 public unowned DateTime? get_datetime (string predicate) {
 	try {
-		return get_datetime_by_index (rdfs_class.get_rdfs_property_index (predicate));
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATETIME);
+		return get_datetime_by_index (index);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -287,7 +293,8 @@ public unowned DateTime? get_datetime (string predicate) {
 
 public unowned float get_float (string predicate) {
 	try {
-		return get_float_by_index (rdfs_class.get_rdfs_property_index (predicate));
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.FLOAT);
+		return get_float_by_index (index);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
