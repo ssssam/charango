@@ -28,12 +28,12 @@ public string name;
 public string label;
 
 /* type: basic type of literal stored by the property, or ValueBaseType.RESOURCE */
-Charango.ValueBaseType type;
+public Charango.ValueBaseType type;
 
 /* range: actual range of the resource. Note that XSD literal types and derivations share
  *        an id space with RDFS classes.
  */
-Charango.Class range;
+public Charango.Class range;
 
 unowned Rdf.Node this_node;
 
@@ -98,11 +98,16 @@ public void load (Rdf.Model model)
 		if (arc.equals (redland->concept (Rdf.Concept.S_range))) {
 			unowned Rdf.Node range_node = statement.get_object ();
 			if (range_node.is_resource ()) {
-				Class? range = null;
-				range = context.get_class_by_uri (range_node.get_uri());
+				this.range = context.get_class_by_uri (range_node.get_uri());
 
-				if (range is Charango.LiteralTypeClass)
-					type = ((Charango.LiteralTypeClass)range).literal_value_type;
+				if (this.range == null) {
+					throw new ParseError.ONTOLOGY_ERROR
+					            ("Unknown range for property %s: %s",
+					             this_node.to_string(),
+					             range_node.to_string());
+				} else if (this.range is Charango.LiteralTypeClass)
+				
+					type = ((Charango.LiteralTypeClass)this.range).literal_value_type;
 				else
 					type = ValueBaseType.RESOURCE;
 			} else if (range_node.is_blank ()) {
