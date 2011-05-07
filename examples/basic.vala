@@ -51,6 +51,7 @@ public int main (string[] args) {
 		}
 
 	var artist_mo = new Charango.Entity(context, "mo:MusicArtist");
+	var track_mo = new Charango.Entity(context, "mo:Track");
 	/*entity.set_string ("rdf:about",
 	                   "http://musicbrainz.org/artist/ac241ded-3430-4f42-8451-f78667cc2f52");
 	entity.set_string ("foaf:name", "The Aggrolites");
@@ -63,6 +64,7 @@ public int main (string[] args) {
 	entity.set_string ("ov:sortName", "Aggrolites, The");*/
 
 	artist_mo.dump ();
+	track_mo.dump ();
 	//artist_nmm.dump ();
 	return 0;
 }
