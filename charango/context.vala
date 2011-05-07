@@ -44,6 +44,7 @@ public Context() {
 
 	ontology_list.prepend (new RdfOntology (this));
 	ontology_list.prepend (new RdfsOntology (this));
+	ontology_list.prepend (new XsdOntology (this));
 	ontology_list.prepend (new TrackerOntology (this));
 }
 

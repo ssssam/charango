@@ -69,6 +69,7 @@ public class RdfOntology: Ontology {
 		prefix = "rdf";
 
 		class_list.prepend (new Class.internal (this, context.max_class_id ++, "Property"));
+		class_list.prepend (new Class.internal (this, context.max_class_id ++, "List"));
 	}
 }
 
@@ -89,6 +90,59 @@ public class RdfsOntology: Ontology {
 		var rdfs_datatype = new Class.internal (this, context.max_class_id ++, "Datatype");
 		rdfs_datatype.main_parent = rdfs_literal;
 		class_list.prepend (rdfs_datatype);
+	}
+}
+
+
+public class XsdOntology: Ontology {
+	struct TypeMapping {
+		string        name;
+		ValueBaseType type;
+	}
+
+	public XsdOntology (Context _context) {
+		base (_context);
+		builtin = true;
+		source_file_name = "<internal xsd:>";
+		uri = "http://www.w3.org/2001/XMLSchema#";
+		prefix = "xsd";
+
+		/* FIXME: if you take away the const, Vala (0.12.0) gives an error:
+		 *   "Expected array element, got array initializer list"
+		 * That's completely unhelpful. Something like "Struct initialisation
+		 * is only permitted for constants" would be better.
+		 */
+		const TypeMapping mappings[] = {
+			// Primitive types - Tracker's subset
+			{ "string", ValueBaseType.STRING },
+			{ "boolean", ValueBaseType.BOOLEAN },
+			{ "integer", ValueBaseType.INT64 },
+			{ "double", ValueBaseType.DOUBLE },
+			{ "date", ValueBaseType.DATE },
+			{ "dateTime", ValueBaseType.DATETIME },
+
+			// Other primitives
+			{ "duration", ValueBaseType.DOUBLE },
+			{ "gYear", ValueBaseType.DATE },
+			{ "gDay", ValueBaseType.DATE },
+			{ "gMonth", ValueBaseType.DATE },
+			{ "float", ValueBaseType.FLOAT },
+			{ "decimal", ValueBaseType.DOUBLE },
+			{ "anyURI", ValueBaseType.STRING },
+
+			// FIXME: the contraints of these derived types get ignored :(
+			{ "int", ValueBaseType.INT64 },
+			{ "nonNegativeInteger", ValueBaseType.INT64 }
+		};
+
+		foreach (TypeMapping type in mappings) {
+			class_list.prepend (new LiteralTypeClass (
+				this,
+				context.max_class_id ++,
+				type.name,
+				type.type
+			));
+		}
 	}
 }
 

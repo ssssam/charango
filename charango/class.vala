@@ -228,3 +228,23 @@ public void dump_properties () {
 }
 
 }
+
+
+/**
+ * Charango.LiteralTypeClass:
+ *
+ * Represents an xsd literal type or derivation. These are themselves
+ * rdfs classes.
+ */
+
+public class Charango.LiteralTypeClass: Class {
+	public ValueBaseType literal_value_type;
+
+	public LiteralTypeClass (Charango.Ontology _ontology,
+	                         int               _id,
+	                         string            _name,
+	                         ValueBaseType     _literal_value_type) {
+		base (_ontology, _id, _name);
+		literal_value_type = _literal_value_type;
+	}
+}

@@ -27,6 +27,14 @@ Ontology ontology;
 public string name;
 public string label;
 
+/* type: basic type of literal stored by the property, or ValueBaseType.RESOURCE */
+Charango.ValueBaseType type;
+
+/* range: actual range of the resource. Note that XSD literal types and derivations share
+ *        an id space with RDFS classes.
+ */
+Charango.Class range;
+
 unowned Rdf.Node this_node;
 
 public Property (Ontology _ontology,
@@ -81,6 +89,28 @@ public void load (Rdf.Model model)
 			} else {
 				throw new ParseError.PARSE_ERROR
 				            ("%s: rdf:domain requires URI\n", this.to_string());
+			}
+		}
+
+		// rdfs:range - type of this property.
+		//
+		else
+		if (arc.equals (redland->concept (Rdf.Concept.S_range))) {
+			unowned Rdf.Node range_node = statement.get_object ();
+			if (range_node.is_resource ()) {
+				Class? range = null;
+				range = context.get_class_by_uri (range_node.get_uri());
+
+				if (range is Charango.LiteralTypeClass)
+					type = ((Charango.LiteralTypeClass)range).literal_value_type;
+				else
+					type = ValueBaseType.RESOURCE;
+			} else if (range_node.is_blank ()) {
+				// FIXME: handle lists here ... are there many properties with range
+				// a list? mo:similar_to is one.
+			} else {
+				throw new ParseError.PARSE_ERROR
+				            ("%s: rdfs:range requires URI\n", this.to_string());
 			}
 		}
 
