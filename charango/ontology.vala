@@ -255,6 +255,8 @@ internal void initial_load (ref List<Warning> warning_list)
 {
 	Rdf.World *redland = context.redland;
 
+	tracel (1, "ontology", "%s: initial read\n", this.source_file_name);
+
 	// Read class list, use each triple of either form:
 	//   C :type rdfs:Class
 	//   C :type owl:Class
@@ -292,6 +294,8 @@ internal void initial_load (ref List<Warning> warning_list)
 /* complete_load: connect up the property and class objects */
 internal void complete_load (ref List<Warning> warning_list)
          throws ParseError     {
+	tracel (1, "ontology", "%s: completing load\n", this.source_file_name);
+
 	try {
 		foreach (Class c in class_list)
 			if (c.builtin == false)

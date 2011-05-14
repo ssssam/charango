@@ -54,7 +54,14 @@ public class Charango.Warning {
 
 namespace Charango {
 
-int redland_logger (LogMessage message) {
+internal void glib_logger (string?            domain,
+                           GLib.LogLevelFlags log_level,
+                           string             message) {
+	/* Handles only Charango debug messages */
+	print (message);
+}
+
+internal int redland_logger (LogMessage message) {
 	const GLib.LogLevelFlags log_level_mapping[] = {
 		0,
 		GLib.LogLevelFlags.LEVEL_DEBUG,
@@ -76,6 +83,28 @@ int redland_logger (LogMessage message) {
 	GLib.log ("Charango", log_level_mapping[message.level], output.str);
 
 	return 1;
+}
+
+/* FIXME: ideally, we would make it possible to disable tracing via a #ifdef,
+ * this is something that perhaps could be directly built into vala ... */
+internal void trace (string component,
+                     string format, ...) {
+	va_list va = va_list();
+	tracev (0, component, format, va);
+}
+
+internal void tracel (int    level,
+                      string component,
+                      string format, ...) {
+	va_list va = va_list();
+	tracev (level, component, format, va);
+}
+
+private void tracev (int    level,
+                     string component,
+                     string format, va_list va) {
+	// Uncomment to get some traces!
+	/* logv ("Charango", LogLevelFlags.LEVEL_DEBUG, format, va); */
 }
 
 public void print_warnings (List<Warning> warning_list) {

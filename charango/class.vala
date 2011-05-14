@@ -81,6 +81,8 @@ public void load (Rdf.Model         model,
 	Context context = ontology.context;
 	Rdf.World *redland = context.redland;
 
+	tracel (2, "ontology", "%s: %s: loading\n", this.ontology.source_file_name, this.name);
+
 	// Find more data on this class from the ontology
 	//
 	var template = new Rdf.Statement.from_nodes (ontology.context.redland,

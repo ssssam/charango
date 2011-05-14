@@ -40,6 +40,9 @@ List<Ontology> ontology_list = null;
 internal int max_class_id = 0;
 
 public Context() {
+	/* We do some general initialisation here */
+	GLib.Log.set_handler ("Charango", LogLevelFlags.LEVEL_DEBUG, glib_logger);
+
 	redland = new Rdf.World();
 
 	redland->set_logger (redland_logger);
