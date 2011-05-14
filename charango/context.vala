@@ -42,6 +42,8 @@ internal int max_class_id = 0;
 public Context() {
 	redland = new Rdf.World();
 
+	redland->set_logger (redland_logger);
+
 	ontology_list.prepend (new RdfOntology (this));
 	ontology_list.prepend (new RdfsOntology (this));
 	ontology_list.prepend (new XsdOntology (this));
@@ -93,7 +95,7 @@ string get_parser_name_for_file (string file_name) {
 	/*string parser_name = Rdf.Parser.guess_name (redland, "/foo", "fuck", "you");
 	print ("Got parser: %s\n", parser_name);*/
 
-	// A dumb guessing game. We default to turtle.
+	// FIXME: A dumb guessing game. We default to turtle.
 	//
 	int dot_index = file_name.last_index_of_char ('.');	
 	if (dot_index == -1)

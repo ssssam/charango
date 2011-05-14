@@ -54,6 +54,30 @@ public class Charango.Warning {
 
 namespace Charango {
 
+int redland_logger (LogMessage message) {
+	const GLib.LogLevelFlags log_level_mapping[] = {
+		0,
+		GLib.LogLevelFlags.LEVEL_DEBUG,
+		GLib.LogLevelFlags.LEVEL_INFO,
+		GLib.LogLevelFlags.LEVEL_WARNING,
+		GLib.LogLevelFlags.LEVEL_ERROR,
+		GLib.LogLevelFlags.LEVEL_CRITICAL
+	};
+
+	StringBuilder output = new StringBuilder ();
+
+	if (message.locator != null) {
+		string file = message.locator.file ?? message.locator.uri.as_string();
+		output.append_printf ("%s:%i: ", file, message.locator.line);
+	}
+
+	output.append (message.message);
+
+	GLib.log ("Charango", log_level_mapping[message.level], output.str);
+
+	return 1;
+}
+
 public void print_warnings (List<Warning> warning_list) {
 	foreach (unowned Warning w in warning_list)
 		print ("Warning: %s\n", w.message);
