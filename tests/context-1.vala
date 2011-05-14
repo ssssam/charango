@@ -130,6 +130,7 @@ public void test_external_references () {
 }
 
 /* live:
+ *
  * Test the real ontology data parses */
 public void test_live () {
 	var context = new Charango.Context();
