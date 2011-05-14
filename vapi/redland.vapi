@@ -65,6 +65,14 @@ namespace Rdf {
 		public unowned Uri ms_namespace ();
 		[CCode (cname = "librdf_get_concept_schema_namespace")]
 		public unowned Uri schema_namespace ();
+
+		/* Parser API, but in Vala's object model they make more sense here */
+		/*[CCode (cname = "librdf_parser_register_factory")]
+		public void register_parser_factory (string name, string label, string mime_type, string uri_string, ParserFactory factory);*/
+		[CCode (cname = "librdf_parser_enumerate")]
+		public bool enumerate_parser (uint counter, out unowned string name, out unowned string label);
+		[CCode (cname = "librdf_parser_check_name")]
+		public bool check_parser_name (string name);
 	}
 
 	/***************************************************************************
@@ -170,14 +178,61 @@ namespace Rdf {
 	/***************************************************************************
 	 * Log
 	 */
+
+	[CCode (cprefix = "LIBRDF_LOG_")]
+	public enum LogLevel {
+		NONE,
+		DEBUG,
+		INFO,
+		WARN,
+		ERROR,
+		FATAL,
+		LAST
+	}
+
+	[CCode (cname = "LIBRDF_FROM_")]
+	public enum LogFacility {
+		CONCEPTS,
+		DIGEST,
+		FILES,
+		HASH,
+		INIT,
+		ITERATOR,
+		LIST,
+		MODEL,
+		NODE,
+		PARSER,
+		QUERY,
+		SERIALIZER,
+		STATEMENT,
+		STORAGE,
+		STREAM,
+		URI,
+		UTF8,
+		MEMORY,
+		NONE,
+		LAST
+	}
+
 	[Compact]
 	[CCode (cname = "librdf_log_message")]
 	public class LogMessage {
 		public int code;
-		/* Missing: public LogLevel level; */
-		/* Missing: public LogFacility facility; */
-		/* Missing: public string message; */
-		/* Missing: Locator locator; */
+		public LogLevel level;
+		public LogFacility facility;
+		public string message;
+		public Raptor.Locator? locator;
+
+		[CCode (cname = "librdf_log_message_code")]
+		public int get_code ();
+		[CCode (cname = "librdf_log_message_level")]
+		public LogLevel get_level ();
+		[CCode (cname = "librdf_log_message_facility")]
+		public LogFacility get_facility ();
+		[CCode (cname = "librdf_log_message_message")]
+		public string get_message ();
+		[CCode (cname = "librdf_log_message_locator")]
+		public Raptor.Locator? get_locator ();
 	}
 
 	[CCode (cname = "librdf_log_level_func", instance_pos = 0)]
@@ -421,15 +476,6 @@ namespace Rdf {
 	/***************************************************************************
 	 * Parser
 	 */
-
-	/* Missing:
-	REDLAND_API
-	void librdf_parser_register_factory(librdf_world *world, const char *name, const char *label, const char *mime_type, const unsigned char *uri_string, void (*factory) (librdf_parser_factory*));
-	REDLAND_API
-	int librdf_parser_enumerate(librdf_world* world, const unsigned int counter, const char **name, const char **label);
-	REDLAND_API
-	int librdf_parser_check_name(librdf_world* world, const char *name);
-	*/
 
 	[Compact]
 	[CCode (cname = "librdf_parser_factory")]
