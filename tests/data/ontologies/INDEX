@@ -1,0 +1,5 @@
+[http://example.com/test-entity#]
+file=test-entity.ontology
+
+[http://example.com/test-heirarchy#]
+file=test-heirarchy.ontology

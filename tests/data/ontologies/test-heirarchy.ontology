@@ -2,7 +2,7 @@
 #
 
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix owl: <http://www.w3.org/2002/07/owl> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix test_heirarchy: <http://example.com/test-heirarchy#> .
 
 test_heirarchy: a owl:Ontology ;

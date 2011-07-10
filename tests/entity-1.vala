@@ -29,22 +29,23 @@ public EntityTest() {
 }
 
 public void test_primitive_types () { /* Unit test */
-	List<Warning> warning_list;
+	List<Warning> warning_list = null;
 	// Fixture. FIXME: MUST be a better way to do all this
 	var context = new Charango.Context ();
 
 	try {
-		var test_ontology_file = test_ontology_dir + "test-entity.ontology";
-		context.load_ontology_file (test_ontology_file);
-		context.load (out warning_list);
+		context.add_local_ontology_source (test_ontology_dir);
+		context.load_namespace ("http://example.com/test-entity#");
 	}
-		catch (FileError e) { error (e.message); }
-		catch (ParseError e) { error (e.message); }
+	  catch (FileError e) { error (e.message); }
+	  catch (ParseError e) { error (e.message); }
+	  catch (OntologyError e) { error (e.message); }
 
 	assert (warning_list.length() == 0);
 
 	// The actual test
-	var entity = new Charango.Entity(context, "test_entity:BasicEntity");
+	var entity = new Charango.Entity ("test:1",
+	                                  context.find_class ("http://example.com/test-entity#BasicEntity"));
 	entity.set_string ("string", "test");
 	entity.set_boolean ("boolean", true);
 	entity.set_integer ("integer", -1);
@@ -77,21 +78,21 @@ void warning_counter (string? log_domain,
 }
 
 public void test_type_checking() {
-	List<Warning> warning_list;
+	List<Warning> warning_list = null;
 	// Fixture. FIXME: MUST be a better way to do all this
 	var context = new Charango.Context ();
 
 	try {
-		var test_ontology_file = test_ontology_dir + "test-entity.ontology";
-		context.load_ontology_file (test_ontology_file);
-		context.load (out warning_list);
+		context.add_local_ontology_source (test_ontology_dir);
+		context.load_namespace ("http://example.com/test-entity#");
 	}
-		catch (FileError e) { error (e.message); }
-		catch (ParseError e) { error (e.message); }
+	  catch (FileError e) { error (e.message); }
+	  catch (ParseError e) { error (e.message); }
+	  catch (OntologyError e) { error (e.message); }
 
 	assert (warning_list.length() == 0);
 
-	var entity = new Charango.Entity(context, "test_entity:BasicEntity");
+	var entity = new Charango.Entity ("test:1", context.find_class ("http://example.com/test-heirarchy#BasicEntity"));
 
 	/* The setter functions warn rather than raising an exception, to avoid
 	 * requiring the programmer to put every property access in a try/catch

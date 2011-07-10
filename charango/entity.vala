@@ -20,45 +20,78 @@ namespace Charango {
 /**
  * Charango.Entity: a data 'object'
  * 
- * More precisely, a #Charango.Entity is an instance of an rdfs:Class.
+ * More precisely, a #Charango.Entity is an instance of an rdfs:Class -
+ * an rdf:Resource which has had an rdf:type specified.
  */
-public class Entity: GLib.Object {
+/* FIXME: Ideally, this would be a MiniObject type. We don't need signals
+ * or properties, it's a model. In general Models should be MiniObjects, in
+ * fact (I've been reading about MVC recently :) perhaps there should be a 
+ * GDataModel base class that specifically cannot emit signals, because
+ * a data model should not need them.
+ */
+ 
+ /* It would be cool to have this as a 'magic' GObject subclass, in fact.
+  * Since the namespace of GObject properties is completely clean we don't
+  * have to worry about namespace clashes (and the property names will be
+  * key URI's :). We could have magic get, set, enumerate etc. property
+  * functions where all class properties and all assigned annotation
+  * properties are accessible & listed.
+  * - Would property notifications not clash horribly with the store's
+  *   change notifications? Actually no, they could coexist because the
+  *   store would still notify on changes, just that the object optionally
+  *   would as well.
+  */
+public class Entity: Object {
+
+public string uri;
+public Charango.Class rdf_type;
 
 /* FIXME: would be nicer if we could store the values directly in the array,
  * but that requires wrapping GArray in Vala which might be hard ..
  */
-Charango.Class rdfs_class;
 GenericArray<Charango.Value?> data;
 
-/* In old Entry, we used to index properties with an int. Is that practical here?
- * IF entries were only one class we could use a sort of hashmap and speed things
- * up with that .. we certainly don't want a hash table lookup on every god damn
- * line of every view refresh ...
- */
-/* The problem then is that there can be more than one class. While ontologies are
- * fixed, we can use the class heirarchy to find all possible predicates and index
- * them BY class. If we change the heirarchy at run time, no matter because this is
- * all just shortcuts anyway. Restart. The problem is when we can have an Entity
- * which is an instance of more than one class heirarchy.
- *
- * I'm leaning towards just not allowing this.
- */
-
-public Entity (Context  context,
-               string   class_uri_string) {
-	try {
-		rdfs_class = context.get_class_by_uri_string (class_uri_string);
-	}
-		catch (ParseError e) {
-			warning ("%s", e.message);
-			return;
-		}
+public Entity (string         uri,
+               Charango.Class rdf_type) {
+	this.uri = uri;
+	this.rdf_type = rdf_type;
 
 	this.data = new GenericArray<Charango.Value?>();
 }
 
-public Charango.Class get_rdfs_class () {
-	return rdfs_class;
+public Entity.prototype (string uri) {
+	this.uri = uri;
+
+	this.data = new GenericArray<Charango.Value?>();
+}
+
+/* requires_promotion:
+ * 
+ * True if the class is currently an Entity, but becoming 'to_class' would
+ * make it for example a Property or Class.
+ */
+internal bool requires_promotion (Charango.Class to_class)
+              throws OntologyError {
+	switch (to_class.get_concept_type()) {
+		case ConceptType.ONTOLOGY:
+			return ! (this is Charango.Ontology);
+		case ConceptType.CLASS:
+			return ! (this is Charango.Class);
+		case ConceptType.PROPERTY:
+			return ! (this is Charango.Property);
+		case ConceptType.ENTITY:
+			return ! (this is Charango.Entity);
+	}
+
+	return_val_if_reached (false);
+}
+
+/* copy_properties:
+ *
+ * Duplicate 'source' into 'this'.
+ */
+internal void copy_properties (Entity source) {
+	data = source.data;
 }
 
 /* FIXME: this is a horribly bloated amount of code. If only Vala had a macro
@@ -76,7 +109,7 @@ int check_type_and_get_index_for_property (string                 predicate,
                                            Charango.ValueBaseType type)
            throws OntologyError {
 	int index = 0;
-	Charango.Property property = this.rdfs_class.get_rdfs_property (predicate, &index);
+	Charango.Property property = this.rdf_type.get_rdfs_property (predicate, &index);
 
 	if (property.type != type)
 		throw new OntologyError.TYPE_MISMATCH
@@ -86,6 +119,21 @@ int check_type_and_get_index_for_property (string                 predicate,
 		   value_base_type_name[type]);
 
 	return index;
+}
+
+public void set_literal (string   predicate,
+                         Rdf.Node node) {
+	//print ("Setting %s to %s\n", predicate, node.to_string());
+}
+
+public void set_entity (string predicate,
+                        Entity entity) {
+	//print ("Setting %s to %s\n", predicate, entity.uri);
+}
+
+public void set_external_resource (string predicate,
+                                   string uri) {
+	//print ("Setting %s to %s\n", predicate, uri);
 }
 
 public void set_string (string predicate,
@@ -330,7 +378,7 @@ public unowned float get_float_by_index (uint predicate_index) {
 	return data[predicate_index].get_float ();
 }
 
-public void dump () {
+public virtual void dump () {
 }
 
 }

@@ -17,9 +17,188 @@
 
 using Rdf;
 
-/* Tracker ontology support: http://www.tracker-project.org/ontologies/tracker#
- * (This is not a hard dep on tracker, because it's only their ontologies we are using here)
+/* Built-in types and universal constants. Note that these objects will
+ * be fleshed out further when their ontology definition is loaded. */
+
+/* FIXME: we currently pretend that rdfs:Resource does not exist and it's
+ * exactly the same as rdf:Resource. How true is this? 
  */
+internal class Charango.RdfResource: Charango.Class {
+	public RdfResource () {
+		base.prototype ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource");
+		this.builtin = true;
+	}
+}
+
+internal class Charango.RdfsClass: Charango.Class {
+	public RdfsClass () {
+		base.prototype ("http://www.w3.org/2000/01/rdf-schema#Class");
+		this.builtin = true;
+	}
+}
+
+/* FIXME: here's a nice Vala bug!!! If I define
+ * OwlOntologyClass and OwlOntology, Vala doesn't know that the class of
+ * OwlOntology needs a different name, so we get a duplicate definition .
+ */
+public class Charango.OwlOntologyClass2: Charango.Class {
+	public OwlOntologyClass2 (Charango.Class rdfs_class) {
+		base.prototype ("http://www.w3.org/2002/07/owl#Ontology");
+		this.rdf_type = rdfs_class;
+		this.builtin = true;
+	}
+}
+
+internal class Charango.XsdOntology: Ontology {
+	struct TypeMapping {
+		string        name;
+		ValueBaseType type;
+	}
+
+	public XsdOntology (Context context) {
+		try {
+			base (context,
+			      "http://www.w3.org/2001/XMLSchema#",
+			      context.owl_ontology_class,
+			      null,
+			      "xsd");
+		} catch (ParseError error) { critical (error.message); }
+
+		builtin = true;
+
+		/* FIXME: if you take away the const, Vala (0.12.0) gives an error:
+		 *   "Expected array element, got array initializer list"
+		 * That's completely unhelpful. Something like "Struct initialisation
+		 * is only permitted for constants" would be better.
+		 */
+		const TypeMapping mappings[] = {
+			// Primitive types - Tracker's subset
+			{ "string", ValueBaseType.STRING },
+			{ "boolean", ValueBaseType.BOOLEAN },
+			{ "integer", ValueBaseType.INT64 },
+			{ "double", ValueBaseType.DOUBLE },
+			{ "date", ValueBaseType.DATE },
+			{ "dateTime", ValueBaseType.DATETIME },
+
+			// Other primitives
+			{ "duration", ValueBaseType.DOUBLE },
+			{ "gYear", ValueBaseType.DATE },
+			{ "gDay", ValueBaseType.DATE },
+			{ "gMonth", ValueBaseType.DATE },
+			{ "float", ValueBaseType.FLOAT },
+			{ "decimal", ValueBaseType.DOUBLE },
+			{ "anyURI", ValueBaseType.STRING },
+
+			// FIXME: the contraints of these derived types get ignored :(
+			{ "int", ValueBaseType.INT64 },
+			{ "nonNegativeInteger", ValueBaseType.INT64 }
+		};
+
+		foreach (TypeMapping type in (TypeMapping[]) mappings) {
+			class_list.prepend (new LiteralTypeClass (
+				this,
+				context.max_class_id ++,
+				type.name,
+				type.type
+			));
+		}
+	}
+}
+
+internal class Charango.RdfOntology: Ontology {
+	public RdfOntology (Context context) {
+		try {
+			base (context,
+			      "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+			      context.owl_ontology_class,
+			      null,
+			      "rdf");
+		} catch (ParseError error) { critical (error.message); }
+
+		builtin = true;
+
+		context.rdf_resource.ontology = this;
+		class_list.prepend (context.rdf_resource);
+
+		class_list.prepend (new Class.internal (this, context.max_class_id ++, "Property"));
+		class_list.prepend (new Class.internal (this, context.max_class_id ++, "List"));
+	}
+}
+
+internal class Charango.RdfsOntology: Ontology {
+	public RdfsOntology (Context context) {
+		try {
+			base (context,
+			      "http://www.w3.org/2000/01/rdf-schema#",
+			      context.owl_ontology_class,
+			      null,
+			      "rdfs");
+		} catch (ParseError error) { critical (error.message); }
+
+		builtin = true;
+
+		context.rdfs_class.ontology = this;
+		class_list.prepend (context.rdfs_class);
+
+		class_list.prepend (new Class.internal (this, context.max_class_id ++, "Resource"));
+
+		Charango.Class c;
+
+		c = new Class.internal (this, context.max_class_id ++, "Literal");
+		c.main_parent = context.rdf_resource;
+		class_list.prepend (c);
+
+		c = new Class.internal (this, context.max_class_id ++, "Datatype");
+		c.main_parent = context.rdfs_class;
+		class_list.prepend (c);
+	}
+}
+
+internal class Charango.OwlOntology: Charango.Ontology {
+	public OwlOntology (Context context) {
+		try {
+			base (context,
+			      "http://www.w3.org/2002/07/owl#",
+			      context.owl_ontology_class,
+			      null,
+			      "owl");
+		} catch (ParseError error) { critical (error.message); }
+
+		this.builtin = true;
+
+		context.owl_ontology_class.ontology = this;
+		class_list.prepend (context.owl_ontology_class);
+
+		this.class_list.prepend (new Class.internal (this, context.max_class_id ++, "Class"));
+
+		Charango.Class c;
+		c = new Class.internal (this, context.max_class_id ++, "Class");
+		c.main_parent = context.rdfs_class;
+		this.class_list.prepend (c);
+
+		c = new Class.internal (this, context.max_class_id ++, "AnnotationProperty");
+		c.main_parent = context.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property");
+		this.class_list.prepend (c);
+
+		c = new Class.internal (this, context.max_class_id ++, "DatatypeProperty");
+		c.main_parent = context.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property");
+		this.class_list.prepend (c);
+
+		c = new Class.internal (this, context.max_class_id ++, "FunctionalProperty");
+		c.main_parent = context.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property");
+		this.class_list.prepend (c);
+
+		c = new Class.internal (this, context.max_class_id ++, "ObjectProperty");
+		c.main_parent = context.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property");
+		this.class_list.prepend (c);
+
+		try {
+		c = new Class.internal (this, context.max_class_id ++, "SymmetricProperty");
+		c.main_parent = this.find_local_class ("http://www.w3.org/2002/07/owl#ObjectProperty");
+		this.class_list.prepend (c);
+		} catch (OntologyError error) { critical (error.message); }
+	}
+}
 
 namespace Charango {
 
@@ -56,108 +235,6 @@ public Rdf.Node get_dsc_ontology_concept (Rdf.World redland) {
 public Rdf.Node get_tracker_prefix_concept (Rdf.World redland) {
 	return new Rdf.Node.from_uri_string
 	                     (redland, "http://www.tracker-project.org/ontologies/tracker#prefix");
-}
-
-/* Built-in types. Note these can still be added to from files, at which point
- * 'source_file_name' will be changed to point to that file. */
-public class RdfOntology: Ontology {
-	public RdfOntology (Context _context) {
-		base (_context);
-		builtin = true;
-		source_file_name = "<internal rdf:>";
-		uri = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-		prefix = "rdf";
-
-		class_list.prepend (new Class.internal (this, context.max_class_id ++, "Property"));
-		class_list.prepend (new Class.internal (this, context.max_class_id ++, "List"));
-	}
-}
-
-public class RdfsOntology: Ontology {
-	public RdfsOntology (Context _context) {
-		base (_context);
-		builtin = true;
-		source_file_name = "<internal rdfs:>";
-		uri = "http://www.w3.org/2000/01/rdf-schema#";
-		prefix = "rdfs";
-
-		class_list.prepend (new Class.internal (this, context.max_class_id ++, "Resource"));
-		class_list.prepend (new Class.internal (this, context.max_class_id ++, "Class"));
-
-		var rdfs_literal = new Class.internal (this, context.max_class_id ++, "Literal");
-		class_list.prepend (rdfs_literal);
-
-		var rdfs_datatype = new Class.internal (this, context.max_class_id ++, "Datatype");
-		rdfs_datatype.main_parent = rdfs_literal;
-		class_list.prepend (rdfs_datatype);
-	}
-}
-
-
-public class XsdOntology: Ontology {
-	struct TypeMapping {
-		string        name;
-		ValueBaseType type;
-	}
-
-	public XsdOntology (Context _context) {
-		base (_context);
-		builtin = true;
-		source_file_name = "<internal xsd:>";
-		uri = "http://www.w3.org/2001/XMLSchema#";
-		prefix = "xsd";
-
-		/* FIXME: if you take away the const, Vala (0.12.0) gives an error:
-		 *   "Expected array element, got array initializer list"
-		 * That's completely unhelpful. Something like "Struct initialisation
-		 * is only permitted for constants" would be better.
-		 */
-		const TypeMapping mappings[] = {
-			// Primitive types - Tracker's subset
-			{ "string", ValueBaseType.STRING },
-			{ "boolean", ValueBaseType.BOOLEAN },
-			{ "integer", ValueBaseType.INT64 },
-			{ "double", ValueBaseType.DOUBLE },
-			{ "date", ValueBaseType.DATE },
-			{ "dateTime", ValueBaseType.DATETIME },
-
-			// Other primitives
-			{ "duration", ValueBaseType.DOUBLE },
-			{ "gYear", ValueBaseType.DATE },
-			{ "gDay", ValueBaseType.DATE },
-			{ "gMonth", ValueBaseType.DATE },
-			{ "float", ValueBaseType.FLOAT },
-			{ "decimal", ValueBaseType.DOUBLE },
-			{ "anyURI", ValueBaseType.STRING },
-
-			// FIXME: the contraints of these derived types get ignored :(
-			{ "int", ValueBaseType.INT64 },
-			{ "nonNegativeInteger", ValueBaseType.INT64 }
-		};
-
-		foreach (TypeMapping type in mappings) {
-			class_list.prepend (new LiteralTypeClass (
-				this,
-				context.max_class_id ++,
-				type.name,
-				type.type
-			));
-		}
-	}
-}
-
-public class TrackerOntology: Ontology {
-	public TrackerOntology (Context _context) {
-		base (_context);
-
-		builtin = true;
-		source_file_name = "<internal tracker:>";
-		uri = "http://www.tracker-project.org/ontologies/tracker#";
-		prefix = "tracker";
-
-		class_list.prepend (new Class.internal (this, context.max_class_id ++, "Namespace"));
-		class_list.prepend (new Class.internal (this, context.max_class_id ++, "Ontology"));
-	}
 }
 
 }

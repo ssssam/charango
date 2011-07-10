@@ -45,6 +45,7 @@ public void parse_uri_as_resource_strings (string      uri_string,
 	fragment = uri_string[hash_index + 1: uri_string.length];
 }
 
+/*
 public void parse_string_as_resource (Charango.Context context,
                                       string           input,
                                       out Ontology?    ontology,
@@ -86,7 +87,8 @@ public void parse_string_as_resource (Charango.Context context,
 		throw new ParseError.UNKNOWN_NAMESPACE
 		            ("Unable to find namespace for %s", uri_string);
 }
-
+*/
+/*
 public string? get_namespace_from_uri (string uri_string) {
 	var hash_index = uri_string.last_index_of_char ('#');
 
@@ -99,7 +101,7 @@ public string? get_namespace_from_uri (string uri_string) {
 
 	return uri_string[0: hash_index + 1];
 
-}
+}*/
 
 public string? get_name_from_uri (string uri_string) {
 	var hash_index = uri_string.last_index_of_char ('#');
@@ -109,7 +111,11 @@ public string? get_name_from_uri (string uri_string) {
 
 	// Check for invalid URI's
 	return_val_if_fail (hash_index > -1, null);
-	return_val_if_fail (hash_index < uri_string.length - 1, null);
+
+	if (hash_index >= uri_string.length - 1) {
+		warning ("get_name_from_uri: URI <%s> has no fragment", uri_string);
+		return null;
+	}
 
 	return uri_string[hash_index + 1: uri_string.length];
 }

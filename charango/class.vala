@@ -19,14 +19,16 @@
  * Charango.RdfsClass: represents an rdfs:Class
  */
 
-/* How to parse a class, from the ontology ..
- * * Need to look out for the key predicates:
- *    - rdf:type == rdfs:Class
- *    - rdfs:label -> class name
- *    - rdfs:subClassOf -> parent
- */
+/* Concepts are specialised forms of entity, which have their own Vala class
+ * because they are relevant to ontology structure. */
+public enum Charango.ConceptType {
+	ONTOLOGY = 0,
+	CLASS = 1,
+	PROPERTY = 2,
+	ENTITY = 3
+}
 
-public class Charango.Class: GLib.Object {
+public class Charango.Class: Entity {
 
 public int id;
 public string name;
@@ -51,101 +53,71 @@ public bool builtin = false;
 
 internal Ontology ontology;
 
-/* Only stored while awaiting load */
-unowned Rdf.Node? this_node;
+public Class (Charango.Ontology ontology,
+              string            uri,
+              Charango.Class    rdf_type,
+              int               id) {
+	base (uri, rdf_type);
 
-public Class (Charango.Ontology _ontology,
-              int               _id,
-              string            _name) {
-	ontology = _ontology;
-	id = _id;
-	name = _name;
+	this.ontology = ontology;
+	this.id = id;
 
-	properties = new PtrArray ();
+	// Give a default superclass; this will be overwritten if/when
+	// rdfs:subClassOf is read
+	this.main_parent = ontology.context.rdf_resource;
+
+	this.name = get_name_from_uri (uri);
+
+	this.properties = new PtrArray ();
 }
 
-public Class.internal (Charango.Ontology _ontology,
-                       int               _id,
-                       string            _name) {
-	this (_ontology, _id, _name);
-	builtin = true;
+internal Class.internal (Charango.Ontology ontology,
+                       int               id,
+                       string            name) {
+	string uri = ontology.uri + name;
+
+	base  (uri, ontology.context.rdfs_class);
+
+	this.main_parent = ontology.context.rdf_resource;
+	this.name = name;
+	this.builtin = true;
+
+	this.properties = new PtrArray ();
 }
 
-public void set_node (Rdf.Node node) {
-	this_node = node;
+internal Class.prototype (string uri) {
+	base.prototype (uri);
+	this.name = get_name_from_uri (uri);
+
+	this.properties = new PtrArray ();
 }
 
-public void load (Rdf.Model         model,
-                  ref List<Warning> warning_list)
-            throws ParseError      {
-	Context context = ontology.context;
-	Rdf.World *redland = context.redland;
+internal ConceptType get_concept_type ()
+                     throws OntologyError {
+	Charango.Class? concept_type = this;
 
-	tracel (2, "ontology", "%s: %s: loading\n", this.ontology.source_file_name, this.name);
-
-	// Find more data on this class from the ontology
-	//
-	var template = new Rdf.Statement.from_nodes (ontology.context.redland,
-	                                              new Rdf.Node.from_node (this_node),
-	                                              null,
-	                                              null);
-	var stream = model.find_statements (template);
-
-	while (! stream.end()) {
-		unowned Rdf.Statement statement = stream.get_object ();
-		unowned Rdf.Node arc = statement.get_predicate ();
-
-		// rdfs:label - human-readable name
-		//
-		if (arc.equals (redland->concept (Rdf.Concept.S_label))) {
-			unowned Rdf.Node label_node = statement.get_object ();
-			label = label_node.get_literal_value ();
+	while (concept_type != null) {
+		switch (concept_type.uri) {
+			case "http://www.w3.org/2002/07/owl#Ontology":
+				return ConceptType.ONTOLOGY;
+			case "http://www.w3.org/2000/01/rdf-schema#Class":
+				return ConceptType.CLASS;
+			case "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property":
+				return ConceptType.PROPERTY;
+			case "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource":
+				return ConceptType.ENTITY;
 		}
 
-		// rdfs:comment - human-readable description
-		//
-		else
-		if (arc.equals (redland->concept (Rdf.Concept.S_comment))) {
-			unowned Rdf.Node comment_node = statement.get_object ();
-			comment = comment_node.get_literal_value ();
-		}
-		else
+		if (concept_type.main_parent == concept_type)
+			break;
 
-		// rdfs:subClassOf - parent class
-		//
-		if (arc.equals (redland->concept (Rdf.Concept.S_subClassOf))) {
-			unowned Rdf.Node parent_node = statement.get_object ();
-
-			if (parent_node.is_resource ()) {
-				Charango.Class parent = context.get_class_by_uri (parent_node.get_uri());
-
-				if (main_parent == null)
-					main_parent = parent;
-				else
-					parent_list.prepend (parent);
-
-				parent.child_list.prepend (this);
-			}
-			else
-			if (parent_node.is_blank ()) {
-				// No idea what to do here, see for example
-				// http://www.isi.edu/~pan/damltime/time-entry.owl#CalendarClockDescription
-				var w = new Warning ("Unhandled rdf:subClassOf triple in %s",
-				                     this.to_string());
-				warning_list.append ((owned)w);
-			} else
-				throw new ParseError.PARSE_ERROR
-				            ("%s: rdf:subClassOf requires URI\n", this.to_string());
-		}
-
-		stream.next ();
+		// This could theoretically miss subclasses that have multiple
+		// inheritance, but I think you would deserve to have problems
+		concept_type = concept_type.main_parent;
 	}
 
-	if (main_parent == null)
-		// FIXME: should be able to access this by a fixed index
-		main_parent = context.get_class_by_uri (redland->concept_uri (Rdf.Concept.S_Class));
-
-	this_node = null;
+	throw new OntologyError.INTERNAL_ERROR
+	  ("'%s' has somehow ruptured the fabric of the universe", this.uri);
 }
 
 public List<Class> get_parents () {
@@ -217,7 +189,7 @@ public string to_string () {
 	return builder.str;
 }
 
-public void dump() {
+public override void dump () {
 	print ("rdfs:Class %i '%s:%s': %u properties\n", id, ontology.prefix, name, properties.len);
 }
 
@@ -262,7 +234,8 @@ public class Charango.LiteralTypeClass: Class {
 	                         int               _id,
 	                         string            _name,
 	                         ValueBaseType     _literal_value_type) {
-		base (_ontology, _id, _name);
+		string uri = _ontology.uri + _name;
+		base (_ontology, uri, _ontology.context.rdfs_class, _id);
 		literal_value_type = _literal_value_type;
 	}
 }

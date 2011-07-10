@@ -23,16 +23,20 @@ using Rdf;
  */
 public errordomain Charango.ParseError {
 	PARSE_ERROR,
-	ONTOLOGY_ERROR,
+	INDEX_PARSE_ERROR,
 	INVALID_URI,
-	DUPLICATED_ONTOLOGY,
+	DUPLICATE_DEFINITION,
 	UNKNOWN_NAMESPACE
 }
 
 /* FIXME: some parse errors should be in here */
 public errordomain Charango.OntologyError {
-	UNKNOWN_PROPERTY,
-	TYPE_MISMATCH
+	UNKNOWN_RESOURCE,
+	UNKNOWN_CLASS,
+	UNKNOWN_PROPERTY,  /* Subject outside property domain */
+	TYPE_MISMATCH,     /* Object outside property range */
+	INVALID_DEFINITION,
+	INTERNAL_ERROR
 }
 
 /**
@@ -58,7 +62,9 @@ internal void glib_logger (string?            domain,
                            GLib.LogLevelFlags log_level,
                            string             message) {
 	/* Handles only Charango debug messages */
-	print (message);
+	for (uint i=(log_level>>8); i>0; i>>=1)
+		printerr ("  ");
+	printerr (message);
 }
 
 internal int redland_logger (LogMessage message) {
@@ -103,8 +109,9 @@ internal void tracel (int    level,
 private void tracev (int    level,
                      string component,
                      string format, va_list va) {
-	// Uncomment to get some traces!
-	/* logv ("Charango", LogLevelFlags.LEVEL_DEBUG, format, va); */
+	return;  // Comment me out to get some traces!
+
+	logv ("Charango", (GLib.LogLevelFlags)(1<<level) << 8, format, va);
 }
 
 public void print_warnings (List<Warning> warning_list) {
