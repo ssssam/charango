@@ -1,0 +1,1736 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hasContentType">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Encoding MIME-Type information in a trivial manner - equivalent to HTTP header: Content-Type.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Content Type</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/DOMRange">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A DOM Range consists of two boundary-points corresponding to the start and the end of the Range.
+http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113/ranges.html#Level-2-Range-Definitions</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">DOMRange</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/findspot">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The place at which a thing is found.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Findspot</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/weight">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The weight of a resource</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Weight</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/describes">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The subject is a document that, to any extent, describes the object.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">describes</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/nationalContextMap">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">This property is a relationship between some thing and a map that shows that thing's location at a national scale.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">National Context Map</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/mirror">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Indicates a resource that is designed to be a mirror or surrogate of the object resource; a backup copy, should the object resource be lost or unobtainable.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Mirror</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/TrimPackage">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A Trim Package represents a standard configuration of options for an automobile.  Usually, a Car Model will be available as several Trim Packages.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Trim Package</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/MicroblogPost">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A post on a microblogging service like Twitter, identi.ca, Jaiku or FriendFeed. Usually untitled and with a limited number of characters, and sometimes containing in-line text-based syntactical elements like at-replies, hashtags, group 'bangtags' etc.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">MicroblogPost</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/attestsTo">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A thing that provides evidence for the existence or historicity of another thing attests to that other thing.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Providing evidence for existence or historicity</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hasBoundary">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">DOMRange has 2 boundary points</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">has boundary</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/diffToOther">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A diff that goes from this resource to another one.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">diff to other</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/country">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A country associated with this resource. This could be a country of origin or operation of an entity. For example a company may be based in a country and operate from there.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Country</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/teaches">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Teaches</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/postalAddress">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A postal address to which letters and parcels can be sent to a Person or Organisation.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Postal Address</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/visibility">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The visibility of a resource (e.g. public, internal), expressed as a literal term.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">visibility</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/isHeaderOf">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Header</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/avatarPosition">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Determines if the character is protagonist, antagonist, supporting character etc.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Position of the Character in Graphic Novel Avatar</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/AnnotationSet">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A type of dataset that contains annotations on a set of resources.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Annotation Set</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/deliveredBy">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Teacher of the course. Should belong to the organization specified by ov:offeredBy of the course</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Course teacher</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/uses">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">links to a thing used by an agent</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">uses</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/compressedFileSize">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Describes the size of the file of a dataset in compressed state</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">compressed dataset file has fileSize</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/ITUREgion">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The ITU defines a set of world-wide regions which uniquely describe locations for radio operation (in particular, amateur radio operation).  These regions are widely-used by amateur radio operators to report operation and radio contacts.  Each region has a unique abbreviation.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">ITU Region for governance of radio operation</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/stickiness">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The the measure of how sticky something is</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Stickiness</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/resultFrom">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The result of the test case obtained from the target specified. For example, the target could be a script that is executed.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">result from</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/sort-name">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Associate a name that can be used for sorting to a foaf:Agent</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Sort name</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hudLoanTotal">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">total loans</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/versionnumber">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Property to encode the version of things - simple intent, to record the sequence of items. (The items themselves will have temporal/finer grained detail)</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Version Number</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/commonExpression">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">This property is used to declare that two resources which may or may not conform to the FRBR (Functional Requirements for Bibliographic Resources) entity model share the same Expression. An example of its use would be to relate a resource described with a vocabulary such as bibo (which does not acknowledge the FRBR model) to other resources that describe endeavours which have the same implied Expression (which could be other bibo resources or FRBR entities or anything else). 
+
+The property is symmetrical, so if &lt;_:someBiboBook&gt; &lt;ov:commonExpression&gt; &lt;_:otherEdition&gt;, this also means &lt;_:otherEdition&gt; &lt;ov:commonExpression&gt; &lt;_:someBiboBook&gt;. 
+
+It is not transitive. 
+
+Having this property also implies ov:commonWork.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Common Expression</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/Formula">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A formula or graph literal, in the sense used by Notation 3.
+
+This is intended to be used as a datatype. e.g.
+
+  &lt;#bob&gt; ex:believes &quot;&lt;#alice&gt; a &lt;http://xmlns.com/foaf/0.1/Person&gt; .&quot;^^ov:Formula .
+
+Note that the wrapping &quot;{&quot;...&quot;}&quot; are omitted from the value.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Formula</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/plot">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A plot of anything.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Plot</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/affiliation">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Used to describe the affiliation, place of work or association of a foaf:Person when the source data is too ambiguous to model into its own resource.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Personal or Professional Affiliation</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/commonWork">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">This property is used to declare that two resources which may or may not conform to the FRBR (Functional Requirements for Bibliographic Resources) entity model share the same Work. An example of its use would be to relate a resource described with a vocabulary such as bibo (which does not acknowledge the FRBR model) to other resources that describe endeavours that fall within the same implied Work (which could be other bibo resources or FRBR entities or anything else). 
+
+The property is symmetrical, so if &lt;_:someBiboBook&gt; &lt;ov:commonWork&gt; &lt;_:someOtherBiboBook&gt;, this also means &lt;_:someOtherBiboBook&gt; &lt;ov:commonWork&gt; &lt;_:someBiboBook&gt;. 
+
+It is not transitive.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Common Work</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hudSuggestion">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">suggestion</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/writeGraph">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">express the ability/right to write to a graph</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Write Graph</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/skypeID">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Someone's ID in the Skype chat and telephony service.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Skype ID</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/rimDiameter">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The diameter of a thing measured at its rim.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Diameter at rim</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/eyeColor">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Eye Color</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Color of Eye of an Individual</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/avatarNationality">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The nationality of a character in Avatar. It can be one of Air, Fire, Water and Earth.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Nationality of a Character in Graphic Novel Avatar</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/libraryService">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A service providing access to bibliographic resources.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Library Service</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/JavascriptThis">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">the concept of &quot;this&quot; in a javascript object. In other words a mean in which to refer to &quot;self&quot;</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">JavascriptThis</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/ZoiaCommand">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A command issued to the code4lib IRC chat bot, zoia.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">ZoiaCommand</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/KillerGorilla">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A gorilla that kills or has the inclination to do so.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Killer Gorilla</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/isCuratedBy">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">curated by</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/commonEndeavour">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">commonEndeavour is intended to define a FRBR (Functional Requirements for Bibliographic Records) relationship between two resources that may or may not be modeled as FRBR.  This makes it possible to assert that a resource modeled using a vocabulary that does not use the FRBR entity model explicitly is describing the same Work, Expression, Manifestation, and/or Item as another resource (which may or may not use the FRBR model, as well).
+
+commonEndeavour is intended to be used merely as a superproperty for WEMI-specific subproperties to inherit from, but there are no restrictions on its use.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Common Endeavour</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/manchax">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The Manchester Syntax for a owl construct (e.g., Restriction).
+
+:manchex rdfs:subPropertyOf rdfs:label .</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">manchester syntax</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hudYear">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The year associated with a loan history</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">year</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/Film">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The class of all motion pictures</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Film</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/machineTag">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">a machine tag that can be used to identify the domain resource in tagging applications. </rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">machine-tag</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/suffersEarworm">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Relates a person to an earworm that they suffer.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Suffers Earworm</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/classSkeleton">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Relates class to a class skeleton. If class has more than one of this relations, it should use them all.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Class Skeleton</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/HUDSchoolLoan">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The loan history of a book within a school</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">School Loan History</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/authorString">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The literal, human readable author string of a Document.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Author string</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/VisualElement">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A thing that manifests visually.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Visual Element</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/DOMNode">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">DOMNode can be a Attribute, Document, DocumentFragment, Element or EntityReference node.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">DOMNode</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/informalName">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The name used when referred to in informal situations, e.g. Ian Davis
+</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Informal Name</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/AutomobileCataologType">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Automobiles, when presented as a catalog, are generally categorized using the Car Maker / Car Model / Trim Package hierarchy.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Automobile Catalog Type</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/commonManifestation">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">This property is used to declare that two resources which may or may not conform to the FRBR (Functional Requirements for Bibliographic Resources) entity model share the same Manifestation.  An example of its use would be to relate a resource described with a vocabulary such as bibo (which does not acknowledge the FRBR model) to other resources that describe endeavours which include the same implied Manifestation (which could be other bibo resources or FRBR entities or anything else).
+
+The property is symmetrical, so if &lt;_:someBiboBook&gt; &lt;ov:commonManifestation&gt; &lt;_:someFrbrWork&gt;, this also means &lt;_:someFrbrWork&gt; &lt;ov:commonManifestation&gt; &lt;_:someBiboBook&gt;.  It is not transitive.
+
+Having this property also implies ov:commonExpression and ov:commonWork.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Common Manifestation</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/firstSentence">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The first sentence of a resource.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">First Sentence</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/earwormTransmitter">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The transmitter of a particular Earworm</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Earworm Transmitter</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hearts">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Slang for loves.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Hearts</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/IrcBot">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">An irc chat bot</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">IrcBot</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/EarWorm">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">class is now deprecated in favour of Earworm class.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">EarWorm</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/reincarnationOf">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Defines reincarnation of someone</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Reincarnation of an Individual</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/image">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">an image of the resource, whatever it may be. Typically the value of this property will be the URI of some sort of digital image.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Image</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/validUntil">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">To mark the date or event at which the named graph object ceases to be accurate.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">is valid until</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hudCourse">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A course associated with a book loan</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">course</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/phoneNumber">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A telephone number that can be used to contact a Person or Organisation.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Phone Number</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/performer">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">7dFHvo  &lt;a href=&quot;http://nussehqldled.com/&quot;&gt;nussehqldled&lt;/a&gt;, [url=http://uvurwqyxjgik.com/]uvurwqyxjgik[/url], [link=http://yqeuzuciwezi.com/]yqeuzuciwezi[/link], http://sdzwxhzsaaqq.com/</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Performer</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/creatorUserAgent">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The user-agent string of the software used by the creator of an item.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Creator User Agent</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/confidence">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A confidence level for a calculation or value.  Usually between 0 and 1.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">ConfidenceLevel</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/dateOfDeath">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The date someone died.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Date of Death</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/colour">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Colour</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/originatesFrom">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A thing that came into existence at a place and time originates from that place and time.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Originally from time and place</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/compassDirection">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The Compass Direction that a Thing faces.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Compass Direction</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/part">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">An element of a whole.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Part</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hasPlot">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Something has a plot.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">hasPlot</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/Plot">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A Plot of anything.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Plot</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/enhancedDescription">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">This property is to be used to relate a resource to an &quot;enhanced description&quot;. An enhanced description is one that provides additional, richer detail about a resource than may typically be obtained by a simple de-reference of the resource's URI.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">enhanced description</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/kudosTo">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">to express kudos to someone (acknowledge a contribution, feedback, etc.) </rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">kudos to</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/Birth">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Birth class</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Birth</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/NewsItem">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A piece of News</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">News item</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/BiologicalDatabase">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Database for Biologists (Bioinformatics)</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Biological Database</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/House">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Structure in which someone lives</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">House</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/isMemberOf">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Property to link an agent with an organization (inverse property of http://xmlns.com/foaf/0.1/member)</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">is member of</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/ClassSkeleton">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Members of this class represent class skeletons which are sort of templates of a class. 
+
+Members of a class which has a class skeleton (http://open.vocab.org/terms/classSkeleton property) should have the triples relating from/to the skeleton, which don't use property http://open.vocab.org/terms/classSkeletonIgnore and its sub-properties as predicate, relating from/to them too.
+
+This materialization of triples is expected to be carried out by for example some kind of rule engine.
+
+Important: This kind of inference is already possible with OWL using property restrictions (Functional-Style Syntax): 
+  EquivalentClasses( 
+    :JohnsChildren 
+    ObjectHasValue( :hasParent :John )
+  )
+So you might better use OWL since the functionality is the same.
+http://www.w3.org/TR/owl2-primer/#Property_Restrictions</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Class Skeleton</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/commonItem">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">This property is used to declare that two resources which may or may not conform to the FRBR (Functional Requirements for Bibliographic Resources) entity model share the same Item. An example of its use would be to relate a resource described with a vocabulary such as bibo (which does not acknowledge the FRBR model) to other resources that describe endeavours which contains the same specific Item (which could be other bibo resources or FRBR entities or anything else). This implies identical WEMI hierarchies.
+
+The property is symmetrical, so if &lt;_:specificPhysicalItem&gt; &lt;ov:commonItem&gt; &lt;_:someArchive&gt;, this also means &lt;_:someArchive&gt; &lt;ov:commonItem&gt; &lt;_:specificPhysicalItem&gt;. 
+
+It is not transitive. 
+
+Having this property also entails ov:commonManifestation, ov:commonExpression and ov:commonWork.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Common Item</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/isSongOfEarworm">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A song which is the focus of a particular Earworm</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">is Song of Earworm</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/shape">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The shape of something</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Shape</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/earwormSong">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The song that is the focus of a particular earworm</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Earworm Song</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/avatarFirstAppearance">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Describes when the character was introduced in the series.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">First Appearance of Character</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/canonicalUri">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Denotes the canonical URI that should be used to refer to this resource.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Canonical URI</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/Ware">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Generic term for category of ceramics that may be distinguished by function, surface treatment, distinguishing features of clay, or other set of criteria as defined by usage. Commonly used in the discipline of Archaeology.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Ware</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/Diff">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A diff, showing the difference between a source resource and a target resource.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">diff</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/sindiceResultCount">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The number of results retrieved for a search on that uri from the Search Engine sindice</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Sindice Result Count</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/AfricanRedSlip">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The ceramic ware produced during the Roman period in the region of what is now the modern country of Tunisia.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">African Red Slip</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/specification">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The specification(s) that the resource implemented. </rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Specification</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/WinterOlympicGames">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Winter Olympic Games</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/national-grid-reference">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A (UK) national grid reference for a given location, using the alphanumeric syntax.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">National Grid Reference</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/defaultProperty">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Associates properties to a class where the properties are meant to be present in some default view - basically a very light version of fresnel ;-)</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">default property</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/RTFMImperative">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">RTFMImperative is an instruction for foaf:Agent(s) to read a given document.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">instruction to RTFM</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/readGraph">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">express the ability/right to read from a graph</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Read Graph</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/csvRow">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The row number of a csv from which this instance was created. This is different from the r-th entry within the table, which may be less than the csv row if the csv has title information and a header above the data.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">csv row</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hudSchool">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The school associated with the loan history of a book</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">school</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hasRange">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">a resource (e.g. HTML content --&gt; awol:Content) has a DOM range</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">has range</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hudLoanCount">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The number of loans of a book within a year, school, or course</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">loan count</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/MultiSportEvent">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">MultiSportEvent</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/lastCachedPage">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The most recently cached static page describing the resource.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Last Cached Page</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/usedHttpHeader">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The subject (perhaps a foaf:Agent) made HTTP requests with a header described by this http:MessageHeader resource.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Used HTTP Header</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/avatarHairColor">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Defines the hair color (or no hair at all!) of an individual</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Color of Hair of an Individual</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/recordedAddress">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A property to capture an un-intepreted written address, notably for addresses that have yet to be or can never be semantically represented using an existing scheme, such as the vcard ontology.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">recorded address</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/associatedEntity">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">This property is used to relate two FRBR Endeavours/entities (http://vocab.org/frbr/core.html#Endeavour) together even if the entire Work-Expression-Manifestation-Item hierarchy does not exist.  For example, it could be used to relate a frbr:Work to a frbr:Manifestation without the need of a frbr:Expression to link them through.  The property is symmetric (if a &lt;_:work&gt; ov:associatedEntity &lt;_:item&gt; then &lt;_:item&gt; ov:associatedEntity &lt;_:work&gt;.  It is not transitive (items may be associated with the same work but not be in the same WEMI chain, for example).</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Associated Entity</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/earwormSufferer">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The person who experiences or suffers from a particular ear worm</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Earworm Sufferer</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/HUDSuggestion">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Suggested book based on circulation data</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Suggestion</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/prefAcronym">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Preferred or official acronym as used by the subject.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">preferred acronym</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/foafro">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Use this property to state that you admire a friend's fro</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Friend of a Fro</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/diffSource">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The resource that this diff goes from.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">source</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/syndicates">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">An agent syndicates a document some way.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">syndicates</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/Numismatics">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Numismatics is  the study of coins, medals and other related items.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Numismatics</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/AmateurRadioContact">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">It is a major goal of Amateur Radio Operators to make contact with each other.  This contact is formally defined as the exchange of certain information, usually consisting of each operator's call sign and a signal report (how well each operator receives the signal of the other).  A contact can last a few seconds to many minutes.  Nickname &quot;QSL&quot;.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">An event that is a contact between two AmateurRadioOperators</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/AmateurRadioOperator">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A person who is licensed in at least one ITU region to operate (transmit and receive) a radio using frequencies and modes permitted only  to licensed persons.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Amateur Radio Operator</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hasNode">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">has node</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/sourcefile">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">associates a given feature file document with the audio file that is described by that document</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Source File</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hasLender">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Domain: any institution or individual who borrows money from loaner
+Range: any institution or individual who loans a borrower money</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Has lender</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/endTime">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The time of day that something ends.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">End Time</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/disclaimerText">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The disclaimerText property associates a resource with the text of a disclaimer (in the form of an rdfs:Literal) applied to the resource by the resource owner or other relevant party.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">disclaimer text</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/avatarBendingElement">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">One or more of the four elements viz. Air, Water, Fire and Earth that can be bent.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">The Element an Individual Can Bend</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/isDefinedBy">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">DOMBoundaryPointPosition is defines by a DOMNode and a DOMOffset</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">is defined by</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/editForm">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Associates a resource with a form that can be used to edit its description. See http://patterns.dataincubator.org/book/edit-trail.html for more information.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Edit Form</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/ScientificDatabase">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A Scientific Database</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Scientific Database</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/aggregates">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">An agent syndicates a document some way.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">syndicates</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/UnivSchool">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A school of a university (e.g., School of Business).</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">University School</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/houseColor">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">color of a house</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">houseColor</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/responsiblityOf">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Organization who is responsible for (offers) the course. Like a department, a school...</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Responsible organization</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/WheelChairEnabled">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A place that is accessible with a wheel chair.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">wheel chair enabled</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/Database">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A Database</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Database</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/composer">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">associates a manifestation of a musical work with music artist who composed the work</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Composer</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/passwd">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">a password usually stored in md5</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Password</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/SportEvent">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">e.g. : 100m in Beijing 2008</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Sport Event </rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/anniversary">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The anniversary of some event</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Anniversary</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hasChecksum">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">has checksum - expecting (acronym/name):(checksum hexdigest)
+
+eg        ov:hasChecksum  &quot;sha1:a526a7c1bc65348dc7649556bee283ee3c999b92&quot;</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">has checksum</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hudBefore">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">loans before</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/bbcWeatherId">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The BBC provides IDs for places. This can be used to link BBC weather IDs to places.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">BBC Weather ID</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/numberOfPages">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The number of pages a resource has</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Number of Pages</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/composedBy">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">:s :composedBy :o .
+:o is a &quot;larger thing&quot; that composes :s and potentially other &quot;smaller things&quot;. :s may also establish some structural organization of the things it composes.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">composed by</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/origin">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The source of a thing.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Origin</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/departureDate">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Date and time your travel will commence</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">departure date</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/Calendar">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Calendar</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hasOffset">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">has offset</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/offeredBy">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Organization who offers the course, e.g. a department, a school, a research institute</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Offering organization</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/blid">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A sub-classing of bibo:identifier to narrow the range to be the numeric part of a BL identifier. For example:
+
+'(Uk)33994949'  ---&gt;  '&lt;foo&gt; &lt;ov:blid&gt; &quot;33994949&quot;'</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">British Library identifier</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/Earworm">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The experience of having a song in your head which you can't get rid of.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Earworm</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/Cheese">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Cheese is a food made from milk, usually the milk of cows, buffalo, goats, or sheep, by coagulation. </rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Cheese</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/near">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">x is 'near' y if they are near to each other in physical space, for a deliberately vague notion of near.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Near</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/favouriteDrink">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A drink, alcoholic or not, that the person in question is particularly fond of. It's what they would typically order in a place where the drink is available. The object can be a literal stating the name of the drink, or (preferred) an RDF resource.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Favourite Drink</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/DigitalAsset">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">DAs would be typically files. Audio, movies, software licenses, software installers, documents, etc. Anything stored that needs a computer to get it and/or read it.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">DigitalAsset</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/json">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The JSON representation of a (usually small) dataset.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">JSON</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/isCategoryOf">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The value of this property is something that has been classified under the resource</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">is category of</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/statement">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Asserts that a reified rdf:Statement is asserted (in a non-reified form) by a particular RDF graph.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">statement</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/RadioOperationFrequency">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">When a radio transmits a signal, a range of frequencies is used to carry information.  This range may be continuous or dis-contiguous (&quot;spread spectrum&quot;).  There is usually a single frequency that is used to &quot;name&quot; the tranmission frequency, although this naming depends on the mode used.  (See RadioOperationMode).  The standard method of expression is &quot;Herz&quot; (or a multiple).  Sometimes, surprisingly, the &quot;frequency&quot; is expressed in terms of length (actually wavelength, often in meters).  This is merely an colloquial and equivalent expresssion, since freq(Herz) = the-speed-of-light / wavelength.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Frequency of operation of a radio.</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/DOMBoundaryPointPosition">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A boundary-point's position in a Document or DocumentFragment tree can be characterized by a node and an offset
+
+http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113/ranges.html#Level-2-Range-Definitions</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">DOMBoundaryPointPosition</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/icon">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">a pictorial representation for something.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Icon</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hasMD5">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">has MD5 checksum</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/PrimaryVisualElement">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Primary Visual Element</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/signatureScent">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Relate a thing (usually a person) to the scent with which they are most commonly associated.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Signature Scent</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/depicts">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">When :s :depicts :o, :s is communicable via a visual medium and, when transmitted, depicts the resource :o.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">depicts</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/defines">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The things defined by this resource - for example, the terms defined by an Ontology.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Defines</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/primaryMaterial">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The primary material from which something is made.
+
+Examples: leather (shoe), paper (book), cotton (t-shirt), nylon (tights), plastic (carrier bag), rubber (wellington boots), iron (pipe) etc.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">primary material</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/offersCourse">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Course offered by the organization</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Offered course</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/avatarEyeColor">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Describes the eye color of an individual</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Color of Eyes of an Individual</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/wikiPage">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A wiki page associated with this resource</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Wiki Page</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hudCommon">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The number of loans two books have in common</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">loans in common</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/madeIn">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The place where a particular object was made. (Made is left intentionally vague and follows the same semantics as foaf:maker, foaf:made etc.)</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">place where made</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/subtitle">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">An additional or secondary title usually used expand or limit the main title</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Subtitle</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/depictsSameResourceAs">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">depicts same resource as</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/dimensionProperty">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Relates a property to a Dimension Property with identical meaning for use with the RDF DataCube vocabulary.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Dimension Property</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/namedPlace">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Places named in a text.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Named place</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/DOMBoundaryPoint">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A boundary-point's position in a Document or DocumentFragment tree can be characterized by a node and an offset.
+http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113/ranges.html#Level-2-Range-Definitions</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">DOMBoundaryPoint</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/Vocabulary">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A set of terms or names, each one having an assigned meaning.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Vocabulary</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/HUDCourseLoan">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Course Loan History</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/noOfReviewsWritten">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">a total count of the number of resources of type &lt;http://purl.org/stuff/rev#Review&gt; that an Agent is known to have created </rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Number of Reviews Written</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/has">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Boundary point has a position</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">has</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/favouritedBy">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">favourite</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/OkkamEntity">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Any entity that can be identified using the OKKAM entity naming system. In general one could say this is equivalent to resource but there are certain entity types that will work better on the OKKAM system</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Okkam Entity</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/StillAKillerGorilla">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Indicates that the subject is a non-deceased killer gorilla.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Living Killer Gorilla</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/similarTo">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Having two things that are not the owl:sameAs but are similar to a certain extent. It is thought of being used where owl:sameAs is too strong but rdfs:seeAlso is too loose. Motivation: http://lists.w3.org/Archives/Public/public-lod/2009Feb/0189.html</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">similar to</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/twitter-id">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Twitter ID</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/disclaimer">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The disclaimer property links a resource to a document that details a disclaimer applied to the resource by the resource owner or other relevant party.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">disclaimer</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/maidenName">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A person's maiden name.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Maiden Name</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/length">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The linear extent of a thing.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Length</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/areaHectares">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The area of some physical thing in hectares.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Area in Hectares</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/faxNumber">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A fax number that can be used to send faxes to a Person or Organisation.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Fax Number</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/diffFromOther">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A diff that goes from another resource to this one.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">diff from other</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/DOMOffset">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">the offset within a DOM node</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">DOMOffset</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/calendar">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A calendar associated with this resource.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Calendar</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/diffTarget">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The resource that this diff goes to.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">target</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/accountIdentifier">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">foaf:OnlineAccount's can have an accountName, but plenty of services use an account identifier internally that is not the same as the public account name: for instance, Twitter uses a nickname and a user_id property. Facebook now assigns usernames as well as internal identification numbers. Google's various services assign a unique identifier so that people are not revealing their e-mail address or username. This property is for these kind of identifiers.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Account Identifier</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/startTime">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The time of day that something starts at.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Start Time</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/formalName">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The name used when referred to in formal situations, e.g. Mr. Davis
+</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Formal Name</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/OlympicGames">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The Olympic Games are an international multi-sport event established for both summer and winter sports.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Olympic games</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/studies">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A topic or work that is studied by a person or group (e.g., a university course)</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">studies</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hasFavourited">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">favourite</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/fileSize">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Describes the size of the file of a dataset in the normal (uncompressed) state</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">dataset file has fileSize</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/HUDYearLoan">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The loan history for a book by year.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Year Loan History</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/exampleResource">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">an example resource using a vocabulary term or terms</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Example Resource</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/Madre">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Madre</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/okkamID">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">the okkam ID of the entity, given in human legible form (literal)</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Okkam ID</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/IllegalRDFXMLStatement">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A statement that would be illegal to express in a non-reified form in RDF/XML - usually because the predicate cannot be converted to a QName.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Illegal RDF/XML Statement</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/featurefile">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">associates a musical item with a feature file describing that item</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Feature File</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/networkVisibility">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The desired visibility of a User's social network. Suggested options: &quot;Just Me&quot;, &quot;My Network&quot;, &quot;Everyone&quot;.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Network Visibility</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/sortLabel">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A label for a resource that is syntactically arranged to be suitable for sorting</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Sort Label</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/AutomobileModel">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">From en.wikipedia.org:
+&quot;A car model is a particular brand of vehicle sold under a marque. From an engineering point of view, a particular car model is usually defined and/or constrained by the use of a particular car chassis/bodywork combination or the same monocoque.&quot;</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Automobile Model</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hudSchoolLoan">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">school loan</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/AvatarCharacterTraits">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">This class of character traits was created to describe the characters in the graphic novel Avatar-The Last Airbender.
+The motivation was to create a unique class identifying the characters in the trilogy.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">General Trait of Characters in the Animated Series Avatar-The Last Airbender</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/NotAKillerGorilla">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Indicates that something is definitely not a Killer-Gorilla. (It may still be a killer though. Or a gorilla.)</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Non Killer-Gorilla</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/Course">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Course</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/csvCol">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The column of a comma separated value file from which this property was created.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">csv column</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/familiarName">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The name used in familiar situations by friends, e.g. Ian
+</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Familiar Name</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hudSame">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">simultaneous loans</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">same</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/fullName">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The full name as expected to be used on an identifying document e.g. Mr Ian Robert Davis
+</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Full Name</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/category">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A category that the resource has been classified under</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">category</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/beam-componentOf">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Following an EAD description, collections consist of one or more &quot;components&quot;. Components act much like files and folders - a component may contain others (folder) or it may be a leaf node (file) - EAD is vague enough not to make this distinction, but provides a &quot;level&quot; attribute instead. This property is used by a component to show that if is a &quot;componentOf&quot; either another component or a collection or both.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">ComponentOf</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/semester">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Semester in which the course is offered</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Semester</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/hasPosition">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">has position</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/taggingCount">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">the number of times a tag has been used in taggings of things</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Tagging Count</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/DeletedEntry">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A construct representing a deleted entry in an Atom feed.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Deleted Entry</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/geoBoundaryDefiner">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The agent that defines the boundaries of a geographic area.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Geographic Boundary Definer</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/businessInterest">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Business Interest</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/validFrom">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">To mark the beginning date or event at which the named graph object is true/accurate.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">is valid from</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/keywords">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A comma separated list of words that are particularly pertinent to this resource.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">keywords</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/UnivCourse">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A course taught at a university</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">University Course</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/SummerOlympicGames">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label xml:lang="en">Summer Olympic Games</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/shortName">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Just a simple readable name, a mnemonic. </rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Short Name</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/businessCard">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">A business card associated with this resource.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Business Card</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/classSkeletonIgnore">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">Triples using his property and its sub-properties as predicate are to be ignored by the class skeleton materialization process (http://open.vocab.org/terms/ClassSkeleton).
+
+This property is not to be used in real data, it serves just to exist and have sub-properties.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Class Skeleton Ignore</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/rank">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">The rank of the resource within the ordered collection represented by the current document</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">rank</rdfs:label>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://open.vocab.org/terms/regionalContextMap">
+    <rdfs:isDefinedBy rdf:resource="http://open.vocab.org/terms"/>
+    <rdfs:comment xml:lang="en">This property is a relationship between some thing and a map that shows that thing's location at a regional scale.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <rdfs:label xml:lang="en">Regional Context Map</rdfs:label>
+  </rdf:Description>
+
+</rdf:RDF>
