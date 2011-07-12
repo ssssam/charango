@@ -3,78 +3,85 @@ Charango 0.3.0 ...
 To do (stuff I won't really do)
 -------------------------------
 
-* Look at libmodel, how does that relate?
-  - interestingly. libmodel takes a very different approach, lower-level than
-  anything in charango. Other than the weird idea of having integers etc.
-  descend from GObject it's good stuff, but the best use for us would be as
-  a way to present views as an alternative to GtkTreeModel. Anything else
-  has no real use for me.
-
-* look at meego music player, apparently everything has been done for you !!!!
-
 -> disable static build, add a 'waf run' command similar to 'libtool exec' to fix ld_library_path.
 
 -> Fix waf no longer keeping the vala c output because a c file is included in the build
 
-To do next
-----------
+* Bug https://bugzilla.gnome.org/show_bug.cgi?id=649644
+  - Vala doesn't support returning the test function .. perhaps what
+    we really want is a push_log_handler/pop_log_handler function anyway.
+    Or a whole vala_test_functions thing - maybe this stuff can go in Valadate?
 
-Entity:
-* type system
-  - type information stored and checking before assignment
+* Tracing - using #ifdef's correctly, we can making tracing free when disabled.
+  Currently ... we don't.
 
-  -> make the xsd basic types built-in classes
+  -> I guess you also need a resources hash. Per-namespace to avoid hashing the
+     whole URI each time.
+     Also, it makes far more sense to index namespaces on their prefix than on
+     the URI .. is it fair to make unique prefixes a requirement? There's ultimately
+     no reason you can't just invent one/add a postfix index if the user can't make
+     it unique, so this idea is definitely a mover and shaker
 
-  * DO YOU NEED an id system for classes/types when they are always in memory????????
+  -> Do you need entity Id's? I'm not sure at the moment. We can probably use
+     pointers most places.
 
-* Value storage is enourmously inefficient currently because we store all
-  integer values as a pointer to a heap-allocated 64 bit int. I guess the
-  ideal system is to dynamically store numeric values in the smallest
-  possible size, so word-size by default and then up to bigint if
-  necessary. I think I will just make the value union 8 bytes.
- - especially since we probably mostly store strings :)
+To do
+-----
 
-I had  an idea (not sure if necessary) that we should have one giant 'Resource'
-hash table that could somehow identify a URI as type, class, property or entity.
-This could just be done with a pointer, if we gave maybe the base type values
-Vala object types as well.
+get/set properties should work again - actually store the data :)
 
-* avoid duplication of value in setter (see C code for entity.c)
+6. add accessors for concept properties that wrap get/set_entity etc.
 
-> store data values:
-  - read property type from ontology, & build type table from read types
-  - finish entity
+* Write up a proper spec
 
-  Property types are set with
-    rdfs:range
-  Custom types are defined in time-entry.owl, for one, .. which makes sense.
-  This is a strict property, violations are 'datatype clashes', 'XSD inconsistent'
+* Add an 'ontology-browser' example - simple Gtk+ 3 app
 
-* Since you're using Vala, why not use GValue since it's built in!!
+* Since you're using Vala, why not use GValue for values since it's built in!!
 
-* Improve the look of the class & ontology classes, we can read rdf in a neater way :)
+* class.to_string(): don't put : in non-key URI's
+
+* Support key URI's etc.
+  ->
+
+* don't access members, make them properties and use accessors - this is a library !
+
+-> We should start warning on unrecognised predicates for classes and properties too.
+
+*  Get 'basic' example working - simply create an entity
+
+
+* Relationship properties
 
 * The store/source interface (beginnings are stashed)
-  
 
--> then examples/basic should work!
---------------------------------------------
-The tests are HORRIBLE! Let's just use valadate or improve gtest in vala or something.
-This is a joke!
-https://bugzilla.gnome.org/show_bug.cgi?id=645178
--------------------------------------------
+-> need a couple of thoughts on architecture. Heard a bit about MVC recently
+   and how change notifications and editing should go in the controller,
+   not the model. I don't really buy this (or get it). Our architecture is
+   this
 
-* Thoughts on libmodel:
-  - need to investigate it properly of course
-  - aim to provide a generic data model on top of Tracker, but with other uses -
-    maybe aiming too high? surely tracker wasn't their only use case. Seems like
-    higher level abstractions ontop of eg. glist is a waste of time though. I
-    am probably missing something.
-  - not an object mapping like charango, more low level. charango forces a
-    specific way of working, but a fairly reasonable one
-  - maybe charango could integrate it? can't think of a need other than to
-    not have to write our own type system - need to see what libmodel does
-    here.
+   Data store:   tracker,  in memory     
+                                         //    web endpoints:    Data source
+        transactional CRUD             ->   model: stores data, provides change
+                                            notification
+                 ^^ vv        vv     ^^  vv
+              info editor   views   extractor
+
+   I guess it does seem like a reasonable design to at least put the
+   CRUD stuff in a separate API, even if its just an interface, because
+   web data sources will be immutable. Perhaps then you have:
+
+        Charango.Source    : querying and change notification
+          Charango.Store   : CRUD
+
+        .. that's astonishingly simple. I like it.
+
+* an in-memory store
+
+-> write some tests
+
+-> write some of calliope :)
+    - extractor
+    - text mode playback !!
 
 Might be nice to have read-only entitys? You can't edit them unless (a) they're
 new or (b) they've been checked out. Then again, it's just a flag, it doesn't
@@ -87,35 +94,6 @@ way, and it was REALLY useful. Wait actually you might be able to do
 it using default parameters, even if you have to write the actual
 Entity code in C. Better look into this business.
 
-* Handle librdf parse errors by calling librdf_world_set_logger(). Would be nice
-  if we could print as many errors as possible rather than just raising an
-  exception on the first one. I guess we could return them all to the context
-  as Warnings, then raise our own ParseError once the parser has completed
-  with a list of all the warnings. This seems kind of an abuse of Warning since
-  they aren't warnings, they are errors, we just don't want to fail on the first
-  one. Is there a better way? Yeah, make a separate ParseError class which we
-  accumulate in the logger .. this makes no sense though, and the errors could
-  come from anywhere, not just the parser. Options are:
-    - in the .vapi, provide a logger and have the World provide a simple error
-      query interface. Don't like this.
-    - link with the GLib logger somehow, then we can disable fail on errors
-      perhaps while we are parsing. Maybe. Seems like that's a winner for the
-      librdf warnings at least.
-    - I think eventually you will have to create a list of RedlandParseError
-      messages and query them after the parse, however you go about this
-      other stuff.
---> librdf parse errors not caught :(
-  - Actually I just thought about this again, and the sensible thing to do is to
-    turn the parse errors into exceptions but then when we catch one, carry on
-    parsing. I constantly forget that exceptions are actually a pretty powerful
-    mechanism.
-
--> We should start warning on unrecognised predicates for classes and properties too.
-
-
--> write some tests
-
--> write some of calliope :)
 
 Things still to handle:
 rdfs:isDefinedBy on classes (check it matches where we have added it :)
@@ -227,6 +205,8 @@ Views thoughts:
 General things
 --------------------------------------
 
+* Set up log domain - how do you do this in vala?
+
 * I don't like the _noerror variants of some functions, but I don't like having
   ugly try { } catch { } blocks around all my code either. And I don't like the
   "unhandled exception" warnings, but only sometimes because other times I do
@@ -235,6 +215,22 @@ General things
 * Don't distribute ontologies with charango. That should be up to the
   applications that use them (since it's their API) or Tracker (if they want to
   delegate the responsibility)
+
+* Value storage is enourmously inefficient currently because we store all
+  integer values as a pointer to a heap-allocated 64 bit int. I guess the
+  ideal system is to dynamically store numeric values in the smallest
+  possible size, so word-size by default and then up to bigint if
+  necessary. We mainly store strings, so it is probably worth having a
+  32-bit struct on 32-bit pointer systems. How would storing ints based
+  on value work? ... complicatedly.
+
+* I had  an idea (not sure if necessary) that we should have one giant 'Resource'
+  hash table that could somehow identify a URI as type, class, property or entity.
+  This could just be done with a pointer, if we gave maybe the base type values
+  Vala object types as well.
+   -> if you did, the id numbers for resources might be useless - just refer to
+      them by pointer
+
 
 Minor things
 --------------------------------------
@@ -249,6 +245,8 @@ Minor things
 	It is a lot like what we use now but needs a new runner and the test to be
 	linked as a library (which seems annoying because you can't run the test as
 	an exe). Has some nice API extensions like wait_for_signal() and stuff.
+
+	Organise the tests .. unit, functional, integration, live ...
 
 Blue sky things
 --------------------------------------
@@ -304,3 +302,10 @@ Fixes in other projects
 	     library .. maybe built on top of libsoup ! This would need a new name
 	     I guess, like SoaLib or libdata or something like that. Why do you
 	     always worry about names!
+
+
+Waiting for
+-----------
+
+Vala 0.12.1:
+  https://bugzilla.gnome.org/show_bug.cgi?id=645178

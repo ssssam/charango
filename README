@@ -10,7 +10,7 @@ subject/predicate/object. Normally, the resources are classed and so the
 data can be mapped on top the standard instance/property/value model.
 This provides a simple and intuitive way of working with the data.
 
-See DESIGN for more information.
+See the examples/ directory and ./DESIGN for more information.
 
 
 Philosophical Q & A
@@ -57,6 +57,9 @@ Philosophical Q & A
       Charango does, but conceptually a key/value hash suggests (to me)
       unstructured data.
     - the aim of killing GtkTreeModel is a noble one.
+    - perhaps libmodel is too decoupled from how your data is actually
+      stored. Charango is a better and more efficient way to model RDF
+      Schema because it directly represents how the data is stored.
   => there's no reason Charango couldn't run on top of libmodel if there
      was reason to (and the reason would be Gtk widgets displaying data
      in libmodel formats easily). The only overlap really is the type
