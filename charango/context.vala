@@ -189,6 +189,10 @@ public void load_namespace (string            uri,
 	}
 }
 
+public List<Charango.Ontology> get_ontology_list () {
+	return (owned) this.ontology_list;
+}
+
 /**
  * find_entity()
  * @uri: resource identifier string

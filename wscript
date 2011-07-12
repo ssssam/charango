@@ -33,31 +33,41 @@ def build(bld):
 	               # FIXME: For our custom vapi, they need merging to Vala
 	               vapi_dirs = charango_vapi_dirs)
 
+	kws = {
+		'features': 'c cprogram',
+		'packages': 'charango',
+		'use': 'charango',
+		'includes': ['.', './charango'],
+		'vapi_dirs': charango_vapi_dirs,
+		'install_path': None
+	}
+
 	# Build examples
 	#
 	examples_dir = bld.path.find_dir ('examples')
+
 	for file in examples_dir.ant_glob('*.vala', src=True, dir=False):
-		example = bld (features = 'c cprogram',
-		               source = file,
+		example = bld (source = file,
 		               target = file.change_ext('').get_bld(),
-		               packages = 'charango',
-		               use = 'charango',
-		               includes = ['.', './charango'],
-		               vapi_dirs = charango_vapi_dirs,
-		               install_path = None)
+		               **kws)
+
+	if bld.env['HAVE_GTK'] == 1:
+		examples_gtk_dir = examples_dir.find_dir ('gtk+')
+		for file in examples_gtk_dir.ant_glob('*.vala', src=True, dir=False):
+			kws_gtk = kws
+			kws_gtk['uselib'] = 'GTK'
+			kws_gtk['packages'] += ' gtk+-3.0'
+			example = bld (source = file,
+			               target = file.change_ext('').get_bld(),
+			               **kws_gtk)
 
 	# Build tests
 	#
 	tests_dir = bld.path.find_dir ('tests')
 	for file in tests_dir.ant_glob('*.vala', src=True, dir=False):
-		test = bld (features = 'c cprogram',
-		            source = file,
+		test = bld (source = file,
 		            target = file.change_ext('').get_bld(),
-		            packages = 'charango',
-		            use = 'charango',
-		            includes = ['.', './charango'],
-		            vapi_dirs = charango_vapi_dirs,
-		            install_path = None)
+		            **kws)
 
 		# Set unit_test flag selectively so user can call:
 		#   ./waf check --target=tests/foo-test
