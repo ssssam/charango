@@ -266,6 +266,23 @@ internal void load (ref List<Warning>  warning_list)
 	}
 }
 
+public List<Charango.Class> get_class_list () {
+	return (owned) this.class_list;
+}
+
+public List<Charango.Property> get_property_list () {
+	return (owned) this.property_list;
+}
+
+/* FIXME: it's a bit weird that this only returns things aren't classes
+ * or properties, in terms of consistency. However this API is temporary
+ * anyway, one day you will use Charango.Source API's to get this info
+ */
+public List<Charango.Entity> get_entity_list () {
+	return (owned) this.entity_list;
+}
+
+
 internal Charango.Entity find_local_entity (string uri)
                          throws OntologyError {
 	try {

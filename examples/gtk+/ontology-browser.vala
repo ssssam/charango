@@ -119,17 +119,10 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 		return_if_fail (iter.user_data != null);
 
 		Node *node = iter.user_data;
-		switch (node->depth) {
-			case 0:
-				Ontology o = (Ontology)node->entity;
+		Charango.Entity e = node->entity;
 
-				value.init (typeof (string));
-				value.set_string (o.uri);
-				break;
-
-			default:
-				return_if_reached ();
-		}
+		value.init (typeof (string));
+		value.set_string (e.uri);
 	}
 
 	bool iter_next (ref Gtk.TreeIter iter) {
@@ -252,21 +245,59 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 	void unref_node (Gtk.TreeIter iter) {
 	}
 
+	private static int compare_entities_by_uri (Charango.Entity a,
+	                                            Charango.Entity b) {
+		return strcmp (a.uri, b.uri);
+	}
+
 	public ConceptTree (Charango.Context context) {
 		this.context = context;
 		this.stamp = (int) Random.next_int ();
 
 		var ontology_list = context.get_ontology_list();
-		ontology_list.sort ((a, b) => { return strcmp (a.uri, b.uri); });
+		ontology_list.sort ((GLib.CompareFunc<Charango.Ontology>)compare_entities_by_uri);
 
 		this.root = new Node (null, 0, -1);
 
+		/* FIXME: we shouldn't be using these ontology-specific API's, and
+		 * they shouldn't exist - Context should implement Charango.Source
+		 */
+
 		int i = 0;
-		Node *prev = null;
+		Node *o_prev = null;
 		foreach (Ontology o in ontology_list) {
-			Node *node = new Node (o, i ++, 0);
-			node->add_to_tree (this.root, prev);
-			prev = node;
+			Node *o_node = new Node (o, i ++, 0);
+			o_node->add_to_tree (this.root, o_prev);
+			o_prev = o_node;
+
+			var class_list = o.get_class_list ();
+			class_list.sort ((GLib.CompareFunc<Charango.Class>)compare_entities_by_uri);
+
+			int j = 0;
+			Node *x_prev = null;
+			foreach (Class x in class_list) {
+				Node *x_node = new Node (x, j ++, 1);
+				x_node->add_to_tree (o_node, x_prev);
+				x_prev = x_node;
+			}
+
+			var property_list = o.get_property_list ();
+			property_list.sort ((GLib.CompareFunc<Charango.Property>)compare_entities_by_uri);
+
+			foreach (Property x in property_list) {
+				Node *x_node = new Node (x, j ++, 1);
+				x_node->add_to_tree (o_node, x_prev);
+				x_prev = x_node;
+			}
+
+			var entity_list = o.get_entity_list ();
+			entity_list.sort (compare_entities_by_uri);
+
+			foreach (Entity x in entity_list) {
+				Node *x_node = new Node (x, j ++, 1);
+				x_node->add_to_tree (o_node, x_prev);
+				x_prev = x_node;
+			}
 		}
 	}
 
@@ -330,15 +361,17 @@ public class MainWindow: Gtk.Window {
 }
 
 int main (string[] args) {
-	Charango.Context context;
-
 	Gtk.init (ref args);
 
 	var path = Path.build_filename (SRCDIR, "charango", "data", "ontologies", null);
 
-	context = new Charango.Context ();
+	var context = new Charango.Context ();
+	List<Warning> warning_list;
 	try {
 		context.add_local_ontology_source (path);
+		/* FIXME: would be cool if we could do the loading incrementally based
+		 * on what the user clicks on :) */
+		context.load_namespace ("http://purl.org/ontology/mo/", out warning_list);
 	}
 	  catch (FileError error) {
 		print ("Unable to find ontologies: %s\n", error.message);
@@ -348,6 +381,9 @@ int main (string[] args) {
 		print ("Error loading ontology data: %s\n", error.message);
 		return 2;
 	  }
+
+	if (warning_list != null)
+		print ("[%u warnings]\n", warning_list.length());
 
 	var app_window = new MainWindow(context);
 	app_window.show ();
