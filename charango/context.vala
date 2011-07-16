@@ -320,15 +320,15 @@ internal Entity find_or_create_entity (Ontology    owner,
 			// Forward reference - just create the entity as a stub
 			switch (expected_type) {
 				case ConceptType.ENTITY:
-					e = new Charango.Entity (uri, this.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource"));
+					e = new Charango.Entity (o, uri, this.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource"));
 					o.entity_list.prepend (e);
 					break;
 				case ConceptType.CLASS:
-					e = new Charango.Class (owner, uri, this.find_class ("http://www.w3.org/2000/01/rdf-schema#Class"), this.max_class_id ++);
+					e = new Charango.Class (o, uri, this.find_class ("http://www.w3.org/2000/01/rdf-schema#Class"), this.max_class_id ++);
 					o.class_list.prepend ((Charango.Class) e);
 					break;
 				case ConceptType.PROPERTY:
-					e = new Charango.Property (owner, uri, this.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"));
+					e = new Charango.Property (o, uri, this.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"));
 					o.property_list.prepend ((Charango.Property) e);
 					break;
 				case ConceptType.ONTOLOGY:
@@ -346,8 +346,8 @@ internal Entity find_or_create_entity (Ontology    owner,
 
 /* find_or_create_class:
  */
-internal Charango.Class find_or_create_class (Ontology    owner,
-                                              string      uri)
+internal Charango.Class find_or_create_class (Ontology owner,
+                                              string   uri)
                 throws OntologyError, ParseError {
 	Charango.Entity e = find_or_create_entity (owner, uri, ConceptType.CLASS);
 
@@ -357,7 +357,13 @@ internal Charango.Class find_or_create_class (Ontology    owner,
 	if (e.rdf_type == rdf_resource) {
 		// If the entity has no type info, it's probably been referenced already
 		// a statement like rdf:range but we couldn't be sure it was a class.
-		var c = new Charango.Class (owner, uri, rdfs_class, max_class_id ++);
+
+		/* FIXME: duplicated effort from find_or_create_entity () */
+		string namespace_uri, entity_name;
+		parse_uri_as_resource_strings (uri, out namespace_uri, out entity_name);
+		Ontology o = find_ontology (namespace_uri);
+
+		var c = new Charango.Class (o, uri, rdfs_class, max_class_id ++);
 		c.copy_properties (e);
 		this.replace_entity (e, c);
 		return c;

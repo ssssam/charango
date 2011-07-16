@@ -61,7 +61,7 @@ public Ontology (Context        context,
 	if (terminator != '#' && terminator != '/')
 		throw new ParseError.INVALID_URI ("Namespace must end in # or /; got '%s'", uri);
 
-	base (uri, rdf_type);
+	base (null, uri, rdf_type);
 
 	this.context = context;
 	this.source_file_name = source_file_name;
@@ -117,7 +117,7 @@ private Entity create_entity (string         uri,
 			return new Charango.Property (this, uri, type);
 		case ConceptType.ENTITY:
 		default:
-			return new Charango.Entity (uri, type);
+			return new Charango.Entity (this, uri, type);
 	}
 }
 
@@ -203,9 +203,9 @@ internal void load (ref List<Warning>  warning_list)
 			if (subject == null) {
 				subject = create_entity (uri_string, type);
 
-				if (subject is Charango.Class)
+				if (subject is Charango.Class) {
 					this.class_list.prepend ((Charango.Class) subject);
-				else if (subject is Charango.Property)
+				} else if (subject is Charango.Property)
 					this.property_list.prepend ((Charango.Property) subject);
 				else
 					this.entity_list.prepend (subject);
@@ -309,19 +309,25 @@ internal Charango.Property find_local_property (string uri)
 
 internal void replace_entity (Entity old_entity,
                               Entity new_entity) {
-	if (old_entity is Charango.Class)
-		this.class_list.remove ((Charango.Class) old_entity);
-	else if (old_entity is Charango.Property)
-		this.property_list.remove ((Charango.Property) old_entity);
-	else
-		this.entity_list.remove (old_entity);
+	// There's no reason to move entities between different ontologies because
+	// the correct namespace is always known.
+	warn_if_fail (old_entity.owner == new_entity.owner);
 
-	if (new_entity is Charango.Class)
-		this.class_list.prepend ((Charango.Class) new_entity);
-	else if (new_entity is Charango.Property)
-		this.property_list.prepend ((Charango.Property) new_entity);
-	else
-		this.entity_list.prepend (new_entity);
+	if (new_entity.owner == this) {
+		if (old_entity is Charango.Class)
+			this.class_list.remove ((Charango.Class) old_entity);
+		else if (old_entity is Charango.Property)
+			this.property_list.remove ((Charango.Property) old_entity);
+		else
+			this.entity_list.remove (old_entity);
+
+		if (new_entity is Charango.Class)
+			this.class_list.prepend ((Charango.Class) new_entity);
+		else if (new_entity is Charango.Property)
+			this.property_list.prepend ((Charango.Property) new_entity);
+		else
+			this.entity_list.prepend (new_entity);
+	}
 
 	foreach (Entity e in this.entity_list) {
 		/* FIXME: Replace all of the properties - including rdf_type? That

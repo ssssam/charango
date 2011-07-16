@@ -46,20 +46,25 @@ public class Entity: Object {
 public string uri;
 public Charango.Class rdf_type;
 
+/* FIXME: this should be able to be any type of Charango.Source */
+internal Ontology? owner;
+
 /* FIXME: would be nicer if we could store the values directly in the array,
  * but that requires wrapping GArray in Vala which might be hard ..
  */
 GenericArray<Charango.Value?> data;
 
-public Entity (string         uri,
-               Charango.Class rdf_type) {
+public Entity (Charango.Ontology? owner,
+               string             uri,
+               Charango.Class     rdf_type) {
+	this.owner = owner;
 	this.uri = uri;
 	this.rdf_type = rdf_type;
 
 	this.data = new GenericArray<Charango.Value?>();
 }
 
-public Entity.prototype (string uri) {
+public Entity.prototype (string             uri) {
 	this.uri = uri;
 
 	this.data = new GenericArray<Charango.Value?>();

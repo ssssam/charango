@@ -35,12 +35,10 @@ public Charango.ValueBaseType type;
  */
 public Charango.Class range;
 
-public Property (Ontology       ontology,
+public Property (Ontology       owner,
                  string         uri,
                  Charango.Class rdf_type) {
-	base (uri, rdf_type);
-
-	this.ontology = ontology;
+	base (owner, uri, rdf_type);
 
 	this.name = get_name_from_uri (uri);
 }

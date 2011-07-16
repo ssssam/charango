@@ -51,34 +51,31 @@ internal PtrArray    properties;
 
 public bool builtin = false;
 
-internal Ontology ontology;
-
-public Class (Charango.Ontology ontology,
+public Class (Charango.Ontology owner,
               string            uri,
               Charango.Class    rdf_type,
               int               id) {
-	base (uri, rdf_type);
+	base (owner, uri, rdf_type);
 
-	this.ontology = ontology;
 	this.id = id;
 
 	// Give a default superclass; this will be overwritten if/when
 	// rdfs:subClassOf is read
-	this.main_parent = ontology.context.rdf_resource;
+	this.main_parent = owner.context.rdf_resource;
 
 	this.name = get_name_from_uri (uri);
 
 	this.properties = new PtrArray ();
 }
 
-internal Class.internal (Charango.Ontology ontology,
-                       int               id,
-                       string            name) {
-	string uri = ontology.uri + name;
+internal Class.internal (Charango.Ontology owner,
+                         int               id,
+                         string            name) {
+	string uri = owner.uri + name;
 
-	base  (uri, ontology.context.rdfs_class);
+	base  (owner, uri, owner.context.rdfs_class);
 
-	this.main_parent = ontology.context.rdf_resource;
+	this.main_parent = owner.context.rdf_resource;
 	this.name = name;
 	this.builtin = true;
 
@@ -178,10 +175,10 @@ public uint get_rdfs_property_index (string property_name)
 public string to_string () {
 	var builder = new StringBuilder();
 
-	if (ontology.prefix != null)
-		builder.append (ontology.prefix);
+	if (this.owner.prefix != null)
+		builder.append (this.owner.prefix);
 	else
-		builder.append (ontology.uri);
+		builder.append (this.owner.uri);
 
 	builder.append (":");
 	builder.append (name);
@@ -190,7 +187,7 @@ public string to_string () {
 }
 
 public override void dump () {
-	print ("rdfs:Class %i '%s:%s': %u properties\n", id, ontology.prefix, name, properties.len);
+	print ("rdfs:Class %i '%s:%s': %u properties\n", id, this.owner.prefix, name, properties.len);
 }
 
 public void dump_heirarchy (int indent = 0) {
@@ -199,7 +196,7 @@ public void dump_heirarchy (int indent = 0) {
 			print ("   ");
 		print ("-> ");
 	}
-	print ("%s:%s\n", ontology.prefix != null? ontology.prefix: ontology.uri, name);
+	print ("%s:%s\n", this.owner.prefix != null? this.owner.prefix: this.owner.uri, name);
 
 	// Only permitted for rdfs:Resource class
 	if (this.main_parent == null)

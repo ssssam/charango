@@ -37,11 +37,13 @@ public int main (string[] args) {
 		return 2;
 	  }
 
-	var artist_mo = new Charango.Entity ("http://musicbrainz.org/artist/ac241ded-3430-4f42-8451-f78667cc2f52",
+	var artist_mo = new Charango.Entity (null,
+	                                     "http://musicbrainz.org/artist/ac241ded-3430-4f42-8451-f78667cc2f52",
 	                                     context.find_class ("http://purl.org/ontology/mo/MusicArtist"));
 
-	var track_mo = new Charango.Entity ("track:test",
-	                                     context.find_class ("http://purl.org/ontology/mo/Track"));
+	var track_mo = new Charango.Entity (null,
+	                                    "track:test",
+	                                    context.find_class ("http://purl.org/ontology/mo/Track"));
 
 	artist_mo.rdf_type.dump_properties();
 

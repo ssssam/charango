@@ -117,7 +117,7 @@ internal class Charango.RdfOntology: Ontology {
 
 		builtin = true;
 
-		context.rdf_resource.ontology = this;
+		context.rdf_resource.owner = this;
 		class_list.prepend (context.rdf_resource);
 
 		class_list.prepend (new Class.internal (this, context.max_class_id ++, "Property"));
@@ -137,7 +137,7 @@ internal class Charango.RdfsOntology: Ontology {
 
 		builtin = true;
 
-		context.rdfs_class.ontology = this;
+		context.rdfs_class.owner = this;
 		class_list.prepend (context.rdfs_class);
 
 		class_list.prepend (new Class.internal (this, context.max_class_id ++, "Resource"));
@@ -166,7 +166,7 @@ internal class Charango.OwlOntology: Charango.Ontology {
 
 		this.builtin = true;
 
-		context.owl_ontology_class.ontology = this;
+		context.owl_ontology_class.owner = this;
 		class_list.prepend (context.owl_ontology_class);
 
 		this.class_list.prepend (new Class.internal (this, context.max_class_id ++, "Class"));

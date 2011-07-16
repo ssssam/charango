@@ -44,7 +44,8 @@ public void test_primitive_types () { /* Unit test */
 	assert (warning_list.length() == 0);
 
 	// The actual test
-	var entity = new Charango.Entity ("test:1",
+	var entity = new Charango.Entity (null,
+	                                  "test:1",
 	                                  context.find_class ("http://example.com/test-entity#BasicEntity"));
 	entity.set_string ("string", "test");
 	entity.set_boolean ("boolean", true);
@@ -92,7 +93,9 @@ public void test_type_checking() {
 
 	assert (warning_list.length() == 0);
 
-	var entity = new Charango.Entity ("test:1", context.find_class ("http://example.com/test-heirarchy#BasicEntity"));
+	var entity = new Charango.Entity (null,
+	                                  "test:1",
+	                                  context.find_class ("http://example.com/test-heirarchy#BasicEntity"));
 
 	/* The setter functions warn rather than raising an exception, to avoid
 	 * requiring the programmer to put every property access in a try/catch
