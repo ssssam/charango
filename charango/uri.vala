@@ -17,6 +17,16 @@
 
 namespace Charango {
 
+public bool namespace_uris_match (string ns, string m) {
+	if (ns == m)
+		return true;
+	if (ns.has_suffix("#") && ns == m + "#")
+		return true;
+	if (ns.has_suffix("/") && ns == m + "/")
+		return true;
+	return false;
+}
+
 public void parse_uri_as_resource_strings (string      uri_string,
                                            out string  ontology_uri,
                                            out string  fragment)

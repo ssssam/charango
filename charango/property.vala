@@ -37,7 +37,8 @@ public Charango.Class range;
 
 public Property (Ontology       owner,
                  string         uri,
-                 Charango.Class rdf_type) {
+                 Charango.Class rdf_type)
+       throws Charango.ParseError {
 	base (owner, uri, rdf_type);
 
 	this.name = get_name_from_uri (uri);

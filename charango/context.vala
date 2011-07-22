@@ -251,16 +251,6 @@ public Charango.Class find_class_with_error (string uri)
 	return o.find_local_class (uri);
 }
 
-private bool namespace_uris_match (string ns, string m) {
-	if (ns == m)
-		return true;
-	if (ns.has_suffix("#") && ns == m + "#")
-		return true;
-	if (ns.has_suffix("/") && ns == m + "/")
-		return true;
-	return false;
-}
-
 public Ontology? find_ontology (string uri) {
 	// FIXME: there must be a better way to search lists in vala
 	foreach (Ontology o in ontology_list) {
@@ -275,6 +265,48 @@ public Ontology? find_ontology (string uri) {
 	return null;
 }
 
+/* process_uri:
+ *
+ * General preprocessing for user-supplied URI's.
+ */
+private Ontology? process_uri (string uri,
+                               out string canonical_uri,
+                               out string namespace_uri,
+                               out string? entity_name)
+                  throws Charango.ParseError {
+	Ontology? o;
+
+	parse_uri_as_resource_strings (uri, out namespace_uri, out entity_name);
+
+	o = find_ontology (namespace_uri);
+
+	// Corner cases where URI is for the actual namespace, so entity_name is
+	// blank and we don't get the correct namespace_uri.
+	if (o == null) {
+		o = find_ontology (uri);
+
+		if (o != null) {
+			canonical_uri = o.uri;
+			namespace_uri = o.uri;
+			entity_name = null;
+		} else {
+			throw new ParseError.UNKNOWN_NAMESPACE
+			  ("Unknown namespace for '%s'", uri);
+		}
+	}
+
+	// Use correct namespace
+	if (namespace_uri == o.uri)
+		canonical_uri = uri;
+	else {
+		print ("Fixing URI: %s => %s\n", namespace_uri, o.uri);
+		canonical_uri = o.uri + entity_name;
+		namespace_uri = o.uri;
+	}
+
+	return o;
+}
+
 /* find_or_create_entity:
  * @expected_type: A hint for if Entity must be created. Not enforced.
  * 
@@ -284,26 +316,14 @@ internal Entity find_or_create_entity (Ontology    owner,
                                        string      uri,
                                        ConceptType expected_type = ConceptType.ENTITY)
                 throws OntologyError, ParseError {
-	string namespace_uri, entity_name;
+	string  canonical_uri;
+	string  namespace_uri;
+	string? entity_name;
 
-	parse_uri_as_resource_strings (uri, out namespace_uri, out entity_name);
-
-	Ontology o = find_ontology (namespace_uri);
-
-	// Corner cases where URI is for the actual namespace, so entity_name is
-	// blank
-	if (o == null) {
-		o = find_ontology (uri);
-
-		if (o != null) {
-			namespace_uri = uri;
-			entity_name = null;
-		}
-	}
-
-	if (o == null)
-		throw new ParseError.UNKNOWN_NAMESPACE
-		  ("Unknown namespace for '%s' (required by %s)", uri, owner.uri);
+	Ontology o = process_uri (uri,
+	                          out canonical_uri,
+	                          out namespace_uri,
+	                          out entity_name);
 
 	if (! o.loaded && ! o.external)
 		if (o.required_by == null)
@@ -311,7 +331,7 @@ internal Entity find_or_create_entity (Ontology    owner,
 
 	Entity e;
 	try {
-		e = o.find_local_entity (uri);
+		e = o.find_local_entity (canonical_uri);
 	}
 	catch (OntologyError.UNKNOWN_RESOURCE error) {
 		if (o.loaded)
@@ -320,15 +340,15 @@ internal Entity find_or_create_entity (Ontology    owner,
 			// Forward reference - just create the entity as a stub
 			switch (expected_type) {
 				case ConceptType.ENTITY:
-					e = new Charango.Entity (o, uri, this.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource"));
+					e = new Charango.Entity (o, canonical_uri, this.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource"));
 					o.entity_list.prepend (e);
 					break;
 				case ConceptType.CLASS:
-					e = new Charango.Class (o, uri, this.find_class ("http://www.w3.org/2000/01/rdf-schema#Class"), this.max_class_id ++);
+					e = new Charango.Class (o, canonical_uri, this.find_class ("http://www.w3.org/2000/01/rdf-schema#Class"), this.max_class_id ++);
 					o.class_list.prepend ((Charango.Class) e);
 					break;
 				case ConceptType.PROPERTY:
-					e = new Charango.Property (o, uri, this.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"));
+					e = new Charango.Property (o, canonical_uri, this.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"));
 					o.property_list.prepend ((Charango.Property) e);
 					break;
 				case ConceptType.ONTOLOGY:
@@ -361,11 +381,12 @@ internal Charango.Class find_or_create_class (Ontology owner,
 		/* FIXME: duplicated effort from find_or_create_entity () */
 		string namespace_uri, entity_name;
 		parse_uri_as_resource_strings (uri, out namespace_uri, out entity_name);
+
 		Ontology o = find_ontology (namespace_uri);
 
-		var c = new Charango.Class (o, uri, rdfs_class, max_class_id ++);
+		Charango.Class c = new Charango.Class (o, uri, rdfs_class, max_class_id ++);
 		c.copy_properties (e);
-		this.replace_entity (e, c);
+		this.replace_entity (e, (Charango.Entity *)c);
 		return c;
 	}
 

@@ -62,12 +62,46 @@ public Entity (Charango.Ontology? owner,
 	this.rdf_type = rdf_type;
 
 	this.data = new GenericArray<Charango.Value?>();
+
+	this.fix_uri ();
 }
 
 public Entity.prototype (string             uri) {
 	this.uri = uri;
 
 	this.data = new GenericArray<Charango.Value?>();
+}
+
+/* Automatically fix non-canonical URI's, if eg. its namespace is an alias of
+ * the actual one.
+ */
+private void fix_uri () {
+	if (this.owner == null) {
+		// Special case.
+		if (!(this is Charango.Ontology))
+			warning ("No owner for <%s>", uri);
+		return;
+	}
+
+	string namespace_uri, entity_name;
+	try {
+		parse_uri_as_resource_strings (this.uri, out namespace_uri, out entity_name);
+	}
+	catch (Charango.ParseError e) {
+		warning ("Parse error in URI <%s>", this.uri);
+	}
+
+	if (namespace_uris_match (this.owner.uri, namespace_uri))
+		return;
+
+	foreach (string alias_uri in this.owner.alias_list)
+		if (namespace_uris_match (alias_uri, namespace_uri)) {
+			// Swap our namespace for the ontology's canonical namespace
+			this.uri = this.owner.uri + entity_name;
+			return;
+		}
+
+	warning ("Unknown namespace for URI <%s> (expected %s)", uri, this.owner.uri);
 }
 
 /* requires_promotion:
