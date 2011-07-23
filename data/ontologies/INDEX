@@ -58,12 +58,16 @@ prefix=vann
 file=sw-vocab-status.rdf
 prefix=vs
 
+[http://xmlns.com/wot/0.1/]
+file=wot.rdf
+prefix=wot
 
 [http://purl.org/ontology/ao/core#]
 file=associationontology.n3
 prefix=ao
 
 [http://purl.org/vocab/bio/0.1/]
+alias=http://vocab.org/bio/0.1/
 file=bio.rdf
 prefix=bio
 
