@@ -120,7 +120,9 @@ internal class Charango.RdfOntology: Ontology {
 		context.rdf_resource.owner = this;
 		class_list.prepend (context.rdf_resource);
 
-		class_list.prepend (new Class.internal (this, context.max_class_id ++, "Property"));
+		context.rdf_property = new Class.internal (this, context.max_class_id ++, "Property");
+		class_list.prepend (context.rdf_property);
+
 		class_list.prepend (new Class.internal (this, context.max_class_id ++, "List"));
 	}
 }

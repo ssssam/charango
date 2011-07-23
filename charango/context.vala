@@ -37,6 +37,7 @@ List<Ontology> ontology_list = null;
 /* Fundamental constants of the universe */
 public Charango.Class rdf_resource;
 public Charango.Class rdfs_class;
+public Charango.Class rdf_property;
 public Charango.Class owl_ontology_class;
 
 internal int max_class_id = 0;
@@ -299,7 +300,6 @@ private Ontology? process_uri (string uri,
 	if (namespace_uri == o.uri)
 		canonical_uri = uri;
 	else {
-		print ("Fixing URI: %s => %s\n", namespace_uri, o.uri);
 		canonical_uri = o.uri + entity_name;
 		namespace_uri = o.uri;
 	}
@@ -307,18 +307,51 @@ private Ontology? process_uri (string uri,
 	return o;
 }
 
+private Entity create_entity (Charango.Ontology owner,
+                              string            uri,
+                              Charango.Class    type)
+               throws ParseError, OntologyError {
+	switch (type.get_concept_type ()) {
+		case ConceptType.ONTOLOGY:
+			// This function is called for resources that don't already exist, and
+			// all ontologies are created on init according to the INDEX so we
+			// should not get here.
+			throw new OntologyError.INVALID_DEFINITION
+			   ("Ontology object for %s should already exist. You may have set " +
+			    "the URI incorrectly in INDEX; or the file may try to define " +
+			    "more than one ontology (which is not permitted)", uri);
+		case ConceptType.CLASS:
+			return new Charango.Class (owner, uri, type, this.max_class_id ++);
+		case ConceptType.PROPERTY:
+			return new Charango.Property (owner, uri, type);
+		case ConceptType.ENTITY:
+		default:
+			return new Charango.Entity (owner, uri, type);
+	}
+}
+
 /* find_or_create_entity:
- * @expected_type: A hint for if Entity must be created. Not enforced.
+ * @owner: a Charango.Ontology
+ * @uri: identifier string
+ * @expected_type: a Charango.Class, or %NULL
  * 
- * Used during ontology loading to handle forward references.
+ * Used during ontology loading to handle forward references. Should really
+ * be named find_or_create_and_promote_if_necessary(). This function will
+ * refuse to add to an ontology that is marked as already having loaded.
+ * 
+ * @owner is the ontology which is currently being processed - it is used to
+ * record the *reason* for the resource's creation.
  */
-internal Entity find_or_create_entity (Ontology    owner,
-                                       string      uri,
-                                       ConceptType expected_type = ConceptType.ENTITY)
+internal Entity find_or_create_entity (Ontology        owner,
+                                       string          uri,
+                                       Charango.Class? expected_type)
                 throws OntologyError, ParseError {
 	string  canonical_uri;
 	string  namespace_uri;
 	string? entity_name;
+
+	if (expected_type == null)
+		expected_type = this.rdf_resource;
 
 	Ontology o = process_uri (uri,
 	                          out canonical_uri,
@@ -329,69 +362,53 @@ internal Entity find_or_create_entity (Ontology    owner,
 		if (o.required_by == null)
 			o.required_by = owner;
 
-	Entity e;
+	Entity? e = null;
 	try {
 		e = o.find_local_entity (canonical_uri);
 	}
 	catch (OntologyError.UNKNOWN_RESOURCE error) {
 		if (o.loaded)
 			throw error;
-		else {
-			// Forward reference - just create the entity as a stub
-			switch (expected_type) {
-				case ConceptType.ENTITY:
-					e = new Charango.Entity (o, canonical_uri, this.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource"));
-					o.entity_list.prepend (e);
-					break;
-				case ConceptType.CLASS:
-					e = new Charango.Class (o, canonical_uri, this.find_class ("http://www.w3.org/2000/01/rdf-schema#Class"), this.max_class_id ++);
-					o.class_list.prepend ((Charango.Class) e);
-					break;
-				case ConceptType.PROPERTY:
-					e = new Charango.Property (o, canonical_uri, this.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"));
-					o.property_list.prepend ((Charango.Property) e);
-					break;
-				case ConceptType.ONTOLOGY:
-				default:
-					e = null;
-					warn_if_reached ();
-					break;
-			}
+	}
 
+	if (e == null) {
+		e = create_entity (o, canonical_uri, expected_type);
+
+		switch (expected_type.get_concept_type ()) {
+			case ConceptType.ENTITY:
+				o.entity_list.prepend (e);
+				break;
+			case ConceptType.CLASS:
+				o.class_list.prepend ((Charango.Class) e);
+				break;
+			case ConceptType.PROPERTY:
+				o.property_list.prepend ((Charango.Property) e);
+				break;
+			case ConceptType.ONTOLOGY:
+			default:
+				warn_if_reached ();
+				break;
 		}
+	} else
+	if (e.requires_promotion (expected_type)) {
+		// It's not possible to reallocate a GObject .... so instead we will
+		// have to update every pointer in the context :(
+		//
+		// Note that expected_type may be rdf:Resource when in fact e is an
+		// owl:Ontology or something else quite grand; we only ever need to
+		// promote UP so this crude system actually works perfectly.
+		var old_entity = e;
+		e = create_entity (o, old_entity.uri, expected_type);
+		e.copy_properties (old_entity);
+		this.replace_entity (old_entity, e);
+		/* FIXME: Also, we theoretically need to update all instances of
+		 * subject, if subject's type is rdfs:Class and it has for example been
+		 * made an rdfs:subClassOf rdf:Property. That can be a special
+		 * case property accessor on CharangoClass.
+		 */
 	}
 
 	return e;
-}
-
-/* find_or_create_class:
- */
-internal Charango.Class find_or_create_class (Ontology owner,
-                                              string   uri)
-                throws OntologyError, ParseError {
-	Charango.Entity e = find_or_create_entity (owner, uri, ConceptType.CLASS);
-
-	if (e is Charango.Class)
-		return (Charango.Class) e;
-
-	if (e.rdf_type == rdf_resource) {
-		// If the entity has no type info, it's probably been referenced already
-		// a statement like rdf:range but we couldn't be sure it was a class.
-
-		/* FIXME: duplicated effort from find_or_create_entity () */
-		string namespace_uri, entity_name;
-		parse_uri_as_resource_strings (uri, out namespace_uri, out entity_name);
-
-		Ontology o = find_ontology (namespace_uri);
-
-		Charango.Class c = new Charango.Class (o, uri, rdfs_class, max_class_id ++);
-		c.copy_properties (e);
-		this.replace_entity (e, (Charango.Entity *)c);
-		return c;
-	}
-
-	throw new OntologyError.TYPE_MISMATCH
-	  ("%s used as rdfs:Class, but is of type %s", uri, e.rdf_type.to_string());
 }
 
 /* replace_entity:

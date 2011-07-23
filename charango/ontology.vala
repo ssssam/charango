@@ -99,32 +99,8 @@ private string get_format_for_file (string file_name) {
 	return "turtle";
 }
 
-private Entity create_entity (string         uri,
-                              Charango.Class type)
-               throws ParseError, OntologyError {
-	switch (type.get_concept_type ()) {
-		case ConceptType.ONTOLOGY:
-			// This function is called for resources that don't already exist, and
-			// all ontologies are created on init according to the INDEX so we
-			// should not get here.
-			throw new OntologyError.INVALID_DEFINITION
-			  ("Ontology object for %s should already exist. You may have set " +
-			   "the URI incorrectly in INDEX; or the file may try to define " +
-			   "more than one ontology (which is not permitted)", uri);
-		case ConceptType.CLASS:
-			return new Charango.Class (this, uri, type, context.max_class_id ++);
-		case ConceptType.PROPERTY:
-			return new Charango.Property (this, uri, type);
-		case ConceptType.ENTITY:
-		default:
-			return new Charango.Entity (this, uri, type);
-	}
-}
-
 /* load:
- * @dependency_list: required namespaces that are not yet available will be
- *                   added to this list.
- * @warning_list: warnings are added to this list.
+ * @warning_list: warnings are appended to this list.
  * 
  * Load ontology into memory.
  */
@@ -174,93 +150,72 @@ internal void load (ref List<Warning>  warning_list)
 			continue;
 		}
 
+		string subject_uri = subject_node.get_uri().as_string();
+		string arc_uri = arc_node.get_uri().as_string();
+
+		Class subject_type = null;
+		if (arc_uri == "http://www.w3.org/1999/02/22-rdf-syntax-ns#Type") {
+			if (! object_node.is_literal()) {
+				warning_list.prepend (new Warning ("Invalid statement: <%s %s %s>",
+				                                   subject_node.to_string (),
+				                                   arc_node.to_string (),
+				                                   object_node.to_string ()));
+				continue;
+			}
+
+			string object_uri = object_node.get_uri().as_string();
+			subject_type = (Charango.Class) context.find_or_create_entity
+			                 (this, object_uri, context.rdfs_class);
+		}
+
 		/* FIXME: an obvious optimisation here is to check if subject is the
 		 * same as the previous subject (node pointers will be equal) and if
 		 * it is, entity will also be the same
 		 */
-		string  uri_string = subject_node.get_uri().as_string();
-		Entity? subject;
 
-		/* FIXME: need to handle external namespaces for subject - in this case it's
-		 * an external definition, so really we can just add them as stubs and not
-		 * put them on the dependency list. ... Shouldn't be allowed to do anything
-		 * other than declare rdf:type of an external object.*/
-
+		Entity subject;
 		try {
-			subject = this.find_local_entity (uri_string);
+			subject = context.find_or_create_entity
+			            (this, subject_uri, subject_type);
 		}
-		  catch (OntologyError error) {
-			if (! (error is OntologyError.UNKNOWN_RESOURCE))
-				throw (error);
-
-			subject = null;
-		  }
-
-		if (arc_node.equals (context.redland->concept (Concept.MS_type))) {
-			Class type = (Charango.Class) context.find_or_create_class
-			                                (this,
-			                                 object_node.get_uri().as_string());
-			if (subject == null) {
-				subject = create_entity (uri_string, type);
-
-				if (subject is Charango.Class) {
-					this.class_list.prepend ((Charango.Class) subject);
-				} else if (subject is Charango.Property)
-					this.property_list.prepend ((Charango.Property) subject);
-				else
-					this.entity_list.prepend (subject);
-			} else {
-				// Resource already exists, it was referenced in advance of being
-				// defined. It could be a property or a class and we didn't know.
-
-				if (subject.requires_promotion (type)) {
-					// It's not possible to reallocate a GObject .... so instead we will
-					// have to update every pointer in the context :(
-					var old_entity = subject;
-					subject = create_entity (old_entity.uri, type);
-					subject.copy_properties (old_entity);
-					context.replace_entity (old_entity, subject);
-					/* FIXME: Also, we theoretically need to update all instances of
-					 * subject, if subject's type is rdfs:Class and it has for example been
-					 * made an rdfs:subClassOf rdf:Property. That can be a special
-					 * case property accessor on CharangoClass.
-					 */
-				}
-
-				subject.rdf_type = type;
+		catch (Charango.ParseError e) {
+			if (e is ParseError.UNKNOWN_NAMESPACE) {
+				/* FIXME: Temporary hack to handle external resources .. */
+				statement.print (stdout);
+				print ("\nUnknown namespace for %s\n\n", subject_uri);
+				continue;
 			}
-		} else {
-			if (subject == null) {
-				subject = create_entity (uri_string, context.rdf_resource);
-				this.entity_list.prepend (subject);
-			}
+			throw (e);
+		}
 
+		if (subject_type != null)
+			// We're done if this was an rdf:type statement
+			continue;
+
+		Property arc = (Charango.Property) context.find_or_create_entity
+		                                     (this, arc_uri, context.rdf_property);
+
+		if (object_node.is_literal ())
+			subject.set_literal (arc.uri, object_node);
+		else if (object_node.is_resource ()) {
 			/* FIXME: because replacing entities after the fact is an expensive operation,
 			 * we should do our best to create the correct concept type here; the range
 			 * of 'arc' should give a good idea
 			 */
-			string arc_uri = arc_node.get_uri().as_string();
-			Entity arc = context.find_or_create_entity (this, arc_uri);
 
-			if (object_node.is_literal ())
-				subject.set_literal (arc_uri, object_node);
-			else if (object_node.is_resource ()) {
-				Entity object;
-				string object_uri = object_node.get_uri().as_string ();
-				try {
-					object = context.find_or_create_entity
-					           (this,
-					            object_uri,
-					            /*arc.range.get_concept_type ()*/ ConceptType.ENTITY);
-					subject.set_entity (arc_uri, object);
-				}
-				catch (ParseError e) {
-					if (e is ParseError.UNKNOWN_NAMESPACE)
-						// Value is an external resource
-						subject.set_external_resource (arc_uri, object_uri);
-					else
-						throw e;
-				}
+			Entity object;
+			string object_uri = object_node.get_uri().as_string ();
+			try {
+				object = context.find_or_create_entity
+						   (this, object_uri, /*arc.range.get_concept_type ()*/ null);
+				subject.set_entity (arc.uri, object);
+			}
+			catch (ParseError e) {
+				if (e is ParseError.UNKNOWN_NAMESPACE)
+					// Value is an external resource
+					subject.set_external_resource (arc.uri, object_uri);
+				else
+					throw e;
 			}
 		}
 	}
