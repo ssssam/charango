@@ -17,54 +17,20 @@
 
 using Rdf;
 
-/* Built-in types and universal constants. Note that these objects will
- * be fleshed out further when their ontology definition is loaded. */
-
-/* FIXME: we currently pretend that rdfs:Resource does not exist and it's
- * exactly the same as rdf:Resource. How true is this? 
- */
-internal class Charango.RdfResource: Charango.Class {
-	public RdfResource () {
-		base.prototype ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource");
-		this.builtin = true;
-	}
-}
-
-internal class Charango.RdfsClass: Charango.Class {
-	public RdfsClass () {
-		base.prototype ("http://www.w3.org/2000/01/rdf-schema#Class");
-		this.builtin = true;
-	}
-}
-
-/* FIXME: here's a nice Vala bug!!! If I define
- * OwlOntologyClass and OwlOntology, Vala doesn't know that the class of
- * OwlOntology needs a different name, so we get a duplicate definition .
- */
-public class Charango.OwlOntologyClass2: Charango.Class {
-	public OwlOntologyClass2 (Charango.Class rdfs_class) {
-		base.prototype ("http://www.w3.org/2002/07/owl#Ontology");
-		this.rdf_type = rdfs_class;
-		this.builtin = true;
-	}
-}
-
-internal class Charango.XsdOntology: Ontology {
+internal class Charango.XsdOntology: Charango.Ontology {
 	struct TypeMapping {
 		string        name;
 		ValueBaseType type;
 	}
 
-	public XsdOntology (Context context) {
+	public XsdOntology (Charango.Namespace ns) {
+		var context = ns.context;
+
 		try {
-			base (context,
-			      "http://www.w3.org/2001/XMLSchema#",
-			      context.owl_ontology_class,
-			      null,
-			      "xsd");
+			base (ns, ns.uri, context.owl_ontology_class, null);
 		} catch (ParseError error) { critical (error.message); }
 
-		builtin = true;
+		ns.set_ontology (this);
 
 		/* FIXME: if you take away the const, Vala (0.12.0) gives an error:
 		 *   "Expected array element, got array initializer list"
@@ -88,6 +54,8 @@ internal class Charango.XsdOntology: Ontology {
 			{ "float", ValueBaseType.FLOAT },
 			{ "decimal", ValueBaseType.DOUBLE },
 			{ "anyURI", ValueBaseType.STRING },
+			// FIXME:
+			{ "time", ValueBaseType.INT64 },
 
 			// FIXME: the contraints of these derived types get ignored :(
 			{ "int", ValueBaseType.INT64 },
@@ -95,148 +63,101 @@ internal class Charango.XsdOntology: Ontology {
 		};
 
 		foreach (TypeMapping type in (TypeMapping[]) mappings) {
-			class_list.prepend (new LiteralTypeClass (
-				this,
-				context.max_class_id ++,
+			ns.class_list.prepend (new LiteralTypeClass (
+				ns,
 				type.name,
-				type.type
+				type.type,
+				context.max_class_id ++
 			));
 		}
 	}
 }
 
-internal class Charango.RdfOntology: Ontology {
-	public RdfOntology (Context context) {
+internal class Charango.RdfOntology: Charango.Ontology {
+	public RdfOntology (Charango.Namespace ns) {
+		var context = ns.context;
+
 		try {
-			base (context,
-			      "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-			      context.owl_ontology_class,
-			      null,
-			      "rdf");
+			base (ns, ns.uri, context.owl_ontology_class, null);
 		} catch (ParseError error) { critical (error.message); }
 
-		builtin = true;
+		ns.set_ontology (this);
 
-		context.rdf_resource.owner = this;
-		class_list.prepend (context.rdf_resource);
+		ns.class_list.prepend (context.rdf_resource);
 
-		context.rdf_property = new Class.internal (this, context.max_class_id ++, "Property");
-		class_list.prepend (context.rdf_property);
+		context.rdf_property = new Class.internal (ns, "Property", context.max_class_id ++);
+		ns.class_list.prepend (context.rdf_property);
 
-		class_list.prepend (new Class.internal (this, context.max_class_id ++, "List"));
+		ns.class_list.prepend (new Class.internal (ns, "List", context.max_class_id ++));
 	}
 }
 
 internal class Charango.RdfsOntology: Ontology {
-	public RdfsOntology (Context context) {
+	public RdfsOntology (Charango.Namespace ns) {
+		var context = ns.context;
+
 		try {
-			base (context,
-			      "http://www.w3.org/2000/01/rdf-schema#",
-			      context.owl_ontology_class,
-			      null,
-			      "rdfs");
+			base (ns, ns.uri, context.owl_ontology_class, null);
 		} catch (ParseError error) { critical (error.message); }
 
-		builtin = true;
+		ns.class_list.prepend (context.rdfs_class);
 
-		context.rdfs_class.owner = this;
-		class_list.prepend (context.rdfs_class);
-
-		class_list.prepend (new Class.internal (this, context.max_class_id ++, "Resource"));
+		/* FIXME: not sure what to do about this - is it really correct
+		 * rdfs:Resource is valid as well as rdf:Resource and means the
+		 * same thing ?? */
+		ns.class_list.prepend (new Class.internal (ns, "Resource", context.max_class_id ++));
 
 		Charango.Class c;
 
-		c = new Class.internal (this, context.max_class_id ++, "Literal");
+		c = new Class.internal (ns, "Literal", context.max_class_id ++);
 		c.main_parent = context.rdf_resource;
-		class_list.prepend (c);
+		ns.class_list.prepend (c);
 
-		c = new Class.internal (this, context.max_class_id ++, "Datatype");
+		c = new Class.internal (ns, "Datatype", context.max_class_id ++);
 		c.main_parent = context.rdfs_class;
-		class_list.prepend (c);
+		ns.class_list.prepend (c);
 	}
 }
 
 internal class Charango.OwlOntology: Charango.Ontology {
-	public OwlOntology (Context context) {
+	public OwlOntology (Charango.Namespace ns) {
+		var context = ns.context;
+
 		try {
-			base (context,
-			      "http://www.w3.org/2002/07/owl#",
-			      context.owl_ontology_class,
-			      null,
-			      "owl");
+			base (ns, ns.uri, context.owl_ontology_class, null);
 		} catch (ParseError error) { critical (error.message); }
 
-		this.builtin = true;
+		ns.class_list.prepend (context.owl_ontology_class);
 
-		context.owl_ontology_class.owner = this;
-		class_list.prepend (context.owl_ontology_class);
-
-		this.class_list.prepend (new Class.internal (this, context.max_class_id ++, "Class"));
+		ns.class_list.prepend (new Class.internal (ns, "Class", context.max_class_id ++));
 
 		Charango.Class c;
-		c = new Class.internal (this, context.max_class_id ++, "Class");
+		c = new Class.internal (ns, "Class", context.max_class_id ++);
 		c.main_parent = context.rdfs_class;
-		this.class_list.prepend (c);
+		ns.class_list.prepend (c);
 
-		c = new Class.internal (this, context.max_class_id ++, "AnnotationProperty");
+		c = new Class.internal (ns, "AnnotationProperty", context.max_class_id ++);
 		c.main_parent = context.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property");
-		this.class_list.prepend (c);
+		ns.class_list.prepend (c);
 
-		c = new Class.internal (this, context.max_class_id ++, "DatatypeProperty");
+		c = new Class.internal (ns, "DatatypeProperty", context.max_class_id ++);
 		c.main_parent = context.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property");
-		this.class_list.prepend (c);
+		ns.class_list.prepend (c);
 
-		c = new Class.internal (this, context.max_class_id ++, "FunctionalProperty");
+		c = new Class.internal (ns, "FunctionalProperty", context.max_class_id ++);
 		c.main_parent = context.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property");
-		this.class_list.prepend (c);
+		ns.class_list.prepend (c);
 
-		c = new Class.internal (this, context.max_class_id ++, "ObjectProperty");
+		c = new Class.internal (ns, "ObjectProperty", context.max_class_id ++);
 		c.main_parent = context.find_class ("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property");
-		this.class_list.prepend (c);
+		ns.class_list.prepend (c);
 
 		try {
-		c = new Class.internal (this, context.max_class_id ++, "SymmetricProperty");
-		c.main_parent = this.find_local_class ("http://www.w3.org/2002/07/owl#ObjectProperty");
-		this.class_list.prepend (c);
+
+		c = new Class.internal (ns, "SymmetricProperty", context.max_class_id ++);
+		c.main_parent = ns.find_local_class ("http://www.w3.org/2002/07/owl#ObjectProperty");
+		ns.class_list.prepend (c);
+
 		} catch (OntologyError error) { critical (error.message); }
 	}
-}
-
-namespace Charango {
-
-public Rdf.Node get_owl_ontology_concept (Rdf.World redland) {
-	return new Rdf.Node.from_uri_string
-	                     (redland, "http://www.w3.org/2002/07/owl#Ontology");
-}
-
-public Rdf.Node get_owl_class_concept (Rdf.World redland) {
-	return new Rdf.Node.from_uri_string
-	                     (redland, "http://www.w3.org/2002/07/owl#Class");
-}
-
-public Rdf.Node get_owl_datatype_property_concept (Rdf.World redland) {
-	return new Rdf.Node.from_uri_string
-	                     (redland, "http://www.w3.org/2002/07/owl#DatatypeProperty");
-}
-
-public Rdf.Node get_owl_object_property_concept (Rdf.World redland) {
-	return new Rdf.Node.from_uri_string
-	                     (redland, "http://www.w3.org/2002/07/owl#ObjectProperty");
-}
-
-public Rdf.Node get_tracker_ontology_concept (Rdf.World redland) {
-	return new Rdf.Node.from_uri_string
-	                     (redland, "http://www.tracker-project.org/ontologies/tracker#Ontology");
-}
-
-public Rdf.Node get_dsc_ontology_concept (Rdf.World redland) {
-	return new Rdf.Node.from_uri_string
-	                     (redland, "http://www.tracker-project.org/temp/dsc#Ontology");
-}
-
-public Rdf.Node get_tracker_prefix_concept (Rdf.World redland) {
-	return new Rdf.Node.from_uri_string
-	                     (redland, "http://www.tracker-project.org/ontologies/tracker#prefix");
-}
-
 }

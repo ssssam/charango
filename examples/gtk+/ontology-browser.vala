@@ -121,6 +121,8 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 		Node *node = iter.user_data;
 		Charango.Entity e = node->entity;
 
+		return_if_fail (e != null);
+
 		value.init (typeof (string));
 		value.set_string (e.uri);
 	}
@@ -245,6 +247,11 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 	void unref_node (Gtk.TreeIter iter) {
 	}
 
+	private static int compare_namespaces_by_uri (Charango.Namespace a,
+	                                              Charango.Namespace b) {
+		return strcmp (a.uri, b.uri);
+	}
+
 	private static int compare_entities_by_uri (Charango.Entity a,
 	                                            Charango.Entity b) {
 		return strcmp (a.uri, b.uri);
@@ -254,8 +261,8 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 		this.context = context;
 		this.stamp = (int) Random.next_int ();
 
-		var ontology_list = context.get_ontology_list();
-		ontology_list.sort ((GLib.CompareFunc<Charango.Ontology>)compare_entities_by_uri);
+		var namespace_list = context.get_namespace_list();
+		namespace_list.sort ((GLib.CompareFunc<Charango.Namespace>)compare_namespaces_by_uri);
 
 		this.root = new Node (null, 0, -1);
 
@@ -264,38 +271,41 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 		 */
 
 		int i = 0;
-		Node *o_prev = null;
-		foreach (Ontology o in ontology_list) {
-			Node *o_node = new Node (o, i ++, 0);
-			o_node->add_to_tree (this.root, o_prev);
-			o_prev = o_node;
+		Node *ns_prev = null;
+		foreach (Namespace ns in namespace_list) {
+			if (ns.ontology == null)
+				continue;
 
-			var class_list = o.get_class_list ();
+			Node *ns_node = new Node (ns.ontology, i ++, 0);
+			ns_node->add_to_tree (this.root, ns_prev);
+			ns_prev = ns_node;
+
+			var class_list = ns.get_class_list ();
 			class_list.sort ((GLib.CompareFunc<Charango.Class>)compare_entities_by_uri);
 
 			int j = 0;
 			Node *x_prev = null;
 			foreach (Class x in class_list) {
 				Node *x_node = new Node (x, j ++, 1);
-				x_node->add_to_tree (o_node, x_prev);
+				x_node->add_to_tree (ns_node, x_prev);
 				x_prev = x_node;
 			}
 
-			var property_list = o.get_property_list ();
+			var property_list = ns.get_property_list ();
 			property_list.sort ((GLib.CompareFunc<Charango.Property>)compare_entities_by_uri);
 
 			foreach (Property x in property_list) {
 				Node *x_node = new Node (x, j ++, 1);
-				x_node->add_to_tree (o_node, x_prev);
+				x_node->add_to_tree (ns_node, x_prev);
 				x_prev = x_node;
 			}
 
-			var entity_list = o.get_entity_list ();
+			var entity_list = ns.get_entity_list ();
 			entity_list.sort (compare_entities_by_uri);
 
 			foreach (Entity x in entity_list) {
 				Node *x_node = new Node (x, j ++, 1);
-				x_node->add_to_tree (o_node, x_prev);
+				x_node->add_to_tree (ns_node, x_prev);
 				x_prev = x_node;
 			}
 		}
@@ -381,9 +391,16 @@ int main (string[] args) {
 		print ("Error loading ontology data: %s\n", error.message);
 		return 2;
 	  }
+	  catch (OntologyError error) {
+		print ("Error loading namespace: %s\n", error.message);
+		return 3;
+	  }
 
 	if (warning_list != null)
 		print ("[%u warnings]\n", warning_list.length());
+
+	/*foreach (unowned Warning w in warning_list)
+		print ("\t%s\n", w.message);*/
 
 	var app_window = new MainWindow(context);
 	app_window.show ();

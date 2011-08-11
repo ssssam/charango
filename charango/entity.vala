@@ -46,18 +46,17 @@ public class Entity: Object {
 public string uri;
 public Charango.Class rdf_type;
 
-/* FIXME: this should be able to be any type of Charango.Source */
-internal Ontology? owner;
+internal Charango.Namespace ns;
 
 /* FIXME: would be nicer if we could store the values directly in the array,
  * but that requires wrapping GArray in Vala which might be hard ..
  */
 GenericArray<Charango.Value?> data;
 
-public Entity (Charango.Ontology? owner,
+public Entity (Charango.Namespace ns,
                string             uri,
                Charango.Class     rdf_type) {
-	this.owner = owner;
+	this.ns = ns;
 	this.uri = uri;
 	this.rdf_type = rdf_type;
 
@@ -66,7 +65,9 @@ public Entity (Charango.Ontology? owner,
 	this.fix_uri ();
 }
 
-public Entity.prototype (string             uri) {
+public Entity.prototype (Charango.Namespace ns,
+                         string             uri) {
+	this.ns = ns;
 	this.uri = uri;
 
 	this.data = new GenericArray<Charango.Value?>();
@@ -76,32 +77,32 @@ public Entity.prototype (string             uri) {
  * the actual one.
  */
 private void fix_uri () {
-	if (this.owner == null) {
-		// Special case.
-		if (!(this is Charango.Ontology))
-			warning ("No owner for <%s>", uri);
-		return;
-	}
-
 	string namespace_uri, entity_name;
+
 	try {
 		parse_uri_as_resource_strings (this.uri, out namespace_uri, out entity_name);
 	}
 	catch (Charango.ParseError e) {
 		warning ("Parse error in URI <%s>", this.uri);
+		return;
 	}
 
-	if (namespace_uris_match (this.owner.uri, namespace_uri))
+	if (this is Charango.Ontology) {
+		warn_if_fail (namespace_uri == this.ns.uri);
+		return;
+	}
+
+	if (namespace_uris_match (this.ns.uri, namespace_uri))
 		return;
 
-	foreach (string alias_uri in this.owner.alias_list)
+	// Swap our namespace for the ontology's canonical namespace
+	foreach (string alias_uri in this.ns.alias_list)
 		if (namespace_uris_match (alias_uri, namespace_uri)) {
-			// Swap our namespace for the ontology's canonical namespace
-			this.uri = this.owner.uri + entity_name;
+			this.uri = this.ns.uri + entity_name;
 			return;
 		}
 
-	warning ("Unknown namespace for URI <%s> (expected %s)", uri, this.owner.uri);
+	warning ("Unknown namespace for URI <%s> (expected %s)", uri, this.ns.uri);
 }
 
 /* requires_promotion:
@@ -168,11 +169,6 @@ public void set_literal (string   predicate,
 public void set_entity (string predicate,
                         Entity entity) {
 	//print ("Setting %s to %s\n", predicate, entity.uri);
-}
-
-public void set_external_resource (string predicate,
-                                   string uri) {
-	//print ("Setting %s to %s\n", predicate, uri);
 }
 
 public void set_string (string predicate,

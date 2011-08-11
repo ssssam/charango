@@ -22,8 +22,6 @@
  */
 public class Charango.Property: Entity {
 
-Ontology ontology;
-
 public string name;
 public string label;
 
@@ -35,17 +33,17 @@ public Charango.ValueBaseType type;
  */
 public Charango.Class range;
 
-public Property (Ontology       owner,
-                 string         uri,
-                 Charango.Class rdf_type)
+public Property (Charango.Namespace ns,
+                 string             uri,
+                 Charango.Class     rdf_type)
        throws Charango.ParseError {
-	base (owner, uri, rdf_type);
+	base (ns, uri, rdf_type);
 
 	this.name = get_name_from_uri (uri);
 }
 
 public string to_string () {
-	return "%s:%s".printf (ontology.prefix ?? ontology.uri, name);
+	return "%s:%s".printf (this.ns.prefix ?? this.ns.uri, name);
 }
 
 public override void dump () {

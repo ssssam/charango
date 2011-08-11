@@ -51,40 +51,44 @@ internal PtrArray    properties;
 
 public bool builtin = false;
 
-public Class (Charango.Ontology owner,
-              string            uri,
-              Charango.Class    rdf_type,
-              int               id) {
-	base (owner, uri, rdf_type);
+public Class (Charango.Namespace ns,
+              string             uri,
+              Charango.Class     rdf_type,
+              int                id) {
+	base (ns, uri, rdf_type);
 
+	this.name = get_name_from_uri (uri);
 	this.id = id;
 
 	// Give a default superclass; this will be overwritten if/when
 	// rdfs:subClassOf is read
-	this.main_parent = owner.context.rdf_resource;
-
-	this.name = get_name_from_uri (uri);
+	this.main_parent = ns.context.rdf_resource;
 
 	this.properties = new PtrArray ();
 }
 
-internal Class.internal (Charango.Ontology owner,
-                         int               id,
-                         string            name) {
-	string uri = owner.uri + name;
+internal Class.internal (Charango.Namespace ns,
+                         string             name,
+                         int                id) {
+	string uri = ns.uri + name;
 
-	base  (owner, uri, owner.context.rdfs_class);
+	base  (ns, uri, ns.context.rdfs_class);
 
-	this.main_parent = owner.context.rdf_resource;
 	this.name = name;
+	this.id = id;
+	this.main_parent = ns.context.rdf_resource;
 	this.builtin = true;
 
 	this.properties = new PtrArray ();
 }
 
-internal Class.prototype (string uri) {
-	base.prototype (uri);
+internal Class.prototype (Charango.Namespace ns,
+                          string             uri,
+                          int                id) {
+	base.prototype (ns, uri);
+
 	this.name = get_name_from_uri (uri);
+	this.id = id;
 
 	this.properties = new PtrArray ();
 }
@@ -175,10 +179,10 @@ public uint get_rdfs_property_index (string property_name)
 public string to_string () {
 	var builder = new StringBuilder();
 
-	if (this.owner.prefix != null)
-		builder.append (this.owner.prefix);
+	if (this.ns.prefix != null)
+		builder.append (this.ns.prefix);
 	else
-		builder.append (this.owner.uri);
+		builder.append (this.ns.uri);
 
 	builder.append (":");
 	builder.append (name);
@@ -187,7 +191,7 @@ public string to_string () {
 }
 
 public override void dump () {
-	print ("rdfs:Class %i '%s:%s': %u properties\n", id, this.owner.prefix, name, properties.len);
+	print ("rdfs:Class %i '%s:%s': %u properties\n", id, this.ns.prefix, name, properties.len);
 }
 
 public void dump_heirarchy (int indent = 0) {
@@ -196,7 +200,7 @@ public void dump_heirarchy (int indent = 0) {
 			print ("   ");
 		print ("-> ");
 	}
-	print ("%s:%s\n", this.owner.prefix != null? this.owner.prefix: this.owner.uri, name);
+	print ("%s:%s\n", this.ns.prefix != null? this.ns.prefix: this.ns.uri, name);
 
 	// Only permitted for rdfs:Resource class
 	if (this.main_parent == null)
@@ -227,12 +231,12 @@ public void dump_properties () {
 public class Charango.LiteralTypeClass: Class {
 	public ValueBaseType literal_value_type;
 
-	public LiteralTypeClass (Charango.Ontology _ontology,
-	                         int               _id,
-	                         string            _name,
-	                         ValueBaseType     _literal_value_type) {
-		string uri = _ontology.uri + _name;
-		base (_ontology, uri, _ontology.context.rdfs_class, _id);
-		literal_value_type = _literal_value_type;
+	public LiteralTypeClass (Charango.Namespace ns,
+	                         string             name,
+	                         ValueBaseType      literal_value_type,
+	                         int                id) {
+		string uri = ns.uri + name;
+		base (ns, uri, ns.context.rdfs_class, id);
+		this.literal_value_type = literal_value_type;
 	}
 }

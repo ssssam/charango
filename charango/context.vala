@@ -32,7 +32,8 @@ public class Charango.Context: GLib.Object {
  */
 internal Rdf.World *redland;
 
-List<Ontology> ontology_list = null;
+List<Charango.Namespace> namespace_list = null;
+List<Charango.Ontology>  ontology_list = null;
 
 /* Fundamental constants of the universe */
 public Charango.Class rdf_resource;
@@ -50,23 +51,42 @@ public Context() {
 
 	redland->set_logger (redland_logger);
 
-	// Create the fundamental concepts
-	rdf_resource = new Charango.RdfResource ();
-	rdf_resource.id = this.max_class_id ++;
+	// Create the fundamental concepts of the universe
+	var xsd_namespace = new Charango.Namespace.builtin_internal
+	                      (this, "http://www.w3.org/2001/XMLSchema#", "xsd");
+	var rdf_namespace = new Charango.Namespace.builtin_internal
+	                      (this, "http://www.w3.org/1999/02/22-rdf-syntax-ns#", "rdf");
+	var rdfs_namespace = new Charango.Namespace.builtin_internal
+	                      (this, "http://www.w3.org/2000/01/rdf-schema#", "rdfs");
+	var owl_namespace = new Charango.Namespace.builtin_internal
+	                      (this, "http://www.w3.org/2002/07/owl#", "owl");
 
-	rdfs_class = new Charango.RdfsClass ();
-	rdfs_class.id = this.max_class_id ++;
+	// No external definition of XML Schema, it makes no sense as RDF
+	xsd_namespace.loaded = true;
 
-	rdf_resource.rdf_type = rdfs_class;
+	this.namespace_list.prepend (xsd_namespace);
+	this.namespace_list.prepend (rdf_namespace);
+	this.namespace_list.prepend (rdfs_namespace);
+	this.namespace_list.prepend (owl_namespace);
+
+	rdf_resource = new Charango.Class.prototype
+	  (rdf_namespace, "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource", this.max_class_id ++);
+
+	rdfs_class = new Charango.Class.prototype
+	  (rdfs_namespace, "http://www.w3.org/1999/02/22-rdf-syntax-ns#Class", this.max_class_id ++);
+
+	owl_ontology_class = new Charango.Class.prototype
+	  (owl_namespace, "http://www.w3.org/2002/07/owl#Ontology", this.max_class_id ++);
+
+	// Maxwell's equations
 	rdfs_class.main_parent = rdf_resource;
+	rdf_resource.rdf_type = rdfs_class;
+	owl_ontology_class.rdf_type = rdfs_class;
 
-	owl_ontology_class = new Charango.OwlOntologyClass2 (rdfs_class);
-	owl_ontology_class.id = this.max_class_id ++;
-
-	ontology_list.prepend (new XsdOntology (this));
-	ontology_list.prepend (new RdfOntology (this));
-	ontology_list.prepend (new RdfsOntology (this));
-	ontology_list.prepend (new OwlOntology (this));
+	this.ontology_list.prepend (new XsdOntology (xsd_namespace));
+	this.ontology_list.prepend (new RdfOntology (rdf_namespace));
+	this.ontology_list.prepend (new RdfsOntology (rdfs_namespace));
+	this.ontology_list.prepend (new OwlOntology (owl_namespace));
 }
 
 /**
@@ -101,97 +121,116 @@ public void add_local_ontology_source (string path)
 		throw new ParseError.INDEX_PARSE_ERROR (error.message);
 	  }
 
-	foreach (string rdf_namespace in index.get_groups()) {
-		bool    external = false;
+	foreach (string namespace_uri in index.get_groups()) {
 		string  filename = null;
 		string? prefix = null;
+		bool    ignore = false;
 
 		try {
-			if (index.has_key (rdf_namespace, "file")) {
-				filename = index.get_string (rdf_namespace, "file");
+			if (index.has_key (namespace_uri, "file")) {
+				filename = index.get_string (namespace_uri, "file");
 				filename = Path.build_filename (path, filename);
+			}
 
-				if (index.has_key (rdf_namespace, "prefix"))
-					prefix = index.get_string (rdf_namespace, "prefix");
-			} else
-			if (index.has_key (rdf_namespace, "external"))
-				external = index.get_boolean (rdf_namespace, "external");
+			if (index.has_key (namespace_uri, "prefix"))
+				prefix = index.get_string (namespace_uri, "prefix");
+
+			if (index.has_key (namespace_uri, "ignore"))
+				ignore = index.get_boolean (namespace_uri, "ignore");
 		}
 		  catch (KeyFileError error) {
 			throw new ParseError.INDEX_PARSE_ERROR (error.message);
 		  }
 
-		if (filename == null && external != true)
-			throw new ParseError.INDEX_PARSE_ERROR
-			  ("%s: Namespace must either have a file or be marked as external",
-			   rdf_namespace);
+		var ns = this.find_namespace (namespace_uri);
 
-		var ontology = this.find_ontology (rdf_namespace);
-		if (ontology == null)
-			ontology = new Ontology (this, rdf_namespace, this.owl_ontology_class, filename, prefix);
-		else {
-			if (ontology.source_file_name != null)
-				throw new ParseError.DUPLICATE_DEFINITION
-				  ("%s: Namespace %s is already defined in file %s",
-				   filename,
-				   rdf_namespace,
-				   ontology.source_file_name);
-
-			warn_if_fail (ontology.builtin);
-
-			ontology.source_file_name = filename;
-			ontology.prefix = prefix;
+		if (ns == null) {
+			ns = new Charango.Namespace (this, namespace_uri, prefix);
+			this.namespace_list.prepend (ns);
 		}
+
+		if (ignore == true) {
+			//print ("Ignoring: %s\n", ns.uri);
+			ns.ignore = true;
+			continue;
+		}
+
+		if (filename == null)
+			throw new ParseError.INDEX_PARSE_ERROR
+			  ("%s: Namespace must have an associated ontology file",
+			   namespace_uri);
+
+		if (ns.ontology == null) {
+			var ontology = new Ontology (ns, namespace_uri, this.owl_ontology_class, filename);
+			ns.set_ontology (ontology);
+			this.ontology_list.prepend (ontology);
+		} else {
+			// Ontology may have had some internal definitions. We still
+			// make sure only one external file to defines it.
+			if (ns.ontology.source_file_name != null)
+				throw new ParseError.DUPLICATE_DEFINITION
+				  ("%s: Ontology for namespace %s is already defined in file %s",
+				   filename,
+				   namespace_uri,
+				   ns.ontology.source_file_name);
+
+			warn_if_fail (ns.builtin);
+		}
+
+		ns.ontology.source_file_name = filename;
 
 		try {
-			if (index.has_key (rdf_namespace, "alias"))
-				foreach (string alias_uri in index.get_string_list (rdf_namespace, "alias"))
-					if (ontology.alias_list.find (alias_uri) == null)
-						ontology.alias_list.prepend (alias_uri);
+			if (index.has_key (namespace_uri, "alias"))
+				foreach (string alias_uri in index.get_string_list (namespace_uri, "alias"))
+					if (ns.ontology.alias_list.find (alias_uri) == null)
+						ns.ontology.alias_list.prepend (alias_uri);
 		}
 		  catch (KeyFileError error) {
 			throw new ParseError.INDEX_PARSE_ERROR (error.message);
 		  }
 
-		this.ontology_list.prepend (ontology);
+		//print ("Registered: %s in %s\n", ns.uri, ns.ontology.source_file_name);
 	}
 }
 
 /**
  * load_namespace():
- * @namespace_uri: URI string that identifies the namespace
+ * @uri: URI string that identifies the ontology namespace
  *
- * Loads an ontology and all of its dependencies into memory. The ontology must
- * be described in a file that has been added using add_local_ontology_source().
+ * Loads an ontology and all of its dependencies into memory. The
+ * ontology must be available in a directory that has been added using
+ * add_local_ontology_source().
  */
 public void load_namespace (string            uri,
                             out List<Warning> warning_list = null)
             throws FileError, ParseError, OntologyError {
-	List<Ontology> load_list = null;
+	List<Charango.Namespace> load_list = null;
 
-	load_list.append (this.find_ontology (uri));
+	load_list.append (this.find_namespace (uri));
 
 	while (load_list != null) {
 		// All namespaces referenced in 'ontology' that are available but
 		// not yet loaded will be queued for reading
-		var current_ontology = load_list.data;
+		var current_namespace = load_list.data;
 
-		warn_if_fail (current_ontology.loaded == false);
-		warn_if_fail (current_ontology.external == false);
+		if (current_namespace.ontology == null) {
+			throw new ParseError.MISSING_DEFINITION
+			  ("No ontology available for namespace: %s", current_namespace.uri);
+		}
 
-		current_ontology.load (ref warning_list);
+		current_namespace.ontology.load (ref warning_list);
 
-		current_ontology.loaded = true;
+		current_namespace.loaded = true;
 		load_list.remove_link (load_list);
 
-		foreach (Ontology o in this.ontology_list)
-			if (o.required_by == current_ontology && !o.loaded && !o.external)
-				load_list.prepend (o);
+		foreach (Namespace ns in this.namespace_list)
+			if (ns.required_by == current_namespace && ! ns.loaded && ! ns.external)
+				load_list.prepend (ns);
 	}
 }
 
-public List<Charango.Ontology> get_ontology_list () {
-	return (owned) this.ontology_list;
+public List<Charango.Namespace> get_namespace_list () {
+	return (owned) this.namespace_list;
 }
 
 /**
@@ -218,13 +257,13 @@ public Charango.Entity find_entity_with_error (string uri)
 
 	parse_uri_as_resource_strings (uri, out namespace_uri, out entity_name);
 
-	Ontology o = find_ontology (namespace_uri);
+	Namespace ns = find_namespace (namespace_uri);
 
-	if (o == null)
+	if (ns == null)
 		throw new ParseError.UNKNOWN_NAMESPACE
 		  ("find_entity: Unknown namespace for resource <%s>", uri);
 
-	return o.find_local_entity (uri);
+	return ns.find_local_entity (uri);
 }
 
 public Charango.Class? find_class (string uri) {
@@ -243,24 +282,24 @@ public Charango.Class find_class_with_error (string uri)
 
 	parse_uri_as_resource_strings (uri, out namespace_uri, out class_name);
 
-	Ontology o = find_ontology (namespace_uri);
+	Charango.Namespace ns = find_namespace (namespace_uri);
 
-	if (o == null)
+	if (ns == null)
 		throw new ParseError.UNKNOWN_NAMESPACE
 		  ("find_entity: Unknown namespace for resource <%s>", uri);
 
-	return o.find_local_class (uri);
+	return ns.find_local_class (uri);
 }
 
-public Ontology? find_ontology (string uri) {
+public Charango.Namespace? find_namespace (string uri) {
 	// FIXME: there must be a better way to search lists in vala
-	foreach (Ontology o in ontology_list) {
-		if (namespace_uris_match (o.uri, uri))
-			return o;
+	foreach (Namespace ns in namespace_list) {
+		if (namespace_uris_match (ns.uri, uri))
+			return ns;
 
-		foreach (string alias_uri in o.alias_list)
+		foreach (string alias_uri in ns.alias_list)
 			if (namespace_uris_match (alias_uri, uri))
-				return o;
+				return ns;
 	}
 
 	return null;
@@ -270,46 +309,40 @@ public Ontology? find_ontology (string uri) {
  *
  * General preprocessing for user-supplied URI's.
  */
-private Ontology? process_uri (string uri,
-                               out string canonical_uri,
-                               out string namespace_uri,
-                               out string? entity_name)
-                  throws Charango.ParseError {
-	Ontology? o;
+private Charango.Namespace? process_uri (string      uri,
+                                         out string  canonical_uri,
+                                         out string? entity_name)
+                            throws Charango.ParseError {
+	Charango.Namespace? ns;
+	string ns_uri;
 
-	parse_uri_as_resource_strings (uri, out namespace_uri, out entity_name);
+	parse_uri_as_resource_strings (uri, out ns_uri, out entity_name);
 
-	o = find_ontology (namespace_uri);
+	ns = find_namespace (ns_uri);
 
 	// Corner cases where URI is for the actual namespace, so entity_name is
 	// blank and we don't get the correct namespace_uri.
-	if (o == null) {
-		o = find_ontology (uri);
+	// FIXME: this is a weird way of working; parse_uri purports to be able
+	// to split the URI but actually it cannot because it can't tell what's
+	// a valid namespace URI.
+	if (ns == null) {
+		ns = find_namespace (uri);
 
-		if (o != null) {
-			canonical_uri = o.uri;
-			namespace_uri = o.uri;
-			entity_name = null;
-		} else {
-			throw new ParseError.UNKNOWN_NAMESPACE
-			  ("Unknown namespace for '%s'", uri);
-		}
+		if (ns == null)
+			throw new ParseError.UNKNOWN_NAMESPACE ("Unknown namespace for '%s'", uri);
+
+		entity_name = null;
 	}
 
-	// Use correct namespace
-	if (namespace_uri == o.uri)
-		canonical_uri = uri;
-	else {
-		canonical_uri = o.uri + entity_name;
-		namespace_uri = o.uri;
-	}
+	// 'uri' may have used an alias of the real namespace
+	canonical_uri = ns.uri + entity_name;
 
-	return o;
+	return ns;
 }
 
-private Entity create_entity (Charango.Ontology owner,
-                              string            uri,
-                              Charango.Class    type)
+private Entity create_entity (Charango.Namespace ns,
+                              string             uri,
+                              Charango.Class     type)
                throws ParseError, OntologyError {
 	switch (type.get_concept_type ()) {
 		case ConceptType.ONTOLOGY:
@@ -321,12 +354,12 @@ private Entity create_entity (Charango.Ontology owner,
 			    "the URI incorrectly in INDEX; or the file may try to define " +
 			    "more than one ontology (which is not permitted)", uri);
 		case ConceptType.CLASS:
-			return new Charango.Class (owner, uri, type, this.max_class_id ++);
+			return new Charango.Class (ns, uri, type, this.max_class_id ++);
 		case ConceptType.PROPERTY:
-			return new Charango.Property (owner, uri, type);
+			return new Charango.Property (ns, uri, type);
 		case ConceptType.ENTITY:
 		default:
-			return new Charango.Entity (owner, uri, type);
+			return new Charango.Entity (ns, uri, type);
 	}
 }
 
@@ -334,6 +367,8 @@ private Entity create_entity (Charango.Ontology owner,
  * @owner: a Charango.Ontology
  * @uri: identifier string
  * @expected_type: a Charango.Class, or %NULL
+ * @allow_unknown_namespace: behaviour if the namespace of @uri is
+ *                           unknown.
  * 
  * Used during ontology loading to handle forward references. Should really
  * be named find_or_create_and_promote_if_necessary(). This function will
@@ -341,48 +376,71 @@ private Entity create_entity (Charango.Ontology owner,
  * 
  * @owner is the ontology which is currently being processed - it is used to
  * record the *reason* for the resource's creation.
+ *
+ * If the namespace of @uri is unknown and @allow_unknown_namespace is
+ * %TRUE, the namespace will be created for the new entity. If it is
+ * %FALSE, the function will throw #ParseError.UNKNOWN_NAMESPACE.
  */
 internal Entity find_or_create_entity (Ontology        owner,
                                        string          uri,
-                                       Charango.Class? expected_type)
+                                       Charango.Class? expected_type,
+                                       bool            allow_unknown_namespace)
                 throws OntologyError, ParseError {
+	Charango.Namespace ns;
 	string  canonical_uri;
-	string  namespace_uri;
 	string? entity_name;
 
 	if (expected_type == null)
 		expected_type = this.rdf_resource;
 
-	Ontology o = process_uri (uri,
-	                          out canonical_uri,
-	                          out namespace_uri,
-	                          out entity_name);
+	try {
+		ns = process_uri (uri, out canonical_uri, out entity_name);
+	}
+	catch (ParseError e) {
+		if (e is ParseError.UNKNOWN_NAMESPACE && allow_unknown_namespace) {
+			string ns_uri;
+			parse_uri_as_resource_strings (uri, out ns_uri, null);
 
-	if (! o.loaded && ! o.external)
-		if (o.required_by == null)
-			o.required_by = owner;
+			ns = new Charango.Namespace (this, ns_uri, null);
+			ns.external = true;
+			this.namespace_list.prepend (ns);
+
+			canonical_uri = ns_uri + entity_name;
+		}
+		else
+			throw (e);
+	}
+
+	if (ns.ignore)
+		// This error should always be handled by the caller, it's an
+		// exception only for convenience.
+		throw new ParseError.IGNORED_NAMESPACE (ns.uri);
+
+	if (! ns.loaded /*&& ! ns.external*/)
+		if (ns.required_by == null)
+			ns.required_by = owner.ns;
 
 	Entity? e = null;
 	try {
-		e = o.find_local_entity (canonical_uri);
+		e = ns.find_local_entity (canonical_uri);
 	}
 	catch (OntologyError.UNKNOWN_RESOURCE error) {
-		if (o.loaded)
+		if (ns.loaded)
 			throw error;
 	}
 
 	if (e == null) {
-		e = create_entity (o, canonical_uri, expected_type);
+		e = create_entity (ns, canonical_uri, expected_type);
 
 		switch (expected_type.get_concept_type ()) {
 			case ConceptType.ENTITY:
-				o.entity_list.prepend (e);
+				ns.entity_list.prepend (e);
 				break;
 			case ConceptType.CLASS:
-				o.class_list.prepend ((Charango.Class) e);
+				ns.class_list.prepend ((Charango.Class) e);
 				break;
 			case ConceptType.PROPERTY:
-				o.property_list.prepend ((Charango.Property) e);
+				ns.property_list.prepend ((Charango.Property) e);
 				break;
 			case ConceptType.ONTOLOGY:
 			default:
@@ -398,7 +456,7 @@ internal Entity find_or_create_entity (Ontology        owner,
 		// owl:Ontology or something else quite grand; we only ever need to
 		// promote UP so this crude system actually works perfectly.
 		var old_entity = e;
-		e = create_entity (o, old_entity.uri, expected_type);
+		e = create_entity (ns, old_entity.uri, expected_type);
 		e.copy_properties (old_entity);
 		this.replace_entity (old_entity, e);
 		/* FIXME: Also, we theoretically need to update all instances of
@@ -420,8 +478,8 @@ internal Entity find_or_create_entity (Ontology        owner,
  */
 public void replace_entity (Entity *old_entity,
                             Entity *new_entity) {
-	foreach (Ontology o in ontology_list) {
-		o.replace_entity (old_entity, new_entity);
+	foreach (Namespace ns in this.namespace_list) {
+		ns.replace_entity (old_entity, new_entity);
 	}
 }
 

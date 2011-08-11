@@ -35,10 +35,6 @@ prefix=dcns
 file=foaf.rdf
 prefix=foaf
 
-[http://www.w3.org/2003/g/data-view#]
-external=true
-prefix=grddl
-
 [http://purl.org/net/vocab/2004/03/label#]
 file=label.rdf
 
@@ -67,7 +63,6 @@ file=associationontology.n3
 prefix=ao
 
 [http://purl.org/vocab/bio/0.1/]
-alias=http://vocab.org/bio/0.1/
 file=bio.rdf
 prefix=bio
 
@@ -108,3 +103,7 @@ prefix=tzont
 
 [http://www.w3.org/2003/01/geo/wgs84_pos#]
 file=wgs84_pos.xml
+
+# GRDDL: referenced in OWL but not required for Charango
+[http://www.w3.org/2003/g/data-view#]
+ignore=true

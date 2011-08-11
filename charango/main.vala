@@ -26,7 +26,12 @@ public errordomain Charango.ParseError {
 	INDEX_PARSE_ERROR,
 	INVALID_URI,
 	DUPLICATE_DEFINITION,
-	UNKNOWN_NAMESPACE
+	MISSING_DEFINITION,
+	UNKNOWN_NAMESPACE,
+
+	/* This one isn't an error at all, but it seems like the cleanest solution
+	 * to how to handle ignored namespaces. */
+	IGNORED_NAMESPACE
 }
 
 /* FIXME: some parse errors should be in here */

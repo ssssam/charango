@@ -22,55 +22,25 @@ using Rdf;
  */
 public class Charango.Ontology: Entity {
 
-internal Charango.Context context;
-
-public bool builtin = false;
-public bool loaded = false;
-public bool external = false;
-
 public List<string> alias_list = null;
-
-public Charango.Ontology? required_by = null;
 
 /**
  * source_file_name: on-disk source of the ontology
  */
 public string? source_file_name;
 
-/**
- * prefix: Ontology prefix
- */
-public string? prefix;
-
-/* List of ontologies which have contributed to this definition */
-/* FIXME: still needed? */
-protected List<Charango.Ontology> external_def_list = null;
-
-/* FIXME: really, classes and properties are entities as well. ... */
-internal List<Charango.Entity>   entity_list = null;
-internal List<Charango.Class>    class_list = null;
-internal List<Charango.Property> property_list = null;
-
-public Ontology (Context        context,
-                 string         uri,
-                 Charango.Class rdf_type,
-                 string?        source_file_name,
-                 string?        prefix)
+public Ontology (Charango.Namespace ns,
+                 string             uri,
+                 Charango.Class     rdf_type,
+                 string?            source_file_name) /* FIXME: still need source_file_name ?? */
        throws ParseError {
 	unichar terminator = uri[uri.length-1];
 	if (terminator != '#' && terminator != '/')
 		throw new ParseError.INVALID_URI ("Namespace must end in # or /; got '%s'", uri);
 
-	base (null, uri, rdf_type);
+	base (ns, uri, rdf_type);
 
-	this.context = context;
 	this.source_file_name = source_file_name;
-	this.prefix = prefix;
-
-	if (source_file_name == null)
-		this.external = true;
-
-	this.entity_list.prepend (this);
 }
 
 private string get_format_for_file (string file_name) {
@@ -105,13 +75,13 @@ private string get_format_for_file (string file_name) {
  * Load ontology into memory.
  */
 internal void load (ref List<Warning>  warning_list)
-         throws ParseError, OntologyError
-
-         /* external ontologies cannot be loaded */
-         requires (this.external == false)
-         requires (this.source_file_name != null)
-{
+         throws ParseError, OntologyError {
+	Charango.Context context = this.ns.context;
 	Rdf.World *redland = context.redland;
+
+	if (this.source_file_name == null)
+		throw new ParseError.MISSING_DEFINITION
+		  ("Missing ontology definition for %s", ns.uri);
 
 	tracel (1, "ontology", "Loading %s from %s\n", this.uri, this.source_file_name);
 
@@ -136,17 +106,19 @@ internal void load (ref List<Warning>  warning_list)
 
 		stream.next ();
 
-		if (subject_node.is_blank ())
-			/* Not handled yet */
-			//print ("Warning: blank node\n");
+		if (subject_node.is_literal() || !arc_node.is_resource()) {
+			warning_list.prepend (new Warning (
+				"Invalid statement: <%s %s %s>",
+				subject_node.to_string (), arc_node.to_string (), object_node.to_string ()
+			));
 			continue;
+		}
 
-		if (subject_node.is_literal() || !arc_node.is_resource() ||
-		    (!object_node.is_literal() && !object_node.is_resource())) {
-			warning_list.prepend (new Warning ("Invalid statement: <%s %s %s>",
-			                                   subject_node.to_string (),
-			                                   arc_node.to_string (),
-			                                   object_node.to_string ()));
+		if (subject_node.is_blank ()) {
+			warning_list.prepend (new Warning (
+				"Ignored statement due to blank: <%s %s %s>",
+				subject_node.to_string (), arc_node.to_string (), object_node.to_string ()
+			));
 			continue;
 		}
 
@@ -154,6 +126,7 @@ internal void load (ref List<Warning>  warning_list)
 		string arc_uri = arc_node.get_uri().as_string();
 
 		Class subject_type = null;
+
 		if (arc_uri == "http://www.w3.org/1999/02/22-rdf-syntax-ns#Type") {
 			if (! object_node.is_literal()) {
 				warning_list.prepend (new Warning ("Invalid statement: <%s %s %s>",
@@ -165,7 +138,18 @@ internal void load (ref List<Warning>  warning_list)
 
 			string object_uri = object_node.get_uri().as_string();
 			subject_type = (Charango.Class) context.find_or_create_entity
-			                 (this, object_uri, context.rdfs_class);
+			                 (this, object_uri, context.rdfs_class, true);
+		}
+
+		/* FIXME: support containers! http://www.infowebml.ws/website/_n.htm */
+		if (arc_uri.length > 44 &&
+		    arc_uri.substring (0, 44) == "http://www.w3.org/1999/02/22-rdf-syntax-ns#_" &&
+		    (int)arc_uri.substring (44) > 0) {
+			warning_list.prepend (new Warning (
+				"Ignored statement due to container: <%s %s %s>",
+				subject_node.to_string (), arc_node.to_string (), object_node.to_string ()
+			));
+			continue;
 		}
 
 		/* FIXME: an obvious optimisation here is to check if subject is the
@@ -173,30 +157,35 @@ internal void load (ref List<Warning>  warning_list)
 		 * it is, entity will also be the same
 		 */
 
-		Entity subject;
+		Entity?  subject = null;
+		Property arc;
+
 		try {
 			subject = context.find_or_create_entity
-			            (this, subject_uri, subject_type);
+			            (this, subject_uri, subject_type, true);
+			arc = (Charango.Property) context.find_or_create_entity
+			            (this, arc_uri, context.rdf_property, false);
 		}
 		catch (Charango.ParseError e) {
-			if (e is ParseError.UNKNOWN_NAMESPACE) {
-				/* FIXME: Temporary hack to handle external resources .. */
-				statement.print (stdout);
-				print ("\nUnknown namespace for %s\n\n", subject_uri);
+			if (e is ParseError.IGNORED_NAMESPACE)
+				// Ignore any triple with an ignored subject or arc, let's
+				// assume whoever wrote the INDEX knew what they were doing
 				continue;
-			}
-			throw (e);
+			else
+				throw (e);
 		}
 
 		if (subject_type != null)
 			// We're done if this was an rdf:type statement
 			continue;
 
-		Property arc = (Charango.Property) context.find_or_create_entity
-		                                     (this, arc_uri, context.rdf_property);
-
 		if (object_node.is_literal ())
 			subject.set_literal (arc.uri, object_node);
+		else if (object_node.is_blank ())
+			warning_list.prepend (new Warning (
+				"Ignored statement due to blank: <%s %s %s>",
+				subject_node.to_string (), arc_node.to_string (), object_node.to_string ()
+			));
 		else if (object_node.is_resource ()) {
 			/* FIXME: because replacing entities after the fact is an expensive operation,
 			 * we should do our best to create the correct concept type here; the range
@@ -205,128 +194,12 @@ internal void load (ref List<Warning>  warning_list)
 
 			Entity object;
 			string object_uri = object_node.get_uri().as_string ();
-			try {
-				object = context.find_or_create_entity
-						   (this, object_uri, /*arc.range.get_concept_type ()*/ null);
-				subject.set_entity (arc.uri, object);
-			}
-			catch (ParseError e) {
-				if (e is ParseError.UNKNOWN_NAMESPACE)
-					// Value is an external resource
-					subject.set_external_resource (arc.uri, object_uri);
-				else
-					throw e;
-			}
+			object = context.find_or_create_entity (this,
+			                                        object_uri,
+			                                        /*arc.range.get_concept_type ()*/ null,
+			                                        true);
+			subject.set_entity (arc.uri, object);
 		}
-	}
-}
-
-public List<Charango.Class> get_class_list () {
-	return (owned) this.class_list;
-}
-
-public List<Charango.Property> get_property_list () {
-	return (owned) this.property_list;
-}
-
-/* FIXME: it's a bit weird that this only returns things aren't classes
- * or properties, in terms of consistency. However this API is temporary
- * anyway, one day you will use Charango.Source API's to get this info
- */
-public List<Charango.Entity> get_entity_list () {
-	return (owned) this.entity_list;
-}
-
-
-internal Charango.Entity find_local_entity (string uri)
-                         throws OntologyError {
-	try {
-		return find_local_class (uri);
-	}
-	  catch (OntologyError e) { }
-
-	try {
-		return find_local_property (uri);
-	}
-	  catch (OntologyError e) {
-	  }
-
-	foreach (Charango.Entity e in this.entity_list)
-		if (e.uri == uri)
-			return e;
-
-	if (uri == this.uri || (uri + "#") == this.uri || (uri + "/") == this.uri)
-		return this;
-
-	throw new OntologyError.UNKNOWN_RESOURCE ("Unable to find entity '%s'", uri);
-}
-
-internal Charango.Class find_local_class (string uri)
-                        throws OntologyError {
-	foreach (Charango.Class c in this.class_list)
-		if (c.uri == uri)
-			return c;
-
-	throw new OntologyError.UNKNOWN_CLASS ("Unable to find class '%s'", uri);
-}
-
-internal Charango.Property find_local_property (string uri)
-                        throws OntologyError {
-	foreach (Charango.Property p in this.property_list)
-		if (p.uri == uri)
-			return p;
-
-	throw new OntologyError.UNKNOWN_PROPERTY ("Unable to find property '%s'", uri);
-}
-
-internal void replace_entity (Entity old_entity,
-                              Entity new_entity) {
-	// There's no reason to move entities between different ontologies because
-	// the correct namespace is always known.
-	warn_if_fail (old_entity.owner == new_entity.owner);
-
-	if (new_entity.owner == this) {
-		if (old_entity is Charango.Class)
-			this.class_list.remove ((Charango.Class) old_entity);
-		else if (old_entity is Charango.Property)
-			this.property_list.remove ((Charango.Property) old_entity);
-		else
-			this.entity_list.remove (old_entity);
-
-		if (new_entity is Charango.Class)
-			this.class_list.prepend ((Charango.Class) new_entity);
-		else if (new_entity is Charango.Property)
-			this.property_list.prepend ((Charango.Property) new_entity);
-		else
-			this.entity_list.prepend (new_entity);
-	}
-
-	foreach (Entity e in this.entity_list) {
-		/* FIXME: Replace all of the properties - including rdf_type? That
-		 * shouldn't be possible though, we should guess the types
-		 */
-	}
-
-	foreach (Entity e in this.class_list) {
-		/* Replace all of the properties - including rdf_type? That
-		 * shouldn't be possible though, we should guess the types
-		 */
-	}
-	foreach (Entity e in this.property_list) {
-		/* Replace all of the properties - including rdf_type? That
-		 * shouldn't be possible though, we should guess the types
-		 */
-	}
-}
-
-public override void dump () {
-	print ("charango ontology: %s [%s]\n", uri.to_string(), prefix);
-	foreach (Charango.Class rdfs_class in class_list) {
-		assert (rdfs_class != null);
-		print ("\tclass %i: ", 1); rdfs_class.dump();
-	}
-	foreach (Charango.Property rdfs_property in property_list) {
-		print ("\tproperty %i: ", 1); rdfs_property.dump();
 	}
 }
 

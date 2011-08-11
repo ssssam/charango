@@ -28,10 +28,10 @@ public bool namespace_uris_match (string ns, string m) {
 }
 
 public void parse_uri_as_resource_strings (string      uri_string,
-                                           out string  ontology_uri,
+                                           out string  namespace_uri,
                                            out string  fragment)
             throws ParseError                                    {
-	ontology_uri = null;
+	namespace_uri = null;
 	fragment = null;
 
 	// Expand namespace abbreviations
@@ -51,7 +51,7 @@ public void parse_uri_as_resource_strings (string      uri_string,
 		throw new ParseError.INVALID_URI
 		            ("Invalid URI: %s", uri_string);
 
-	ontology_uri = uri_string [0: hash_index + 1];
+	namespace_uri = uri_string [0: hash_index + 1];
 	fragment = uri_string[hash_index + 1: uri_string.length];
 }
 
