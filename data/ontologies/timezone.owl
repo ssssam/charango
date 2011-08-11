@@ -89,32 +89,32 @@
 
   <owl:Class rdf:ID="State"> 
     <rdfs:subClassOf rdf:resource="#PoliticalRegion"/>
-    <owl:subClassOf>
+    <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty rdf:resource="#hasParentRegion"/>
         <owl:allValuesFrom rdf:resource="#Country"/>
       </owl:Restriction>
-    </owl:subClassOf>
+    </rdfs:subClassOf>
   </owl:Class>
 
   <owl:Class rdf:ID="County"> 
     <rdfs:subClassOf rdf:resource="#PoliticalRegion"/>
-    <owl:subClassOf>
+    <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty rdf:resource="#hasParentRegion"/>
         <owl:allValuesFrom rdf:resource="#State"/>
       </owl:Restriction>
-    </owl:subClassOf>
+    </rdfs:subClassOf>
   </owl:Class>
 
   <owl:Class rdf:ID="Reservation"> 
     <rdfs:subClassOf rdf:resource="#PoliticalRegion"/>
-    <owl:subClassOf>
+    <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty rdf:resource="#hasParentRegion"/>
         <owl:allValuesFrom rdf:resource="#Country"/>
       </owl:Restriction>
-    </owl:subClassOf>
+    </rdfs:subClassOf>
   </owl:Class>
 
   <owl:Class rdf:ID="City"> 
