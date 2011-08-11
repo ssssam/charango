@@ -109,7 +109,7 @@
         <comment>A person (or other agent) who is an assistant to the subject.</comment>
         <domain rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
         <label>assistant</label>
-        <ramge rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+        <range rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
     </rdf:Property>
 
     <rdf:Property rdf:about="http://www.w3.org/2000/10/swap/pim/contact#birthday">
@@ -268,7 +268,7 @@
     <rdf:Property rdf:about="http://www.w3.org/2000/10/swap/pim/contact#participant">
         <comment>A person (or other agent) who  particpates in an event, meeting, etc.</comment>
         <label>participant</label>
-        <ramge rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+        <range rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
     </rdf:Property>
 
     <rdf:Property rdf:about="http://www.w3.org/2000/10/swap/pim/contact#partner">
