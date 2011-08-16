@@ -30,7 +30,7 @@ def build_library (bld, source='', target='', uselib='', packages='', includes='
 		     vapi_dirs = vapi_dirs)
 
 def build(bld):
-	charango_uselib = 'REDLAND'
+	charango_uselib = 'RAPTOR REDLAND'
 	charango_packages = 'redland'
 	charango_vapi_dirs = '. vapi'
 
