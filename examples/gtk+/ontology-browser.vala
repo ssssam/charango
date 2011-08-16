@@ -379,9 +379,11 @@ int main (string[] args) {
 	List<Warning> warning_list;
 	try {
 		context.add_local_ontology_source (path);
-		/* FIXME: would be cool if we could do the loading incrementally based
-		 * on what the user clicks on :) */
+		// These two pull in every available ontology.
+		// FIXME: would be cool if we could do the loading incrementally based
+		// on what the user clicks on :)
 		context.load_namespace ("http://purl.org/ontology/mo/", out warning_list);
+		context.load_namespace ("http://creativecommons.org/ns#", null);
 	}
 	  catch (FileError error) {
 		print ("Unable to find ontologies: %s\n", error.message);
