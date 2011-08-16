@@ -389,11 +389,7 @@ int main (string[] args) {
 		print ("Unable to find ontologies: %s\n", error.message);
 		return 1;
 	  }
-	  catch (ParseError error) {
-		print ("Error loading ontology data: %s\n", error.message);
-		return 2;
-	  }
-	  catch (OntologyError error) {
+	  catch (RdfError error) {
 		print ("Error loading namespace: %s\n", error.message);
 		return 3;
 	  }

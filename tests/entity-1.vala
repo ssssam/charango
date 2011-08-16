@@ -38,8 +38,7 @@ public void test_primitive_types () { /* Unit test */
 		context.load_namespace ("http://example.com/test-entity#");
 	}
 	  catch (FileError e) { error (e.message); }
-	  catch (ParseError e) { error (e.message); }
-	  catch (OntologyError e) { error (e.message); }
+	  catch (RdfError e) { error (e.message); }
 
 	assert (warning_list.length() == 0);
 
@@ -88,8 +87,7 @@ public void test_type_checking() {
 		context.load_namespace ("http://example.com/test-entity#");
 	}
 	  catch (FileError e) { error (e.message); }
-	  catch (ParseError e) { error (e.message); }
-	  catch (OntologyError e) { error (e.message); }
+	  catch (RdfError e) { error (e.message); }
 
 	assert (warning_list.length() == 0);
 

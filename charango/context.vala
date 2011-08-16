@@ -103,7 +103,7 @@ public Context() {
  *
  */
 public void add_local_ontology_source (string path)
-            throws FileError, ParseError {
+            throws FileError, RdfError {
 	if (! FileUtils.test (path, FileTest.EXISTS))
 		throw new FileError.NOENT ("%s not found", path);
 	if (! FileUtils.test (path, FileTest.IS_DIR))
@@ -118,7 +118,7 @@ public void add_local_ontology_source (string path)
 		throw (error);
 	  }
 	  catch (KeyFileError error)  {
-		throw new ParseError.INDEX_PARSE_ERROR (error.message);
+		throw new RdfError.INDEX_PARSE_ERROR (error.message);
 	  }
 
 	foreach (string namespace_uri in index.get_groups()) {
@@ -139,7 +139,7 @@ public void add_local_ontology_source (string path)
 				ignore = index.get_boolean (namespace_uri, "ignore");
 		}
 		  catch (KeyFileError error) {
-			throw new ParseError.INDEX_PARSE_ERROR (error.message);
+			throw new RdfError.INDEX_PARSE_ERROR (error.message);
 		  }
 
 		var ns = this.find_namespace (namespace_uri);
@@ -156,7 +156,7 @@ public void add_local_ontology_source (string path)
 		}
 
 		if (filename == null)
-			throw new ParseError.INDEX_PARSE_ERROR
+			throw new RdfError.INDEX_PARSE_ERROR
 			  ("%s: Namespace must have an associated ontology file",
 			   namespace_uri);
 
@@ -168,7 +168,7 @@ public void add_local_ontology_source (string path)
 			// Ontology may have had some internal definitions. We still
 			// make sure only one external file to defines it.
 			if (ns.ontology.source_file_name != null)
-				throw new ParseError.DUPLICATE_DEFINITION
+				throw new RdfError.DUPLICATE_DEFINITION
 				  ("%s: Ontology for namespace %s is already defined in file %s",
 				   filename,
 				   namespace_uri,
@@ -186,7 +186,7 @@ public void add_local_ontology_source (string path)
 						ns.ontology.alias_list.prepend (alias_uri);
 		}
 		  catch (KeyFileError error) {
-			throw new ParseError.INDEX_PARSE_ERROR (error.message);
+			throw new RdfError.INDEX_PARSE_ERROR (error.message);
 		  }
 
 		//print ("Registered: %s in %s\n", ns.uri, ns.ontology.source_file_name);
@@ -203,7 +203,7 @@ public void add_local_ontology_source (string path)
  */
 public void load_namespace (string            uri,
                             out List<Warning> warning_list = null)
-            throws FileError, ParseError, OntologyError {
+            throws FileError, RdfError, RdfError {
 	List<Charango.Namespace> load_list = null;
 
 	load_list.append (this.find_namespace (uri));
@@ -214,7 +214,7 @@ public void load_namespace (string            uri,
 		var current_namespace = load_list.data;
 
 		if (current_namespace.ontology == null) {
-			throw new ParseError.MISSING_DEFINITION
+			throw new RdfError.MISSING_DEFINITION
 			  ("No ontology available for namespace: %s", current_namespace.uri);
 		}
 
@@ -250,7 +250,7 @@ public Charango.Entity? find_entity (string uri) {
 }
 
 public Charango.Entity find_entity_with_error (string uri)
-                       throws ParseError, OntologyError {
+                       throws RdfError {
 	/* FIXME: let's hash the namespaces */
 
 	string namespace_uri, entity_name;
@@ -260,7 +260,7 @@ public Charango.Entity find_entity_with_error (string uri)
 	Namespace ns = find_namespace (namespace_uri);
 
 	if (ns == null)
-		throw new ParseError.UNKNOWN_NAMESPACE
+		throw new RdfError.UNKNOWN_NAMESPACE
 		  ("find_entity: Unknown namespace for resource <%s>", uri);
 
 	return ns.find_local_entity (uri);
@@ -270,14 +270,14 @@ public Charango.Class? find_class (string uri) {
 	try {
 		return find_class_with_error (uri);
 	}
-	  catch (Error e) {
+	  catch (Charango.RdfError e) {
 		warning ("%s", e.message);
 		return null;
 	  }
 }
 
 public Charango.Class find_class_with_error (string uri)
-                      throws OntologyError, ParseError {
+                      throws RdfError {
 	string namespace_uri, class_name;
 
 	parse_uri_as_resource_strings (uri, out namespace_uri, out class_name);
@@ -285,7 +285,7 @@ public Charango.Class find_class_with_error (string uri)
 	Charango.Namespace ns = find_namespace (namespace_uri);
 
 	if (ns == null)
-		throw new ParseError.UNKNOWN_NAMESPACE
+		throw new RdfError.UNKNOWN_NAMESPACE
 		  ("find_entity: Unknown namespace for resource <%s>", uri);
 
 	return ns.find_local_class (uri);
@@ -312,7 +312,7 @@ public Charango.Namespace? find_namespace (string uri) {
 private Charango.Namespace? process_uri (string      uri,
                                          out string  canonical_uri,
                                          out string? entity_name)
-                            throws Charango.ParseError {
+                            throws Charango.RdfError {
 	Charango.Namespace? ns;
 	string ns_uri;
 
@@ -329,7 +329,7 @@ private Charango.Namespace? process_uri (string      uri,
 		ns = find_namespace (uri);
 
 		if (ns == null)
-			throw new ParseError.UNKNOWN_NAMESPACE ("Unknown namespace for '%s'", uri);
+			throw new RdfError.UNKNOWN_NAMESPACE ("Unknown namespace for '%s'", uri);
 
 		entity_name = null;
 	}
@@ -343,13 +343,13 @@ private Charango.Namespace? process_uri (string      uri,
 private Entity create_entity (Charango.Namespace ns,
                               string             uri,
                               Charango.Class     type)
-               throws ParseError, OntologyError {
+               throws Charango.RdfError {
 	switch (type.get_concept_type ()) {
 		case ConceptType.ONTOLOGY:
 			// This function is called for resources that don't already exist, and
 			// all ontologies are created on init according to the INDEX so we
 			// should not get here.
-			throw new OntologyError.INVALID_DEFINITION
+			throw new RdfError.INVALID_DEFINITION
 			   ("Ontology object for %s should already exist. You may have set " +
 			    "the URI incorrectly in INDEX; or the file may try to define " +
 			    "more than one ontology (which is not permitted)", uri);
@@ -379,13 +379,13 @@ private Entity create_entity (Charango.Namespace ns,
  *
  * If the namespace of @uri is unknown and @allow_unknown_namespace is
  * %TRUE, the namespace will be created for the new entity. If it is
- * %FALSE, the function will throw #ParseError.UNKNOWN_NAMESPACE.
+ * %FALSE, the function will throw #RdfError.UNKNOWN_NAMESPACE.
  */
 internal Entity find_or_create_entity (Ontology        owner,
                                        string          uri,
                                        Charango.Class? expected_type,
                                        bool            allow_unknown_namespace)
-                throws OntologyError, ParseError {
+                throws RdfError {
 	Charango.Namespace ns;
 	string  canonical_uri;
 	string? entity_name;
@@ -396,8 +396,8 @@ internal Entity find_or_create_entity (Ontology        owner,
 	try {
 		ns = process_uri (uri, out canonical_uri, out entity_name);
 	}
-	catch (ParseError e) {
-		if (e is ParseError.UNKNOWN_NAMESPACE && allow_unknown_namespace) {
+	catch (RdfError e) {
+		if (e is RdfError.UNKNOWN_NAMESPACE && allow_unknown_namespace) {
 			string ns_uri;
 			parse_uri_as_resource_strings (uri, out ns_uri, null);
 
@@ -414,7 +414,7 @@ internal Entity find_or_create_entity (Ontology        owner,
 	if (ns.ignore)
 		// This error should always be handled by the caller, it's an
 		// exception only for convenience.
-		throw new ParseError.IGNORED_NAMESPACE (ns.uri);
+		throw new RdfError.IGNORED_NAMESPACE (ns.uri);
 
 	if (! ns.loaded /*&& ! ns.external*/)
 		if (ns.required_by == null)
@@ -424,7 +424,7 @@ internal Entity find_or_create_entity (Ontology        owner,
 	try {
 		e = ns.find_local_entity (canonical_uri);
 	}
-	catch (OntologyError.UNKNOWN_RESOURCE error) {
+	catch (RdfError.UNKNOWN_RESOURCE error) {
 		if (ns.loaded)
 			throw error;
 	}

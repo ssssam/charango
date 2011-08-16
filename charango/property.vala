@@ -36,7 +36,7 @@ public Charango.Class range;
 public Property (Charango.Namespace ns,
                  string             uri,
                  Charango.Class     rdf_type)
-       throws Charango.ParseError {
+       throws Charango.RdfError {
 	base (ns, uri, rdf_type);
 
 	this.name = get_name_from_uri (uri);

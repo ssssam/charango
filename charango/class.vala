@@ -94,7 +94,7 @@ internal Class.prototype (Charango.Namespace ns,
 }
 
 internal ConceptType get_concept_type ()
-                     throws OntologyError {
+                     throws Charango.RdfError {
 	Charango.Class? concept_type = this;
 
 	while (concept_type != null) {
@@ -117,7 +117,7 @@ internal ConceptType get_concept_type ()
 		concept_type = concept_type.main_parent;
 	}
 
-	throw new OntologyError.INTERNAL_ERROR
+	throw new RdfError.INTERNAL_ERROR
 	  ("'%s' has somehow ruptured the fabric of the universe", this.uri);
 }
 
@@ -148,7 +148,7 @@ public void register_property (Charango.Property property) {
 
 public Charango.Property get_rdfs_property (string  property_name,
                                             int    *p_index = null)
-                         throws OntologyError                       {
+                         throws RdfError                       {
 	for (uint i=0; i<properties.len; i++) {
 		Property p = (Property)properties.index(i);
 
@@ -159,12 +159,12 @@ public Charango.Property get_rdfs_property (string  property_name,
 		}
 	}
 
-	throw new OntologyError.UNKNOWN_PROPERTY
+	throw new RdfError.UNKNOWN_PROPERTY
 	      ("Class %s has no property '%s'", this.to_string(), property_name);
 }
 
 public uint get_rdfs_property_index (string property_name)
-            throws OntologyError                           {
+            throws RdfError                           {
 	for (uint i=0; i<properties.len; i++) {
 		Property p = (Property)properties.index(i);
 
@@ -172,7 +172,7 @@ public uint get_rdfs_property_index (string property_name)
 			return i;
 	}
 
-	throw new OntologyError.UNKNOWN_PROPERTY
+	throw new RdfError.UNKNOWN_PROPERTY
 	          ("Class %s has no property '%s'", this.to_string(), property_name);
 }
 

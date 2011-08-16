@@ -48,7 +48,7 @@ public void test_local_ontology_sources () {
 		if (error is FileError.NOENT)
 			error_was_thrown = true;
 	  }
-	  catch (Charango.ParseError error) { warn_if_reached (); }
+	  catch (Charango.RdfError error) { warn_if_reached (); }
 
 	assert (error_was_thrown);
 }
@@ -94,8 +94,7 @@ public void test_heirarchy () {
 		context.load_namespace ("http://example.com/test-heirarchy#");
 	}
 		catch (FileError e) { error (e.message); }
-		catch (ParseError e) { error (e.message); }
-		catch (OntologyError e) { error (e.message); }
+		catch (RdfError e) { error (e.message); }
 
 	assert (warning_list.length() == 0);
 
@@ -144,8 +143,7 @@ public void test_live () {
 		context.load_namespace ("http://purl.org/ontology/mo/");
 	}
 	  catch (FileError e) { error (e.message); }
-	  catch (ParseError e) { error (e.message); }
-	  catch (OntologyError e) { error (e.message); }
+	  catch (RdfError e) { error (e.message); }
 
 	foreach (unowned Warning w in warning_list)
 		print ("Warning: %s\n", w.message);

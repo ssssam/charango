@@ -49,7 +49,7 @@ public Charango.Class rdf_type;
 internal Charango.Namespace ns;
 
 /* FIXME: would be nicer if we could store the values directly in the array,
- * but that requires wrapping GArray in Vala which might be hard ..
+ * but that lrequires wrapping GArray in Vala which might be hard ..
  */
 GenericArray<Charango.Value?> data;
 
@@ -82,7 +82,7 @@ private void fix_uri () {
 	try {
 		parse_uri_as_resource_strings (this.uri, out namespace_uri, out entity_name);
 	}
-	catch (Charango.ParseError e) {
+	catch (Charango.RdfError e) {
 		warning ("Parse error in URI <%s>", this.uri);
 		return;
 	}
@@ -111,7 +111,7 @@ private void fix_uri () {
  * make it for example a Property or Class.
  */
 internal bool requires_promotion (Charango.Class to_class)
-              throws OntologyError {
+              throws Charango.RdfError {
 	switch (to_class.get_concept_type()) {
 		case ConceptType.ONTOLOGY:
 			return ! (this is Charango.Ontology);
@@ -147,12 +147,12 @@ internal void copy_properties (Entity source) {
 
 int check_type_and_get_index_for_property (string                 predicate,
                                            Charango.ValueBaseType type)
-           throws OntologyError {
+           throws RdfError {
 	int index = 0;
 	Charango.Property property = this.rdf_type.get_rdfs_property (predicate, &index);
 
 	if (property.type != type)
-		throw new OntologyError.TYPE_MISMATCH
+		throw new RdfError.TYPE_MISMATCH
 		  ("Type mismatch: property '%s' expects %s but got %s",
 		   predicate,
 		   value_base_type_name[property.type],
@@ -177,7 +177,7 @@ public void set_string (string predicate,
 		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.STRING);
 		set_string_by_index (index, object);
 	}
-	catch (OntologyError e) {
+	catch (RdfError e) {
 		warning ("%s", e.message);
 	}
 }
@@ -188,7 +188,7 @@ public void set_boolean (string predicate,
 		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.BOOLEAN);
 		set_boolean_by_index (index, object);
 	}
-	catch (OntologyError e) {
+	catch (RdfError e) {
 		warning ("%s", e.message);
 	}
 }
@@ -199,7 +199,7 @@ public void set_integer (string predicate,
 		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.INT64);
 		set_integer_by_index (index, object);
 	}
-	catch (OntologyError e) {
+	catch (RdfError e) {
 		warning ("%s", e.message);
 	}
 }
@@ -210,7 +210,7 @@ public void set_double (string predicate,
 		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DOUBLE);
 		set_double_by_index (index, object);
 	}
-	catch (OntologyError e) {
+	catch (RdfError e) {
 		warning ("%s", e.message);
 	}
 }
@@ -221,7 +221,7 @@ public void set_date (string predicate,
 		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATE);
 		set_date_by_index (index, object);
 	}
-	catch (OntologyError e) {
+	catch (RdfError e) {
 		warning ("%s", e.message);
 	}
 }
@@ -232,7 +232,7 @@ public void set_datetime (string   predicate,
 		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATETIME);
 		set_datetime_by_index (index, object);
 	}
-	catch (OntologyError e) {
+	catch (RdfError e) {
 		warning ("%s", e.message);
 	}
 }
@@ -243,7 +243,7 @@ public void set_float (string predicate,
 		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.FLOAT);
 		set_float_by_index (index, object);
 	}
-	catch (OntologyError e) {
+	catch (RdfError e) {
 		warning ("%s", e.message);
 	}
 }
@@ -312,7 +312,7 @@ public unowned string? get_string (string predicate) {
 		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.STRING);
 		return get_string_by_index (index);
 	}
-	catch (OntologyError e) {
+	catch (RdfError e) {
 		warning ("%s", e.message);
 		return null;
 	}
@@ -323,7 +323,7 @@ public unowned bool get_boolean (string predicate) {
 		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.BOOLEAN);
 		return get_boolean_by_index (index);
 	}
-	catch (OntologyError e) {
+	catch (RdfError e) {
 		warning ("%s", e.message);
 		return false;
 	}
@@ -334,7 +334,7 @@ public unowned int64 get_integer (string predicate) {
 		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.INT64);
 		return get_integer_by_index (index);
 	}
-	catch (OntologyError e) {
+	catch (RdfError e) {
 		warning ("%s", e.message);
 		return 0;
 	}
@@ -345,7 +345,7 @@ public unowned double get_double (string predicate) {
 		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DOUBLE);
 		return get_double_by_index (index);
 	}
-	catch (OntologyError e) {
+	catch (RdfError e) {
 		warning ("%s", e.message);
 		return 0.0;
 	}
@@ -357,7 +357,7 @@ public unowned Date? get_date (string predicate) {
 		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATE);
 		return get_date_by_index (index);
 	}
-	catch (OntologyError e) {
+	catch (RdfError e) {
 		warning ("%s", e.message);
 		return null;
 	}
@@ -368,7 +368,7 @@ public unowned DateTime? get_datetime (string predicate) {
 		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATETIME);
 		return get_datetime_by_index (index);
 	}
-	catch (OntologyError e) {
+	catch (RdfError e) {
 		warning ("%s", e.message);
 		return null;
 	}
@@ -379,7 +379,7 @@ public unowned float get_float (string predicate) {
 		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.FLOAT);
 		return get_float_by_index (index);
 	}
-	catch (OntologyError e) {
+	catch (RdfError e) {
 		warning ("%s", e.message);
 		return (float)0.0;
 	}

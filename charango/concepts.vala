@@ -28,7 +28,7 @@ internal class Charango.XsdOntology: Charango.Ontology {
 
 		try {
 			base (ns, ns.uri, context.owl_ontology_class, null);
-		} catch (ParseError error) { critical (error.message); }
+		} catch (RdfError error) { critical (error.message); }
 
 		ns.set_ontology (this);
 
@@ -79,7 +79,7 @@ internal class Charango.RdfOntology: Charango.Ontology {
 
 		try {
 			base (ns, ns.uri, context.owl_ontology_class, null);
-		} catch (ParseError error) { critical (error.message); }
+		} catch (RdfError error) { critical (error.message); }
 
 		ns.set_ontology (this);
 
@@ -98,7 +98,7 @@ internal class Charango.RdfsOntology: Ontology {
 
 		try {
 			base (ns, ns.uri, context.owl_ontology_class, null);
-		} catch (ParseError error) { critical (error.message); }
+		} catch (RdfError error) { critical (error.message); }
 
 		ns.class_list.prepend (context.rdfs_class);
 
@@ -125,7 +125,7 @@ internal class Charango.OwlOntology: Charango.Ontology {
 
 		try {
 			base (ns, ns.uri, context.owl_ontology_class, null);
-		} catch (ParseError error) { critical (error.message); }
+		} catch (RdfError error) { critical (error.message); }
 
 		ns.class_list.prepend (context.owl_ontology_class);
 
@@ -158,6 +158,6 @@ internal class Charango.OwlOntology: Charango.Ontology {
 		c.main_parent = ns.find_local_class ("http://www.w3.org/2002/07/owl#ObjectProperty");
 		ns.class_list.prepend (c);
 
-		} catch (OntologyError error) { critical (error.message); }
+		} catch (RdfError error) { critical (error.message); }
 	}
 }

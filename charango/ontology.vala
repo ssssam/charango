@@ -33,10 +33,10 @@ public Ontology (Charango.Namespace ns,
                  string             uri,
                  Charango.Class     rdf_type,
                  string?            source_file_name) /* FIXME: still need source_file_name ?? */
-       throws ParseError {
+       throws RdfError {
 	unichar terminator = uri[uri.length-1];
 	if (terminator != '#' && terminator != '/')
-		throw new ParseError.INVALID_URI ("Namespace must end in # or /; got '%s'", uri);
+		throw new RdfError.URI_PARSE_ERROR ("Namespace must end in # or /; got '%s'", uri);
 
 	base (ns, uri, rdf_type);
 
@@ -75,12 +75,12 @@ private string get_format_for_file (string file_name) {
  * Load ontology into memory.
  */
 internal void load (ref List<Warning>  warning_list)
-         throws ParseError, OntologyError {
+         throws RdfError {
 	Charango.Context context = this.ns.context;
 	Rdf.World *redland = context.redland;
 
 	if (this.source_file_name == null)
-		throw new ParseError.MISSING_DEFINITION
+		throw new RdfError.MISSING_DEFINITION
 		  ("Missing ontology definition for %s", ns.uri);
 
 	tracel (1, "ontology", "Loading %s from %s\n", this.uri, this.source_file_name);
@@ -166,8 +166,8 @@ internal void load (ref List<Warning>  warning_list)
 			arc = (Charango.Property) context.find_or_create_entity
 			            (this, arc_uri, context.rdf_property, false);
 		}
-		catch (Charango.ParseError e) {
-			if (e is ParseError.IGNORED_NAMESPACE)
+		catch (Charango.RdfError e) {
+			if (e is RdfError.IGNORED_NAMESPACE)
 				// Ignore any triple with an ignored subject or arc, let's
 				// assume whoever wrote the INDEX knew what they were doing
 				continue;

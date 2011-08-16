@@ -62,10 +62,10 @@ internal List<Charango.Property> property_list = null;
 public Namespace (Context context,
                   string  uri,
                   string? prefix)
-       throws ParseError {
+       throws RdfError {
 	unichar terminator = uri[uri.length-1];
 	if (terminator != '#' && terminator != '/')
-		throw new ParseError.INVALID_URI ("Namespace must end in # or /; got '%s'", uri);
+		throw new RdfError.URI_PARSE_ERROR ("Namespace must end in # or /; got '%s'", uri);
 
 	this.context = context;
 
@@ -79,7 +79,7 @@ public Namespace.builtin_internal (Context context,
 	try {
 		this (context, uri, prefix);
 	}
-	catch (ParseError e) { warning (e.message); }
+	catch (RdfError e) { warning (e.message); }
 
 	this.builtin = true;
 }
@@ -111,16 +111,16 @@ public List<Charango.Entity> get_entity_list () {
 
 /* FIXME: is it good to have a nullable type .. */
 internal Charango.Entity? find_local_entity (string uri)
-                          throws OntologyError {
+                          throws RdfError {
 	try {
 		return find_local_class (uri);
 	}
-	  catch (OntologyError e) { }
+	  catch (RdfError e) { }
 
 	try {
 		return find_local_property (uri);
 	}
-	  catch (OntologyError e) {
+	  catch (RdfError e) {
 	  }
 
 	foreach (Charango.Entity e in this.entity_list)
@@ -131,25 +131,25 @@ internal Charango.Entity? find_local_entity (string uri)
 		if (uri == this.uri || (uri + "#") == this.uri || (uri + "/") == this.uri)
 			return this.ontology;
 
-	throw new OntologyError.UNKNOWN_RESOURCE ("Unable to find entity '%s'", uri);
+	throw new RdfError.UNKNOWN_RESOURCE ("Unable to find entity '%s'", uri);
 }
 
 internal Charango.Class find_local_class (string uri)
-                        throws OntologyError {
+                        throws RdfError {
 	foreach (Charango.Class c in this.class_list)
 		if (c.uri == uri)
 			return c;
 
-	throw new OntologyError.UNKNOWN_CLASS ("Unable to find class '%s'", uri);
+	throw new RdfError.UNKNOWN_CLASS ("Unable to find class '%s'", uri);
 }
 
 internal Charango.Property find_local_property (string uri)
-                        throws OntologyError {
+                        throws RdfError {
 	foreach (Charango.Property p in this.property_list)
 		if (p.uri == uri)
 			return p;
 
-	throw new OntologyError.UNKNOWN_PROPERTY ("Unable to find property '%s'", uri);
+	throw new RdfError.UNKNOWN_PROPERTY ("Unable to find property '%s'", uri);
 }
 
 internal void replace_entity (Entity old_entity,

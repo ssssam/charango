@@ -21,26 +21,25 @@ using Rdf;
  * because the ontologies are of course API. However, using exceptions
  * simplifies the error checking.
  */
-public errordomain Charango.ParseError {
-	PARSE_ERROR,
+public errordomain Charango.RdfError {
+	URI_PARSE_ERROR,
+	RDF_PARSE_ERROR,
 	INDEX_PARSE_ERROR,
-	INVALID_URI,
-	DUPLICATE_DEFINITION,
-	MISSING_DEFINITION,
+
 	UNKNOWN_NAMESPACE,
-
-	/* This one isn't an error at all, but it seems like the cleanest solution
-	 * to how to handle ignored namespaces. */
-	IGNORED_NAMESPACE
-}
-
-/* FIXME: some parse errors should be in here */
-public errordomain Charango.OntologyError {
 	UNKNOWN_RESOURCE,
 	UNKNOWN_CLASS,
 	UNKNOWN_PROPERTY,  /* Subject outside property domain */
 	TYPE_MISMATCH,     /* Object outside property range */
+
 	INVALID_DEFINITION,
+	DUPLICATE_DEFINITION,
+	MISSING_DEFINITION,
+
+	/* This one isn't an error at all, but it seems like the cleanest solution
+	 * to how to handle ignored namespaces. */
+	IGNORED_NAMESPACE,
+
 	INTERNAL_ERROR
 }
 
