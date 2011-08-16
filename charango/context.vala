@@ -206,17 +206,22 @@ public void load_namespace (string            uri,
             throws FileError, RdfError, RdfError {
 	List<Charango.Namespace> load_list = null;
 
-	load_list.append (this.find_namespace (uri));
+	var root = this.find_namespace (uri);
+
+	if (root == null)
+		throw new RdfError.UNKNOWN_NAMESPACE
+		  ("load_namespace(): '%s' is not available in any ontology source.", uri);
+
+	load_list.append (root);
 
 	while (load_list != null) {
 		// All namespaces referenced in 'ontology' that are available but
 		// not yet loaded will be queued for reading
 		var current_namespace = load_list.data;
 
-		if (current_namespace.ontology == null) {
+		if (current_namespace.ontology == null)
 			throw new RdfError.MISSING_DEFINITION
 			  ("No ontology available for namespace: %s", current_namespace.uri);
-		}
 
 		current_namespace.ontology.load (ref warning_list);
 

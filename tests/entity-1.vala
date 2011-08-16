@@ -19,6 +19,7 @@ using Charango;
 
 extern static const string SRCDIR;
 
+const string ontology_dir = SRCDIR + "/charango/data/ontologies/";
 const string test_ontology_dir = SRCDIR + "/charango/tests/data/ontologies/";
 
 class EntityTest: GLib.Object {
@@ -35,6 +36,7 @@ public void test_primitive_types () { /* Unit test */
 
 	try {
 		context.add_local_ontology_source (test_ontology_dir);
+		context.add_local_ontology_source (ontology_dir);
 		context.load_namespace ("http://example.com/test-entity#");
 	}
 	  catch (FileError e) { error (e.message); }
