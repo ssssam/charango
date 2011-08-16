@@ -3,7 +3,7 @@
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of te License, or
+ *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -23,29 +23,30 @@ const string test_ontology_dir = SRCDIR + "/charango/tests/data/ontologies/";
 
 class EntityTest: GLib.Object {
 
-Charango.Context context;
-
 public EntityTest() {
 	Test.add_data_func ("/charango/entity/primitive types", this.test_primitive_types);
+	Test.add_data_func ("/charango/entity/type checking", this.test_type_checking);
 }
 
-public void test_primitive_types () {
-	List<Warning> warning_list;
+public void test_primitive_types () { /* Unit test */
+	List<Warning> warning_list = null;
 	// Fixture. FIXME: MUST be a better way to do all this
-	context = new Charango.Context ();
+	var context = new Charango.Context ();
 
 	try {
-		var test_ontology_file = test_ontology_dir + "test-entity.ontology";
-		context.load_ontology_file (test_ontology_file);
-		context.load (out warning_list);
+		context.add_local_ontology_source (test_ontology_dir);
+		context.load_namespace ("http://example.com/test-entity#");
 	}
-		catch (FileError e) { error (e.message); }
-		catch (ParseError e) { error (e.message); }
+	  catch (FileError e) { error (e.message); }
+	  catch (ParseError e) { error (e.message); }
+	  catch (OntologyError e) { error (e.message); }
 
 	assert (warning_list.length() == 0);
 
 	// The actual test
-	var entity = new Charango.Entity(context, "test_entity:BasicEntity");
+	var entity = new Charango.Entity (null,
+	                                  "test:1",
+	                                  context.find_class ("http://example.com/test-entity#BasicEntity"));
 	entity.set_string ("string", "test");
 	entity.set_boolean ("boolean", true);
 	entity.set_integer ("integer", -1);
@@ -67,6 +68,54 @@ public void test_primitive_types () {
 	assert (date.compare (entity.get_date ("date")) == 0);
 	assert (datetime.compare (entity.get_datetime ("dateTime")) == 0);
 	assert (entity.get_float ("float") == 1.0);
+}
+
+static int warning_count;
+
+void warning_counter (string? log_domain,
+                      LogLevelFlags log_levels,
+                      string message) {
+	warning_count ++;
+}
+
+public void test_type_checking() {
+	List<Warning> warning_list = null;
+	// Fixture. FIXME: MUST be a better way to do all this
+	var context = new Charango.Context ();
+
+	try {
+		context.add_local_ontology_source (test_ontology_dir);
+		context.load_namespace ("http://example.com/test-entity#");
+	}
+	  catch (FileError e) { error (e.message); }
+	  catch (ParseError e) { error (e.message); }
+	  catch (OntologyError e) { error (e.message); }
+
+	assert (warning_list.length() == 0);
+
+	var entity = new Charango.Entity (null,
+	                                  "test:1",
+	                                  context.find_class ("http://example.com/test-heirarchy#BasicEntity"));
+
+	/* The setter functions warn rather than raising an exception, to avoid
+	 * requiring the programmer to put every property access in a try/catch
+	 * block when the errors are really programmer errors, not runtime exceptions.
+	 */
+	/* FIXME: glib-2.0.vapi has wrong prototypes:
+	 * https://bugzilla.gnome.org/show_bug.cgi?id=649644 */
+	/*var old_fatal_mask = */Log.set_always_fatal (0);
+	/*var old_default_handler = */Log.set_default_handler (warning_counter);
+	warning_count = 0;
+
+	entity.set_string ("integer", "This is not an integer");
+	assert (warning_count == 1);
+
+	warning_count = 0;
+	entity.get_integer ("string");
+	assert (warning_count == 1);
+
+	/*Log.set_always_fatal (old_fatal_mask);
+	Log.set_default_handler (old_default_handler);*/
 }
 
 }

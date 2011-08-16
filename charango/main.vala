@@ -17,17 +17,31 @@
 
 using Rdf;
 
+/* These are really programmer errors rather than runtime exceptions,
+ * because the ontologies are of course API. However, using exceptions
+ * simplifies the error checking.
+ */
 public errordomain Charango.ParseError {
 	PARSE_ERROR,
-	ONTOLOGY_ERROR,
+	INDEX_PARSE_ERROR,
 	INVALID_URI,
-	DUPLICATED_ONTOLOGY,
-	UNKNOWN_NAMESPACE
+	DUPLICATE_DEFINITION,
+	MISSING_DEFINITION,
+	UNKNOWN_NAMESPACE,
+
+	/* This one isn't an error at all, but it seems like the cleanest solution
+	 * to how to handle ignored namespaces. */
+	IGNORED_NAMESPACE
 }
 
-/* FIXME: some parse errors should be in herE */
+/* FIXME: some parse errors should be in here */
 public errordomain Charango.OntologyError {
-	UNKNOWN_PROPERTY
+	UNKNOWN_RESOURCE,
+	UNKNOWN_CLASS,
+	UNKNOWN_PROPERTY,  /* Subject outside property domain */
+	TYPE_MISMATCH,     /* Object outside property range */
+	INVALID_DEFINITION,
+	INTERNAL_ERROR
 }
 
 /**
@@ -48,6 +62,62 @@ public class Charango.Warning {
 }
 
 namespace Charango {
+
+internal void glib_logger (string?            domain,
+                           GLib.LogLevelFlags log_level,
+                           string             message) {
+	/* Handles only Charango debug messages */
+	for (uint i=(log_level>>8); i>0; i>>=1)
+		printerr ("  ");
+	printerr (message);
+}
+
+internal int redland_logger (LogMessage message) {
+	const GLib.LogLevelFlags log_level_mapping[] = {
+		0,
+		GLib.LogLevelFlags.LEVEL_DEBUG,
+		GLib.LogLevelFlags.LEVEL_INFO,
+		GLib.LogLevelFlags.LEVEL_WARNING,
+		GLib.LogLevelFlags.LEVEL_ERROR,
+		GLib.LogLevelFlags.LEVEL_CRITICAL
+	};
+
+	StringBuilder output = new StringBuilder ();
+
+	if (message.locator != null) {
+		string file = message.locator.file ?? message.locator.uri.as_string();
+		output.append_printf ("%s:%i: ", file, message.locator.line);
+	}
+
+	output.append (message.message);
+
+	GLib.log ("Charango", log_level_mapping[message.level], output.str);
+
+	return 1;
+}
+
+/* FIXME: ideally, we would make it possible to disable tracing via a #ifdef,
+ * this is something that perhaps could be directly built into vala ... */
+internal void trace (string component,
+                     string format, ...) {
+	va_list va = va_list();
+	tracev (0, component, format, va);
+}
+
+internal void tracel (int    level,
+                      string component,
+                      string format, ...) {
+	va_list va = va_list();
+	tracev (level, component, format, va);
+}
+
+private void tracev (int    level,
+                     string component,
+                     string format, va_list va) {
+	return;  // Comment me out to get some traces!
+
+	logv ("Charango", (GLib.LogLevelFlags)(1<<level) << 8, format, va);
+}
 
 public void print_warnings (List<Warning> warning_list) {
 	foreach (unowned Warning w in warning_list)

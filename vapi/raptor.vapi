@@ -38,6 +38,15 @@ namespace Raptor {
 		XML_LITERAL
 	}
 
+	[CCode (cname = "raptor_locator")]
+	public struct Locator {
+		public Raptor.Uri uri;
+		public string file;
+		public int line;
+		public int column;
+		public int byte;
+	}
+
 	extern void init ();
 
 	[Compact]

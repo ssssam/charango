@@ -20,45 +20,118 @@ namespace Charango {
 /**
  * Charango.Entity: a data 'object'
  * 
- * More precisely, a #Charango.Entity is an instance of an rdfs:Class.
+ * More precisely, a #Charango.Entity is an instance of an rdfs:Class -
+ * an rdf:Resource which has had an rdf:type specified.
  */
-public class Entity: GLib.Object {
+/* FIXME: Ideally, this would be a MiniObject type. We don't need signals
+ * or properties, it's a model. In general Models should be MiniObjects, in
+ * fact (I've been reading about MVC recently :) perhaps there should be a 
+ * GDataModel base class that specifically cannot emit signals, because
+ * a data model should not need them.
+ */
+ 
+ /* It would be cool to have this as a 'magic' GObject subclass, in fact.
+  * Since the namespace of GObject properties is completely clean we don't
+  * have to worry about namespace clashes (and the property names will be
+  * key URI's :). We could have magic get, set, enumerate etc. property
+  * functions where all class properties and all assigned annotation
+  * properties are accessible & listed.
+  * - Would property notifications not clash horribly with the store's
+  *   change notifications? Actually no, they could coexist because the
+  *   store would still notify on changes, just that the object optionally
+  *   would as well.
+  */
+public class Entity: Object {
+
+public string uri;
+public Charango.Class rdf_type;
+
+internal Charango.Namespace ns;
 
 /* FIXME: would be nicer if we could store the values directly in the array,
  * but that requires wrapping GArray in Vala which might be hard ..
  */
-Charango.Class rdfs_class;
 GenericArray<Charango.Value?> data;
 
-/* In old Entry, we used to index properties with an int. Is that practical here?
- * IF entries were only one class we could use a sort of hashmap and speed things
- * up with that .. we certainly don't want a hash table lookup on every god damn
- * line of every view refresh ...
- */
-/* The problem then is that there can be more than one class. While ontologies are
- * fixed, we can use the class heirarchy to find all possible predicates and index
- * them BY class. If we change the heirarchy at run time, no matter because this is
- * all just shortcuts anyway. Restart. The problem is when we can have an Entity
- * which is an instance of more than one class heirarchy.
- *
- * I'm leaning towards just not allowing this.
- */
+public Entity (Charango.Namespace ns,
+               string             uri,
+               Charango.Class     rdf_type) {
+	this.ns = ns;
+	this.uri = uri;
+	this.rdf_type = rdf_type;
 
-public Entity (Context  context,
-               string   class_uri_string) {
-	try {
-		rdfs_class = context.get_class_by_uri_string (class_uri_string);
-	}
-		catch (ParseError e) {
-			warning ("%s", e.message);
-			return;
-		}
+	this.data = new GenericArray<Charango.Value?>();
+
+	this.fix_uri ();
+}
+
+public Entity.prototype (Charango.Namespace ns,
+                         string             uri) {
+	this.ns = ns;
+	this.uri = uri;
 
 	this.data = new GenericArray<Charango.Value?>();
 }
 
-public Charango.Class get_rdfs_class () {
-	return rdfs_class;
+/* Automatically fix non-canonical URI's, if eg. its namespace is an alias of
+ * the actual one.
+ */
+private void fix_uri () {
+	string namespace_uri, entity_name;
+
+	try {
+		parse_uri_as_resource_strings (this.uri, out namespace_uri, out entity_name);
+	}
+	catch (Charango.ParseError e) {
+		warning ("Parse error in URI <%s>", this.uri);
+		return;
+	}
+
+	if (this is Charango.Ontology) {
+		warn_if_fail (namespace_uri == this.ns.uri);
+		return;
+	}
+
+	if (namespace_uris_match (this.ns.uri, namespace_uri))
+		return;
+
+	// Swap our namespace for the ontology's canonical namespace
+	foreach (string alias_uri in this.ns.alias_list)
+		if (namespace_uris_match (alias_uri, namespace_uri)) {
+			this.uri = this.ns.uri + entity_name;
+			return;
+		}
+
+	warning ("Unknown namespace for URI <%s> (expected %s)", uri, this.ns.uri);
+}
+
+/* requires_promotion:
+ * 
+ * True if the class is currently an Entity, but becoming 'to_class' would
+ * make it for example a Property or Class.
+ */
+internal bool requires_promotion (Charango.Class to_class)
+              throws OntologyError {
+	switch (to_class.get_concept_type()) {
+		case ConceptType.ONTOLOGY:
+			return ! (this is Charango.Ontology);
+		case ConceptType.CLASS:
+			return ! (this is Charango.Class);
+		case ConceptType.PROPERTY:
+			return ! (this is Charango.Property);
+		case ConceptType.ENTITY:
+			return ! (this is Charango.Entity);
+	}
+
+	return_val_if_reached (false);
+}
+
+/* copy_properties:
+ *
+ * Duplicate 'source' into 'this'.
+ */
+internal void copy_properties (Entity source) {
+	data = source.data;
 }
 
 /* FIXME: this is a horribly bloated amount of code. If only Vala had a macro
@@ -66,10 +139,43 @@ public Charango.Class get_rdfs_class () {
  * and see if anyone has any ideas for good ways to reduce the amount of code
  * here. Generics or some such.
  */
+
+/* These functions warn on errors instead of throwing exceptions because the
+ * possible errors are ontology errors and the ontology is part of the
+ * application API. Exceptions are used elsewhere for convenience.
+ */
+
+int check_type_and_get_index_for_property (string                 predicate,
+                                           Charango.ValueBaseType type)
+           throws OntologyError {
+	int index = 0;
+	Charango.Property property = this.rdf_type.get_rdfs_property (predicate, &index);
+
+	if (property.type != type)
+		throw new OntologyError.TYPE_MISMATCH
+		  ("Type mismatch: property '%s' expects %s but got %s",
+		   predicate,
+		   value_base_type_name[property.type],
+		   value_base_type_name[type]);
+
+	return index;
+}
+
+public void set_literal (string   predicate,
+                         Rdf.Node node) {
+	//print ("Setting %s to %s\n", predicate, node.to_string());
+}
+
+public void set_entity (string predicate,
+                        Entity entity) {
+	//print ("Setting %s to %s\n", predicate, entity.uri);
+}
+
 public void set_string (string predicate,
                         string object) {
 	try {
-		set_string_by_index (rdfs_class.get_property_index (predicate), object);
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.STRING);
+		set_string_by_index (index, object);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -79,7 +185,8 @@ public void set_string (string predicate,
 public void set_boolean (string predicate,
                          bool  object) {
 	try {
-		set_boolean_by_index (rdfs_class.get_property_index (predicate), object);
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.BOOLEAN);
+		set_boolean_by_index (index, object);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -89,7 +196,8 @@ public void set_boolean (string predicate,
 public void set_integer (string predicate,
                          int64  object) {
 	try {
-		set_integer_by_index (rdfs_class.get_property_index (predicate), object);
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.INT64);
+		set_integer_by_index (index, object);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -99,7 +207,8 @@ public void set_integer (string predicate,
 public void set_double (string predicate,
                         double object) {
 	try {
-		set_double_by_index (rdfs_class.get_property_index (predicate), object);
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DOUBLE);
+		set_double_by_index (index, object);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -109,7 +218,8 @@ public void set_double (string predicate,
 public void set_date (string predicate,
                       Date   object) {
 	try {
-		set_date_by_index (rdfs_class.get_property_index (predicate), object);
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATE);
+		set_date_by_index (index, object);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -119,7 +229,8 @@ public void set_date (string predicate,
 public void set_datetime (string   predicate,
                           DateTime object) {
 	try {
-		set_datetime_by_index (rdfs_class.get_property_index (predicate), object);
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATETIME);
+		set_datetime_by_index (index, object);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -129,17 +240,18 @@ public void set_datetime (string   predicate,
 public void set_float (string predicate,
                        float object) {
 	try {
-		set_float_by_index (rdfs_class.get_property_index (predicate), object);
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.FLOAT);
+		set_float_by_index (index, object);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
 	}
 }
 
+/* Fast variants: no type or bounds checking is done */
+
 public void set_string_by_index (uint   predicate_index,
                                  string object_literal) {
-	/* FIXME: check type fits */
-	/* FIXME: data.length should be a uint :) */
 	if (data.length <= predicate_index)
 		data.length = (int)(predicate_index + 1);
 
@@ -156,8 +268,6 @@ public void set_boolean_by_index (uint predicate_index,
 
 public void set_integer_by_index (uint  predicate_index,
                                   int64 object_literal) {
-	/* FIXME: check type fits */
-	/* FIXME: data.length should be a uint :) */
 	if (data.length <= predicate_index)
 		data.length = (int)(predicate_index + 1);
 
@@ -166,8 +276,6 @@ public void set_integer_by_index (uint  predicate_index,
 
 public void set_double_by_index (uint   predicate_index,
                                  double object_literal) {
-	/* FIXME: check type fits */
-	/* FIXME: data.length should be a uint :) */
 	if (data.length <= predicate_index)
 		data.length = (int)(predicate_index + 1);
 
@@ -176,8 +284,6 @@ public void set_double_by_index (uint   predicate_index,
 
 public void set_date_by_index (uint predicate_index,
                                Date object_literal) {
-	/* FIXME: check type fits */
-	/* FIXME: data.length should be a uint :) */
 	if (data.length <= predicate_index)
 		data.length = (int)(predicate_index + 1);
 
@@ -186,8 +292,6 @@ public void set_date_by_index (uint predicate_index,
 
 public void set_datetime_by_index (uint     predicate_index,
                                    DateTime object_literal) {
-	/* FIXME: check type fits */
-	/* FIXME: data.length should be a uint :) */
 	if (data.length <= predicate_index)
 		data.length = (int)(predicate_index + 1);
 
@@ -196,17 +300,17 @@ public void set_datetime_by_index (uint     predicate_index,
 
 public void set_float_by_index (uint  predicate_index,
                                 float object_literal) {
-	/* FIXME: check type fits */
-	/* FIXME: data.length should be a uint :) */
 	if (data.length <= predicate_index)
 		data.length = (int)(predicate_index + 1);
 
 	data[predicate_index] = Value.from_float (object_literal);
 }
 
+
 public unowned string? get_string (string predicate) {
 	try {
-		return get_string_by_index (rdfs_class.get_property_index (predicate));
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.STRING);
+		return get_string_by_index (index);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -216,7 +320,8 @@ public unowned string? get_string (string predicate) {
 
 public unowned bool get_boolean (string predicate) {
 	try {
-		return get_boolean_by_index (rdfs_class.get_property_index (predicate));
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.BOOLEAN);
+		return get_boolean_by_index (index);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -226,7 +331,8 @@ public unowned bool get_boolean (string predicate) {
 
 public unowned int64 get_integer (string predicate) {
 	try {
-		return get_integer_by_index (rdfs_class.get_property_index (predicate));
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.INT64);
+		return get_integer_by_index (index);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -236,7 +342,8 @@ public unowned int64 get_integer (string predicate) {
 
 public unowned double get_double (string predicate) {
 	try {
-		return get_double_by_index (rdfs_class.get_property_index (predicate));
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DOUBLE);
+		return get_double_by_index (index);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -247,7 +354,8 @@ public unowned double get_double (string predicate) {
 /* Practically this cannot be null, but vala bug prevents specifying that */
 public unowned Date? get_date (string predicate) {
 	try {
-		return get_date_by_index (rdfs_class.get_property_index (predicate));
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATE);
+		return get_date_by_index (index);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -257,7 +365,8 @@ public unowned Date? get_date (string predicate) {
 
 public unowned DateTime? get_datetime (string predicate) {
 	try {
-		return get_datetime_by_index (rdfs_class.get_property_index (predicate));
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATETIME);
+		return get_datetime_by_index (index);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -267,7 +376,8 @@ public unowned DateTime? get_datetime (string predicate) {
 
 public unowned float get_float (string predicate) {
 	try {
-		return get_float_by_index (rdfs_class.get_property_index (predicate));
+		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.FLOAT);
+		return get_float_by_index (index);
 	}
 	catch (OntologyError e) {
 		warning ("%s", e.message);
@@ -303,7 +413,7 @@ public unowned float get_float_by_index (uint predicate_index) {
 	return data[predicate_index].get_float ();
 }
 
-public void dump () {
+public virtual void dump () {
 }
 
 }

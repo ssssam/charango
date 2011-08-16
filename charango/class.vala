@@ -19,14 +19,16 @@
  * Charango.RdfsClass: represents an rdfs:Class
  */
 
-/* How to parse a class, from the ontology ..
- * * Need to look out for the key predicates:
- *    - rdf:type == rdfs:Class
- *    - rdfs:label -> class name
- *    - rdfs:subClassOf -> parent
- */
+/* Concepts are specialised forms of entity, which have their own Vala class
+ * because they are relevant to ontology structure. */
+public enum Charango.ConceptType {
+	ONTOLOGY = 0,
+	CLASS = 1,
+	PROPERTY = 2,
+	ENTITY = 3
+}
 
-public class Charango.Class: GLib.Object {
+public class Charango.Class: Entity {
 
 public int id;
 public string name;
@@ -49,101 +51,74 @@ internal PtrArray    properties;
 
 public bool builtin = false;
 
-internal Ontology ontology;
+public Class (Charango.Namespace ns,
+              string             uri,
+              Charango.Class     rdf_type,
+              int                id) {
+	base (ns, uri, rdf_type);
 
-/* Only stored while awaiting load */
-unowned Rdf.Node? this_node;
+	this.name = get_name_from_uri (uri);
+	this.id = id;
 
-public Class (Charango.Ontology _ontology,
-              int               _id,
-              string            _name) {
-	ontology = _ontology;
-	id = _id;
-	name = _name;
+	// Give a default superclass; this will be overwritten if/when
+	// rdfs:subClassOf is read
+	this.main_parent = ns.context.rdf_resource;
 
-	properties = new PtrArray ();
+	this.properties = new PtrArray ();
 }
 
-public Class.internal (Charango.Ontology _ontology,
-                       int               _id,
-                       string            _name) {
-	this (_ontology, _id, _name);
-	builtin = true;
+internal Class.internal (Charango.Namespace ns,
+                         string             name,
+                         int                id) {
+	string uri = ns.uri + name;
+
+	base  (ns, uri, ns.context.rdfs_class);
+
+	this.name = name;
+	this.id = id;
+	this.main_parent = ns.context.rdf_resource;
+	this.builtin = true;
+
+	this.properties = new PtrArray ();
 }
 
-public void set_node (Rdf.Node node) {
-	this_node = node;
+internal Class.prototype (Charango.Namespace ns,
+                          string             uri,
+                          int                id) {
+	base.prototype (ns, uri);
+
+	this.name = get_name_from_uri (uri);
+	this.id = id;
+
+	this.properties = new PtrArray ();
 }
 
-public void load (Rdf.Model         model,
-                  ref List<Warning> warning_list)
-            throws ParseError      {
-	Context context = ontology.context;
-	Rdf.World *redland = context.redland;
+internal ConceptType get_concept_type ()
+                     throws OntologyError {
+	Charango.Class? concept_type = this;
 
-	// Find more data on this class from the ontology
-	//
-	var template = new Rdf.Statement.from_nodes (ontology.context.redland,
-	                                              new Rdf.Node.from_node (this_node),
-	                                              null,
-	                                              null);
-	var stream = model.find_statements (template);
-
-	while (! stream.end()) {
-		unowned Rdf.Statement statement = stream.get_object ();
-		unowned Rdf.Node arc = statement.get_predicate ();
-
-		// rdfs:label - human-readable name
-		//
-		if (arc.equals (redland->concept (Rdf.Concept.S_label))) {
-			unowned Rdf.Node label_node = statement.get_object ();
-			label = label_node.get_literal_value ();
+	while (concept_type != null) {
+		switch (concept_type.uri) {
+			case "http://www.w3.org/2002/07/owl#Ontology":
+				return ConceptType.ONTOLOGY;
+			case "http://www.w3.org/2000/01/rdf-schema#Class":
+				return ConceptType.CLASS;
+			case "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property":
+				return ConceptType.PROPERTY;
+			case "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource":
+				return ConceptType.ENTITY;
 		}
 
-		// rdfs:comment - human-readable description
-		//
-		else
-		if (arc.equals (redland->concept (Rdf.Concept.S_comment))) {
-			unowned Rdf.Node comment_node = statement.get_object ();
-			comment = comment_node.get_literal_value ();
-		}
-		else
+		if (concept_type.main_parent == concept_type)
+			break;
 
-		// rdfs:subClassOf - parent class
-		//
-		if (arc.equals (redland->concept (Rdf.Concept.S_subClassOf))) {
-			unowned Rdf.Node parent_node = statement.get_object ();
-
-			if (parent_node.is_resource ()) {
-				Charango.Class parent = context.get_class_by_uri (parent_node.get_uri());
-
-				if (main_parent == null)
-					main_parent = parent;
-				else
-					parent_list.prepend (parent);
-
-				parent.child_list.prepend (this);
-			}
-			else
-			if (parent_node.is_blank ()) {
-				// No idea what to do here, see for example
-				// http://www.isi.edu/~pan/damltime/time-entry.owl#CalendarClockDescription
-				var w = new Warning ("Unhandled rdf:subClassOf triple in %s",
-				                     this.to_string());
-				warning_list.append ((owned)w);
-			} else
-				throw new ParseError.PARSE_ERROR
-				            ("%s: rdf:subClassOf requires URI\n", this.to_string());
-		}
-
-		stream.next ();
+		// This could theoretically miss subclasses that have multiple
+		// inheritance, but I think you would deserve to have problems
+		concept_type = concept_type.main_parent;
 	}
 
-	if (main_parent == null)
-		// FIXME: should be able to access this by a fixed index
-		main_parent = context.get_class_by_uri (redland->concept_uri (Rdf.Concept.S_Class));
-
-	this_node = null;
+	throw new OntologyError.INTERNAL_ERROR
+	  ("'%s' has somehow ruptured the fabric of the universe", this.uri);
 }
 
 public List<Class> get_parents () {
@@ -171,8 +146,25 @@ public void register_property (Charango.Property property) {
 		c.register_property (property);
 }
 
-public uint get_property_index (string property_name)
-            throws OntologyError                      {
+public Charango.Property get_rdfs_property (string  property_name,
+                                            int    *p_index = null)
+                         throws OntologyError                       {
+	for (uint i=0; i<properties.len; i++) {
+		Property p = (Property)properties.index(i);
+
+		if (p.name == property_name) {
+			if (p_index != null)
+				*p_index = i;
+			return p;
+		}
+	}
+
+	throw new OntologyError.UNKNOWN_PROPERTY
+	      ("Class %s has no property '%s'", this.to_string(), property_name);
+}
+
+public uint get_rdfs_property_index (string property_name)
+            throws OntologyError                           {
 	for (uint i=0; i<properties.len; i++) {
 		Property p = (Property)properties.index(i);
 
@@ -182,16 +174,15 @@ public uint get_property_index (string property_name)
 
 	throw new OntologyError.UNKNOWN_PROPERTY
 	          ("Class %s has no property '%s'", this.to_string(), property_name);
-
 }
 
 public string to_string () {
 	var builder = new StringBuilder();
 
-	if (ontology.prefix != null)
-		builder.append (ontology.prefix);
+	if (this.ns.prefix != null)
+		builder.append (this.ns.prefix);
 	else
-		builder.append (ontology.uri);
+		builder.append (this.ns.uri);
 
 	builder.append (":");
 	builder.append (name);
@@ -199,8 +190,8 @@ public string to_string () {
 	return builder.str;
 }
 
-public void dump() {
-	print ("rdfs:Class %i '%s:%s': %u properties\n", id, ontology.prefix, name, properties.len);
+public override void dump () {
+	print ("rdfs:Class %i '%s:%s': %u properties\n", id, this.ns.prefix, name, properties.len);
 }
 
 public void dump_heirarchy (int indent = 0) {
@@ -209,7 +200,7 @@ public void dump_heirarchy (int indent = 0) {
 			print ("   ");
 		print ("-> ");
 	}
-	print ("%s:%s\n", ontology.prefix != null? ontology.prefix: ontology.uri, name);
+	print ("%s:%s\n", this.ns.prefix != null? this.ns.prefix: this.ns.uri, name);
 
 	// Only permitted for rdfs:Resource class
 	if (this.main_parent == null)
@@ -240,11 +231,12 @@ public void dump_properties () {
 public class Charango.LiteralTypeClass: Class {
 	public ValueBaseType literal_value_type;
 
-	public LiteralTypeClass (Charango.Ontology _ontology,
-	                         int               _id,
-	                         string            _name,
-	                         ValueBaseType     _literal_value_type) {
-		base (_ontology, _id, _name);
-		literal_value_type = _literal_value_type;
+	public LiteralTypeClass (Charango.Namespace ns,
+	                         string             name,
+	                         ValueBaseType      literal_value_type,
+	                         int                id) {
+		string uri = ns.uri + name;
+		base (ns, uri, ns.context.rdfs_class, id);
+		this.literal_value_type = literal_value_type;
 	}
 }
