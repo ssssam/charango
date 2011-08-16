@@ -21,6 +21,9 @@ To do (stuff I won't really do)
      the URI .. is it fair to make unique prefixes a requirement? There's ultimately
      no reason you can't just invent one/add a postfix index if the user can't make
      it unique, so this idea is definitely a mover and shaker
+  -> actually, it might make much more sense to use a tree of some sort for this.
+     rather than hashing the whole URI to get the namespace, using esp. the prefix
+     to look things up this would probably be the fastest route
 
   -> Do you need entity Id's? I'm not sure at the moment. We can probably use
      pointers most places.
@@ -28,13 +31,33 @@ To do (stuff I won't really do)
 To do
 -----
 
+* Add an 'ontology-browser' example - simple Gtk+ 3 app
+  1. concept browser
+    - & make sure everything works!
+  2. display the properties in a separate pane
+  3. fix crash on type-search in treeview
+
+Current issues
+
+* Why does creativecommons.org#ns contain no resources?
+
+* You pass Namespace to Entity() etc. - but you can discover it from the
+  URI.
+
+* rename OntologyError - RdfError? NamespaceError?
+
 get/set properties should work again - actually store the data :)
 
 6. add accessors for concept properties that wrap get/set_entity etc.
 
 * Write up a proper spec
 
-* Add an 'ontology-browser' example - simple Gtk+ 3 app
+* We need to make a list of entities which were created on the fly during load
+  but never actually got a type defined, or didn't get mentioned in any statements
+  at all. Essentially we need to go through and check all the semantics *after*
+  everything is loaded I suppose. Is this Charango's responsibility? Actually
+  it shouldn't be too hard since we can do it automatically on a property-by-property
+  basis once we know the domains and ranges are accurate, for example.
 
 * Since you're using Vala, why not use GValue for values since it's built in!!
 
@@ -53,6 +76,10 @@ get/set properties should work again - actually store the data :)
 * Relationship properties
 
 * The store/source interface (beginnings are stashed)
+Charango.Namespace:
+  - should implement charango.source, charango.store is related too .. not
+    sure how all of these things fit together yet.
+
 
 -> need a couple of thoughts on architecture. Heard a bit about MVC recently
    and how change notifications and editing should go in the controller,
@@ -277,6 +304,8 @@ Fixes in other projects
 	or valadata?
 
 	Update raptor.vapi in upstream Vala, merge redland.vapi
+
+	Would be great if vala exceptions carried line number info .. :)
 
 * Tracker
 	Some of our ontology state code is duplicated in Tracker, although also have

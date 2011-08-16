@@ -96,9 +96,8 @@ error, not a user error.
 Non-controversial things that nontheless aren't specified as part of RDF
 ------------------------------------------------------------------------
 
-One ontology <-> one file
+One ontology <-> one file <-> one namespace
 
-An 'Entity' is a resource with ONE rdf:type assigned.
 
 Code design decisions
 ---------------------
