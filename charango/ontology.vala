@@ -181,11 +181,6 @@ internal void load (ref List<Warning>  warning_list)
 
 		if (object_node.is_literal ())
 			subject.set_literal (arc.uri, object_node);
-		else if (object_node.is_blank ())
-			warning_list.prepend (new Warning (
-				"Ignored statement due to blank: <%s %s %s>",
-				subject_node.to_string (), arc_node.to_string (), object_node.to_string ()
-			));
 		else if (object_node.is_resource ()) {
 			/* FIXME: because replacing entities after the fact is an expensive operation,
 			 * we should do our best to create the correct concept type here; the range
@@ -200,6 +195,11 @@ internal void load (ref List<Warning>  warning_list)
 			                                        true);
 			subject.set_entity (arc.uri, object);
 		}
+		else if (object_node.is_blank ())
+			warning_list.prepend (new Warning (
+				"Ignored statement due to blank: <%s %s %s>",
+				subject_node.to_string (), arc_node.to_string (), object_node.to_string ()
+			));
 	}
 }
 
