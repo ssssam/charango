@@ -203,7 +203,7 @@ public void add_local_ontology_source (string path)
  */
 public void load_namespace (string            uri,
                             out List<Warning> warning_list = null)
-            throws FileError, RdfError, RdfError {
+            throws FileError, RdfError {
 	List<Charango.Namespace> load_list = null;
 
 	var root = this.find_namespace (uri);
