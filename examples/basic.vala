@@ -23,10 +23,11 @@ public int main (string[] args) {
 	var context = new Charango.Context ();
 	/* FIXME: make relocatable */
 	var path = Path.build_filename (SRCDIR, "charango", "data", "ontologies", null);
+	List<Charango.Warning> warning_list;
 
 	try {
 		context.add_local_ontology_source (path);
-		context.load_namespace ("http://purl.org/ontology/mo/");
+		context.load_namespace ("http://purl.org/ontology/mo/", out warning_list);
 	}
 	  catch (FileError error) {
 		print ("Unable to find ontologies: %s\n", error.message);
@@ -37,25 +38,33 @@ public int main (string[] args) {
 		return 2;
 	  }
 
-	var artist_mo = new Charango.Entity (null,
+	/*foreach (unowned Warning w in warning_list)
+		print ("%s\n", w.message);*/
+
+	Charango.Namespace example_ns = null;
+	Charango.Namespace musicbrainz_artist_ns = null;
+	try {
+		example_ns = new Charango.Namespace (context, "http://example.com/", "example");
+		musicbrainz_artist_ns = new Charango.Namespace (context, "http://musicbrainz.org/artist/", "musicbrainz");
+	}
+	  catch (RdfError error) { warning (error.message); }
+
+	var artist_mo = new Charango.Entity (musicbrainz_artist_ns,
 	                                     "http://musicbrainz.org/artist/ac241ded-3430-4f42-8451-f78667cc2f52",
 	                                     context.find_class ("http://purl.org/ontology/mo/MusicArtist"));
 
-	var track_mo = new Charango.Entity (null,
-	                                    "track:test",
+	var track_mo = new Charango.Entity (example_ns,
+	                                    "http://example.com/test",
 	                                    context.find_class ("http://purl.org/ontology/mo/Track"));
 
 	artist_mo.rdf_type.dump_properties();
 
-	/*artist_mo.set_string ("rdf:about",
-	                   );
-	artist_mo.set_string ("foaf:name", "The Aggrolites");
-	artist_mo.set_string ("ov:sortName", "Aggrolites, The");
-	*/
+	artist_mo.set_string ("http://xmlns.com/foaf/0.1/name", "The Aggrolites");
+	artist_mo.set_string ("http://open.vocab.org/terms/sort-name", "Aggrolites, The");
 
-	/* Step 2:
-	track_mo.set_resource ("mo:key", Charango.get_entity ("keys:DMinor"));
-	*/
+
+	track_mo.set_entity ("http://purl.org/ontology/mo/key",
+	                     context.find_entity ("http://purl.org/NET/c4dm/keys.owl#DMinor"));
 
 	/*var artist_nmm = new Charango.Entity (context, "nmm:Artist");
 	entity.set_string ("rdf:about",
