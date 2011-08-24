@@ -127,8 +127,8 @@ internal void load (ref List<Warning>  warning_list)
 
 		Class subject_type = null;
 
-		if (arc_uri == "http://www.w3.org/1999/02/22-rdf-syntax-ns#Type") {
-			if (! object_node.is_literal()) {
+		if (arc_uri == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
+			if (! object_node.is_resource()) {
 				warning_list.prepend (new Warning ("Invalid statement: <%s %s %s>",
 				                                   subject_node.to_string (),
 				                                   arc_node.to_string (),

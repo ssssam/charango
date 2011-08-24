@@ -73,13 +73,14 @@ public Context() {
 	  (rdf_namespace, "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource", this.max_class_id ++);
 
 	rdfs_class = new Charango.Class.prototype
-	  (rdfs_namespace, "http://www.w3.org/1999/02/22-rdf-syntax-ns#Class", this.max_class_id ++);
+	  (rdfs_namespace, "http://www.w3.org/2000/01/rdf-schema#Class", this.max_class_id ++);
 
 	owl_ontology_class = new Charango.Class.prototype
 	  (owl_namespace, "http://www.w3.org/2002/07/owl#Ontology", this.max_class_id ++);
 
 	// Maxwell's equations
 	rdfs_class.main_parent = rdf_resource;
+	rdfs_class.rdf_type = rdfs_class;
 	rdf_resource.rdf_type = rdfs_class;
 	owl_ontology_class.rdf_type = rdfs_class;
 
