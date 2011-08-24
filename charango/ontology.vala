@@ -137,8 +137,7 @@ internal void load (ref List<Warning>  warning_list)
 			}
 
 			string object_uri = object_node.get_uri().as_string();
-			subject_type = (Charango.Class) context.find_or_create_entity
-			                 (this, object_uri, context.rdfs_class, true);
+			subject_type = (Charango.Class) context.find_or_create_entity (this, object_uri, context.rdfs_class, true);
 		}
 
 		/* FIXME: support containers! http://www.infowebml.ws/website/_n.htm */
