@@ -26,6 +26,7 @@
  */
 
 #include <glib.h>
+#include <glib-object.h>
 
 typedef struct _CharangoEntity *CharangoEntity;
 
@@ -82,7 +83,12 @@ typedef union {
 	#define DOUBLE_IS_INLINED  FALSE
 #endif
 
- 
+/* rdf:Resource */ 
+void charango_value_init_from_entity (CharangoValue  *value,
+                                      CharangoEntity *x) {
+	value->ptr = g_object_ref (x);
+}
+
 /* xsd:string */
 void charango_value_init_from_string (CharangoValue *value,
                                       const gchar   *x) {
