@@ -297,6 +297,31 @@ public Charango.Class find_class_with_error (string uri)
 	return ns.find_local_class (uri);
 }
 
+public Charango.Property? find_property (string uri) {
+	try {
+		return find_property_with_error (uri);
+	}
+	  catch (Charango.RdfError e) {
+		warning ("%s", e.message);
+		return null;
+	  }
+}
+
+public Charango.Property find_property_with_error (string uri)
+                         throws RdfError {
+	string namespace_uri, property_name;
+
+	parse_uri_as_resource_strings (uri, out namespace_uri, out property_name);
+
+	Charango.Namespace ns = find_namespace (namespace_uri);
+
+	if (ns == null)
+		throw new RdfError.UNKNOWN_NAMESPACE
+		  ("find_entity: Unknown namespace for resource <%s>", uri);
+
+	return ns.find_local_property (uri);
+}
+
 public Charango.Namespace? find_namespace (string uri) {
 	// FIXME: there must be a better way to search lists in vala
 	foreach (Namespace ns in namespace_list) {

@@ -145,11 +145,12 @@ internal void copy_properties (Entity source) {
  * application API. Exceptions are used elsewhere for convenience.
  */
 
-int check_type_and_get_index_for_property (string                 predicate,
-                                           Charango.ValueBaseType type)
-           throws RdfError {
+int check_and_intern_property (string                 predicate,
+                               Charango.ValueBaseType type)
+           throws RdfError
+           requires (this.rdf_type is Charango.Class) {
 	int index = 0;
-	Charango.Property property = this.rdf_type.get_rdfs_property (predicate, &index);
+	Charango.Property property = this.rdf_type.intern_property (predicate, &index);
 
 	if (property.type != type)
 		throw new RdfError.TYPE_MISMATCH
@@ -167,14 +168,20 @@ public void set_literal (string   predicate,
 }
 
 public void set_entity (string predicate,
-                        Entity entity) {
-	//print ("Setting %s to %s\n", predicate, entity.uri);
+                        Entity object) {
+	try {
+		int index = check_and_intern_property (predicate, ValueBaseType.RESOURCE);
+		set_entity_by_index (index, object);
+	}
+	catch (RdfError e) {
+		warning ("%s", e.message);
+	}
 }
 
 public void set_string (string predicate,
                         string object) {
 	try {
-		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.STRING);
+		int index = check_and_intern_property (predicate, ValueBaseType.STRING);
 		set_string_by_index (index, object);
 	}
 	catch (RdfError e) {
@@ -185,7 +192,7 @@ public void set_string (string predicate,
 public void set_boolean (string predicate,
                          bool  object) {
 	try {
-		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.BOOLEAN);
+		int index = check_and_intern_property (predicate, ValueBaseType.BOOLEAN);
 		set_boolean_by_index (index, object);
 	}
 	catch (RdfError e) {
@@ -196,7 +203,7 @@ public void set_boolean (string predicate,
 public void set_integer (string predicate,
                          int64  object) {
 	try {
-		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.INT64);
+		int index = check_and_intern_property (predicate, ValueBaseType.INT64);
 		set_integer_by_index (index, object);
 	}
 	catch (RdfError e) {
@@ -207,7 +214,7 @@ public void set_integer (string predicate,
 public void set_double (string predicate,
                         double object) {
 	try {
-		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DOUBLE);
+		int index = check_and_intern_property (predicate, ValueBaseType.DOUBLE);
 		set_double_by_index (index, object);
 	}
 	catch (RdfError e) {
@@ -218,7 +225,7 @@ public void set_double (string predicate,
 public void set_date (string predicate,
                       Date   object) {
 	try {
-		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATE);
+		int index = check_and_intern_property (predicate, ValueBaseType.DATE);
 		set_date_by_index (index, object);
 	}
 	catch (RdfError e) {
@@ -229,7 +236,7 @@ public void set_date (string predicate,
 public void set_datetime (string   predicate,
                           DateTime object) {
 	try {
-		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATETIME);
+		int index = check_and_intern_property (predicate, ValueBaseType.DATETIME);
 		set_datetime_by_index (index, object);
 	}
 	catch (RdfError e) {
@@ -240,7 +247,7 @@ public void set_datetime (string   predicate,
 public void set_float (string predicate,
                        float object) {
 	try {
-		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.FLOAT);
+		int index = check_and_intern_property (predicate, ValueBaseType.FLOAT);
 		set_float_by_index (index, object);
 	}
 	catch (RdfError e) {
@@ -249,6 +256,14 @@ public void set_float (string predicate,
 }
 
 /* Fast variants: no type or bounds checking is done */
+
+public void set_entity_by_index (uint            predicate_index,
+                                 Charango.Entity object_resource) {
+	if (data.length <= predicate_index)
+		data.length = (int)(predicate_index + 1);
+
+	data[predicate_index] = Value.from_entity (object_resource);
+}
 
 public void set_string_by_index (uint   predicate_index,
                                  string object_literal) {
@@ -309,7 +324,7 @@ public void set_float_by_index (uint  predicate_index,
 
 public unowned string? get_string (string predicate) {
 	try {
-		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.STRING);
+		int index = check_and_intern_property (predicate, ValueBaseType.STRING);
 		return get_string_by_index (index);
 	}
 	catch (RdfError e) {
@@ -320,7 +335,7 @@ public unowned string? get_string (string predicate) {
 
 public unowned bool get_boolean (string predicate) {
 	try {
-		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.BOOLEAN);
+		int index = check_and_intern_property (predicate, ValueBaseType.BOOLEAN);
 		return get_boolean_by_index (index);
 	}
 	catch (RdfError e) {
@@ -331,7 +346,7 @@ public unowned bool get_boolean (string predicate) {
 
 public unowned int64 get_integer (string predicate) {
 	try {
-		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.INT64);
+		int index = check_and_intern_property (predicate, ValueBaseType.INT64);
 		return get_integer_by_index (index);
 	}
 	catch (RdfError e) {
@@ -342,7 +357,7 @@ public unowned int64 get_integer (string predicate) {
 
 public unowned double get_double (string predicate) {
 	try {
-		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DOUBLE);
+		int index = check_and_intern_property (predicate, ValueBaseType.DOUBLE);
 		return get_double_by_index (index);
 	}
 	catch (RdfError e) {
@@ -354,7 +369,7 @@ public unowned double get_double (string predicate) {
 /* Practically this cannot be null, but vala bug prevents specifying that */
 public unowned Date? get_date (string predicate) {
 	try {
-		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATE);
+		int index = check_and_intern_property (predicate, ValueBaseType.DATE);
 		return get_date_by_index (index);
 	}
 	catch (RdfError e) {
@@ -365,7 +380,7 @@ public unowned Date? get_date (string predicate) {
 
 public unowned DateTime? get_datetime (string predicate) {
 	try {
-		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.DATETIME);
+		int index = check_and_intern_property (predicate, ValueBaseType.DATETIME);
 		return get_datetime_by_index (index);
 	}
 	catch (RdfError e) {
@@ -376,7 +391,7 @@ public unowned DateTime? get_datetime (string predicate) {
 
 public unowned float get_float (string predicate) {
 	try {
-		int index = check_type_and_get_index_for_property(predicate, ValueBaseType.FLOAT);
+		int index = check_and_intern_property (predicate, ValueBaseType.FLOAT);
 		return get_float_by_index (index);
 	}
 	catch (RdfError e) {

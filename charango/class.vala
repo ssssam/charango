@@ -132,48 +132,31 @@ public List<Class> get_children () {
 	return child_list.copy();
 }
 
-public void register_property (Charango.Property property) {
-	// FIXME: this is probably actually an ontology warning rather than
-	// programmer error
-	this.properties.foreach ((p) => {
-		if (p == property)
-			return;
-	});
+public Charango.Property intern_property (string  property_uri,
+                                          int    *p_index = null)
+                         throws RdfError {
+	/* FIXME: storing properties would be a lot more efficient in a B-tree
+	 * or some such structure.
+	 */
+	Property? p = null;
+	uint i;
 
-	this.properties.add (property);
-
-	foreach (Class c in this.child_list)
-		c.register_property (property);
-}
-
-public Charango.Property get_rdfs_property (string  property_name,
-                                            int    *p_index = null)
-                         throws RdfError                       {
-	for (uint i=0; i<properties.len; i++) {
-		Property p = (Property)properties.index(i);
-
-		if (p.name == property_name) {
-			if (p_index != null)
-				*p_index = i;
-			return p;
+	for (i=0; i<properties.len; i++) {
+		if (((Property)properties.index(i)).uri == property_uri) {
+			p = (Property)properties.index(i);
+			break;
 		}
 	}
 
-	throw new RdfError.UNKNOWN_PROPERTY
-	      ("Class %s has no property '%s'", this.to_string(), property_name);
-}
-
-public uint get_rdfs_property_index (string property_name)
-            throws RdfError                           {
-	for (uint i=0; i<properties.len; i++) {
-		Property p = (Property)properties.index(i);
-
-		if (p.name == property_name)
-			return i;
+	if (p == null) {
+		p = this.ns.context.find_property_with_error (property_uri);
+		properties.add (p);
 	}
 
-	throw new RdfError.UNKNOWN_PROPERTY
-	          ("Class %s has no property '%s'", this.to_string(), property_name);
+	if (p_index != null)
+		*p_index = i;
+
+	return p;
 }
 
 public string to_string () {
