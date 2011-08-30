@@ -32,12 +32,14 @@ public EntityTest() {
 public void test_primitive_types () { /* Unit test */
 	List<Warning> warning_list = null;
 	// Fixture. FIXME: MUST be a better way to do all this
-	var context = new Charango.Context ();
+	Charango.Context context = new Charango.Context ();
+	Charango.Namespace test_ns;
 
 	try {
 		context.add_local_ontology_source (test_ontology_dir);
 		context.add_local_ontology_source (ontology_dir);
 		context.load_namespace ("http://example.com/test-entity#");
+		test_ns = new Charango.Namespace (context, "http://example.com/test-entity#", "test");
 	}
 	  catch (FileError e) { error (e.message); }
 	  catch (RdfError e) { error (e.message); }
@@ -45,30 +47,30 @@ public void test_primitive_types () { /* Unit test */
 	assert (warning_list.length() == 0);
 
 	// The actual test
-	var entity = new Charango.Entity (null,
-	                                  "test:1",
+	var entity = new Charango.Entity (test_ns,
+	                                  "http://example.com/test-entity#1",
 	                                  context.find_class ("http://example.com/test-entity#BasicEntity"));
-	entity.set_string ("string", "test");
-	entity.set_boolean ("boolean", true);
-	entity.set_integer ("integer", -1);
-	entity.set_double ("double", 0.1);
+	entity.set_string ("http://example.com/test-entity#string", "test");
+	entity.set_boolean ("http://example.com/test-entity#boolean", true);
+	entity.set_integer ("http://example.com/test-entity#integer", -1);
+	entity.set_double ("http://example.com/test-entity#double", 0.1);
 
 	var date = Date();
 	date.set_dmy (7, DateMonth.APRIL, 2011);
-	entity.set_date ("date", date);
+	entity.set_date ("http://example.com/test-entity#date", date);
 
 	var datetime = new DateTime.now_local ();
-	entity.set_datetime ("dateTime", datetime);
+	entity.set_datetime ("http://example.com/test-entity#dateTime", datetime);
 
-	entity.set_float ("float", (float)1.0);
+	entity.set_float ("http://example.com/test-entity#float", (float)1.0);
 
-	assert (entity.get_string ("string") == "test");
-	assert (entity.get_boolean ("boolean") == true);
-	assert (entity.get_integer ("integer") == -1);
-	assert (entity.get_double ("double") == 0.1);
-	assert (date.compare (entity.get_date ("date")) == 0);
-	assert (datetime.compare (entity.get_datetime ("dateTime")) == 0);
-	assert (entity.get_float ("float") == 1.0);
+	assert (entity.get_string ("http://example.com/test-entity#string") == "test");
+	assert (entity.get_boolean ("http://example.com/test-entity#boolean") == true);
+	assert (entity.get_integer ("http://example.com/test-entity#integer") == -1);
+	assert (entity.get_double ("http://example.com/test-entity#double") == 0.1);
+	assert (date.compare (entity.get_date ("http://example.com/test-entity#date")) == 0);
+	assert (datetime.compare (entity.get_datetime ("http://example.com/test-entity#dateTime")) == 0);
+	assert (entity.get_float ("http://example.com/test-entity#float") == 1.0);
 }
 
 static int warning_count;
@@ -82,20 +84,23 @@ void warning_counter (string? log_domain,
 public void test_type_checking() {
 	List<Warning> warning_list = null;
 	// Fixture. FIXME: MUST be a better way to do all this
-	var context = new Charango.Context ();
+	Charango.Context context = new Charango.Context ();
+	Charango.Namespace test_ns;
 
 	try {
 		context.add_local_ontology_source (test_ontology_dir);
+		context.add_local_ontology_source (ontology_dir);
 		context.load_namespace ("http://example.com/test-entity#");
+		test_ns = new Charango.Namespace (context, "http://example.com/test-entity#", "test");
 	}
 	  catch (FileError e) { error (e.message); }
 	  catch (RdfError e) { error (e.message); }
 
 	assert (warning_list.length() == 0);
 
-	var entity = new Charango.Entity (null,
-	                                  "test:1",
-	                                  context.find_class ("http://example.com/test-heirarchy#BasicEntity"));
+	var entity = new Charango.Entity (test_ns,
+	                                  "http://example.com/test-entity#1",
+	                                  context.find_class ("http://example.com/test-entity#BasicEntity"));
 
 	/* The setter functions warn rather than raising an exception, to avoid
 	 * requiring the programmer to put every property access in a try/catch
