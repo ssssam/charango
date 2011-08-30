@@ -17,11 +17,16 @@
 
 using Rdf;
 
+/**
+ * Charango.RdfsLiteralClass:
+ *
+ * Represents the class of literal values, ie. rdfs:Literal and all of its
+ * descendents. 'storage_type' describes how literal values of this datatype
+ * should be stored in a GValue.
+ */
+
 internal class Charango.XsdOntology: Charango.Ontology {
-	struct TypeMapping {
-		string        name;
-		ValueBaseType type;
-	}
+	
 
 	public XsdOntology (Charango.Namespace ns) {
 		var context = ns.context;
@@ -32,44 +37,35 @@ internal class Charango.XsdOntology: Charango.Ontology {
 
 		ns.set_ontology (this);
 
-		/* FIXME: if you take away the const, Vala (0.12.0) gives an error:
-		 *   "Expected array element, got array initializer list"
-		 * That's completely unhelpful. Something like "Struct initialisation
-		 * is only permitted for constants" would be better.
-		 */
-		const TypeMapping mappings[] = {
-			// Primitive types - Tracker's subset
-			{ "string", ValueBaseType.STRING },
-			{ "boolean", ValueBaseType.BOOLEAN },
-			{ "integer", ValueBaseType.INT64 },
-			{ "double", ValueBaseType.DOUBLE },
-			{ "date", ValueBaseType.DATE },
-			{ "dateTime", ValueBaseType.DATETIME },
+		add_type ("string", typeof (string));
+		add_type ("boolean", typeof (bool));
+		add_type ("integer", typeof (int64));
+		add_type ("double", typeof (double));
+		add_type ("date", typeof (Date));
+		add_type ("dateTime", typeof (DateTime));
 
-			// Other primitives
-			{ "duration", ValueBaseType.DOUBLE },
-			{ "gYear", ValueBaseType.DATE },
-			{ "gDay", ValueBaseType.DATE },
-			{ "gMonth", ValueBaseType.DATE },
-			{ "float", ValueBaseType.FLOAT },
-			{ "decimal", ValueBaseType.DOUBLE },
-			{ "anyURI", ValueBaseType.STRING },
-			// FIXME:
-			{ "time", ValueBaseType.INT64 },
+		add_type ("gYear", typeof (Date));
+		add_type ("gDay", typeof (Date));
+		add_type ("gMonth", typeof (Date));
+		add_type ("float", typeof (float));
+		add_type ("decimal", typeof (double));
+		add_type ("anyURI", typeof (string));
 
-			// FIXME: the contraints of these derived types get ignored :(
-			{ "int", ValueBaseType.INT64 },
-			{ "nonNegativeInteger", ValueBaseType.INT64 }
-		};
+		// FIXME:
+		add_type ("time", typeof (int64));
 
-		foreach (TypeMapping type in (TypeMapping[]) mappings) {
-			ns.class_list.prepend (new LiteralTypeClass (
-				ns,
-				type.name,
-				type.type,
-				context.max_class_id ++
-			));
-		}
+		// FIXME: the contraints of these derived types get ignored :(
+		add_type ("int", typeof (int64));
+		add_type ("nonNegativeInteger", typeof (int64));
+
+		// WARNING: don't use xsd:duration, w3c warn against it
+		add_type ("duration", typeof (double));
+	}
+
+	void add_type (string name,
+	               Type   type) {
+		var c = new LiteralClass (this.ns, name, type, this.ns.context.max_class_id ++);
+		this.ns.class_list.prepend (c);
 	}
 }
 
@@ -83,9 +79,6 @@ internal class Charango.RdfOntology: Charango.Ontology {
 
 		ns.set_ontology (this);
 
-		ns.class_list.prepend (context.rdf_resource);
-
-		context.rdf_property = new Class.internal (ns, "Property", context.max_class_id ++);
 		ns.class_list.prepend (context.rdf_property);
 
 		ns.class_list.prepend (new Class.internal (ns, "List", context.max_class_id ++));
@@ -100,17 +93,13 @@ internal class Charango.RdfsOntology: Ontology {
 			base (ns, ns.uri, context.owl_ontology_class, null);
 		} catch (RdfError error) { critical (error.message); }
 
+		ns.class_list.prepend (context.rdfs_resource);
 		ns.class_list.prepend (context.rdfs_class);
-
-		/* FIXME: not sure what to do about this - is it really correct
-		 * rdfs:Resource is valid as well as rdf:Resource and means the
-		 * same thing ?? */
-		ns.class_list.prepend (new Class.internal (ns, "Resource", context.max_class_id ++));
 
 		Charango.Class c;
 
 		c = new Class.internal (ns, "Literal", context.max_class_id ++);
-		c.main_parent = context.rdf_resource;
+		c.main_parent = context.rdfs_resource;
 		ns.class_list.prepend (c);
 
 		c = new Class.internal (ns, "Datatype", context.max_class_id ++);

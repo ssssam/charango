@@ -57,14 +57,11 @@ public int main (string[] args) {
 	                                    "http://example.com/test",
 	                                    context.find_class ("http://purl.org/ontology/mo/Track"));
 
-	artist_mo.rdf_type.dump_properties();
+	artist_mo.set_predicate ("http://xmlns.com/foaf/0.1/name", "The Aggrolites");
+	artist_mo.set_predicate ("http://open.vocab.org/terms/sort-name", "Aggrolites, The");
 
-	artist_mo.set_string ("http://xmlns.com/foaf/0.1/name", "The Aggrolites");
-	artist_mo.set_string ("http://open.vocab.org/terms/sort-name", "Aggrolites, The");
-
-
-	track_mo.set_entity ("http://purl.org/ontology/mo/key",
-	                     context.find_entity ("http://purl.org/NET/c4dm/keys.owl#DMinor"));
+	track_mo.set_predicate ("http://purl.org/ontology/mo/key",
+	                        context.find_entity ("http://purl.org/NET/c4dm/keys.owl#DMinor"));
 
 	/*var artist_nmm = new Charango.Entity (context, "nmm:Artist");
 	entity.set_string ("rdf:about",
@@ -72,8 +69,8 @@ public int main (string[] args) {
 	entity.set_string ("nmm:artistName", "The Aggrolites");
 	entity.set_string ("ov:sortName", "Aggrolites, The");*/
 
-	/*artist_mo.dump ();
-	track_mo.dump ();*/
+	artist_mo.dump ();
+	track_mo.dump ();
 	//artist_nmm.dump ();
 	return 0;
 }

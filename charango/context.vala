@@ -36,9 +36,11 @@ List<Charango.Namespace> namespace_list = null;
 List<Charango.Ontology>  ontology_list = null;
 
 /* Fundamental constants of the universe */
-public Charango.Class rdf_resource;
-public Charango.Class rdfs_class;
+public Charango.Property rdf_type;
+public Charango.Class rdfs_resource;
 public Charango.Class rdf_property;
+public Charango.Class rdfs_class;
+public Charango.Class rdfs_literal;
 public Charango.Class owl_ontology_class;
 
 internal int max_class_id = 0;
@@ -69,19 +71,29 @@ public Context() {
 	this.namespace_list.prepend (rdfs_namespace);
 	this.namespace_list.prepend (owl_namespace);
 
-	rdf_resource = new Charango.Class.prototype
-	  (rdf_namespace, "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource", this.max_class_id ++);
+	rdf_type = new Charango.Property.prototype
+	  (rdf_namespace, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+
+	rdfs_resource = new Charango.Class.prototype
+	  (rdfs_namespace, "http://www.w3.org/2000/01/rdf-schema#Resource", this.max_class_id ++);
+
+	rdf_property = new Charango.Class.prototype
+	  (rdf_namespace, "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property", this.max_class_id ++);
 
 	rdfs_class = new Charango.Class.prototype
 	  (rdfs_namespace, "http://www.w3.org/2000/01/rdf-schema#Class", this.max_class_id ++);
+
+	rdfs_literal = new Charango.LiteralClass (rdfs_namespace, "Literal", typeof (string), this.max_class_id ++);
 
 	owl_ontology_class = new Charango.Class.prototype
 	  (owl_namespace, "http://www.w3.org/2002/07/owl#Ontology", this.max_class_id ++);
 
 	// Maxwell's equations
-	rdfs_class.main_parent = rdf_resource;
+	rdfs_class.main_parent = rdfs_resource;
+	rdfs_resource.rdf_type = rdfs_class;
+	rdf_property.rdf_type = rdfs_class;
 	rdfs_class.rdf_type = rdfs_class;
-	rdf_resource.rdf_type = rdfs_class;
+	rdf_type.rdf_type = rdf_property;
 	owl_ontology_class.rdf_type = rdfs_class;
 
 	this.ontology_list.prepend (new XsdOntology (xsd_namespace));
@@ -422,7 +434,7 @@ internal Entity find_or_create_entity (Ontology        owner,
 	string? entity_name;
 
 	if (expected_type == null)
-		expected_type = this.rdf_resource;
+		expected_type = this.rdfs_resource;
 
 	try {
 		ns = process_uri (uri, out canonical_uri, out entity_name);

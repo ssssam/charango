@@ -177,7 +177,7 @@ internal void load (ref List<Warning>  warning_list)
 			continue;
 
 		if (object_node.is_literal ())
-			subject.set_literal (arc.uri, object_node);
+			subject.set_predicate_from_literal (arc.uri, object_node);
 		else if (object_node.is_resource ()) {
 			/* FIXME: because replacing entities after the fact is an expensive operation,
 			 * we should do our best to create the correct concept type here; the range
@@ -190,7 +190,7 @@ internal void load (ref List<Warning>  warning_list)
 			                                        object_uri,
 			                                        /*arc.range.get_concept_type ()*/ null,
 			                                        true);
-			subject.set_entity (arc.uri, object);
+			subject.set_predicate (arc.uri, object);
 		}
 		else if (object_node.is_blank ())
 			warning_list.prepend (new Warning (

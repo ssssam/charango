@@ -62,9 +62,9 @@ public Class (Charango.Namespace ns,
 
 	// Give a default superclass; this will be overwritten if/when
 	// rdfs:subClassOf is read
-	this.main_parent = ns.context.rdf_resource;
+	this.main_parent = ns.context.rdfs_resource;
 
-	this.properties = new PtrArray ();
+	this.initialize_properties ();
 }
 
 internal Class.internal (Charango.Namespace ns,
@@ -76,10 +76,10 @@ internal Class.internal (Charango.Namespace ns,
 
 	this.name = name;
 	this.id = id;
-	this.main_parent = ns.context.rdf_resource;
+	this.main_parent = ns.context.rdfs_resource;
 	this.builtin = true;
 
-	this.properties = new PtrArray ();
+	this.initialize_properties ();
 }
 
 internal Class.prototype (Charango.Namespace ns,
@@ -90,7 +90,15 @@ internal Class.prototype (Charango.Namespace ns,
 	this.name = get_name_from_uri (uri);
 	this.id = id;
 
+	this.initialize_properties ();
+}
+
+void initialize_properties () {
 	this.properties = new PtrArray ();
+
+	// Hardcoded properties; we rely on these having a fixed index to work
+	// around chicken-and-egg lookup problems.
+	properties.add (this.ns.context.rdf_type);
 }
 
 internal ConceptType get_concept_type ()
@@ -105,7 +113,7 @@ internal ConceptType get_concept_type ()
 				return ConceptType.CLASS;
 			case "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property":
 				return ConceptType.PROPERTY;
-			case "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource":
+			case "http://www.w3.org/2000/01/rdf-schema#Resource":
 				return ConceptType.ENTITY;
 		}
 
@@ -133,7 +141,7 @@ public List<Class> get_children () {
 }
 
 public Charango.Property intern_property (string  property_uri,
-                                          int    *p_index = null)
+                                          uint   *p_index = null)
                          throws RdfError {
 	/* FIXME: storing properties would be a lot more efficient in a B-tree
 	 * or some such structure.
@@ -158,6 +166,7 @@ public Charango.Property intern_property (string  property_uri,
 
 	return p;
 }
+
 
 public string to_string () {
 	var builder = new StringBuilder();
@@ -203,23 +212,18 @@ public void dump_properties () {
 
 }
 
+public class Charango.LiteralClass: Charango.Class {
+	public Type storage_type;
 
-/**
- * Charango.LiteralTypeClass:
- *
- * Represents an xsd literal type or derivation. These are themselves
- * rdfs classes.
- */
-
-public class Charango.LiteralTypeClass: Class {
-	public ValueBaseType literal_value_type;
-
-	public LiteralTypeClass (Charango.Namespace ns,
-	                         string             name,
-	                         ValueBaseType      literal_value_type,
-	                         int                id) {
+	public LiteralClass (Charango.Namespace ns,
+	                     string             name,
+	                     Type               storage_type,
+	                     int                id) {
 		string uri = ns.uri + name;
+
 		base (ns, uri, ns.context.rdfs_class, id);
-		this.literal_value_type = literal_value_type;
+
+		this.storage_type = storage_type;
 	}
 }
+

@@ -44,33 +44,33 @@ namespace Charango {
 public class Entity: Object {
 
 public string uri;
-public Charango.Class rdf_type;
-
 internal Charango.Namespace ns;
+private ValueArray data;
 
-/* FIXME: would be nicer if we could store the values directly in the array,
- * but that lrequires wrapping GArray in Vala which might be hard ..
- */
-GenericArray<Charango.Value?> data;
+public Charango.Class rdf_type {
+	get { return (Charango.Class) get_predicate_by_index (0); }
+	set { set_predicate_by_index (0, value); }
+}
 
 public Entity (Charango.Namespace ns,
                string             uri,
                Charango.Class     rdf_type) {
-	this.ns = ns;
 	this.uri = uri;
-	this.rdf_type = rdf_type;
-
-	this.data = new GenericArray<Charango.Value?>();
+	this.ns = ns;
+	this.data = new ValueArray (2);
 
 	this.fix_uri ();
+
+	this.rdf_type = rdf_type;
 }
 
 public Entity.prototype (Charango.Namespace ns,
                          string             uri) {
-	this.ns = ns;
 	this.uri = uri;
+	this.ns = ns;
+	this.data = new ValueArray (2);
 
-	this.data = new GenericArray<Charango.Value?>();
+	this.rdf_type = ns.context.rdfs_resource;
 }
 
 /* Automatically fix non-canonical URI's, if eg. its namespace is an alias of
@@ -131,201 +131,37 @@ internal bool requires_promotion (Charango.Class to_class)
  * Duplicate 'source' into 'this'.
  */
 internal void copy_properties (Entity source) {
-	data = source.data;
+	data = (owned)source.data;
 }
-
-/* FIXME: this is a horribly bloated amount of code. If only Vala had a macro
- * language ... well, one day when you have lots of time, go on the Vala list
- * and see if anyone has any ideas for good ways to reduce the amount of code
- * here. Generics or some such.
- */
 
 /* These functions warn on errors instead of throwing exceptions because the
  * possible errors are ontology errors and the ontology is part of the
  * application API. Exceptions are used elsewhere for convenience.
  */
 
-int check_and_intern_property (string                 predicate,
-                               Charango.ValueBaseType type)
-           throws RdfError
-           requires (this.rdf_type is Charango.Class) {
-	int index = 0;
-	Charango.Property property = this.rdf_type.intern_property (predicate, &index);
+/* check_property_type:
+ *
+ * Ensure that value fits the range of @property, if one is set. Additionally
+ * returns the optimal #GType to use to store the value, such as %G_TYPE_INTEGER
+ * for xsd:integer.
+ */
+void check_property_type (Charango.Property property,
+                          Type              value_type)
+     throws RdfError {
 
-	if (property.type != type)
-		throw new RdfError.TYPE_MISMATCH
-		  ("Type mismatch: property '%s' expects %s but got %s",
-		   predicate,
-		   value_base_type_name[property.type],
-		   value_base_type_name[type]);
-
-	return index;
+/*	if (object.type() != storage_type) {
+		warning ("set_value: property %s requires value of type %s\n",
+		         predicate_uri,
+		         object.type().name());
+		return;
+	}*/
 }
 
-public void set_literal (string   predicate,
-                         Rdf.Node node) {
-	//print ("Setting %s to %s\n", predicate, node.to_string());
-}
-
-public void set_entity (string predicate,
-                        Entity object) {
+public unowned Value? get_predicate (string predicate_uri) {
 	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.RESOURCE);
-		set_entity_by_index (index, object);
-	}
-	catch (RdfError e) {
-		warning ("%s", e.message);
-	}
-}
-
-public void set_string (string predicate,
-                        string object) {
-	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.STRING);
-		set_string_by_index (index, object);
-	}
-	catch (RdfError e) {
-		warning ("%s", e.message);
-	}
-}
-
-public void set_boolean (string predicate,
-                         bool  object) {
-	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.BOOLEAN);
-		set_boolean_by_index (index, object);
-	}
-	catch (RdfError e) {
-		warning ("%s", e.message);
-	}
-}
-
-public void set_integer (string predicate,
-                         int64  object) {
-	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.INT64);
-		set_integer_by_index (index, object);
-	}
-	catch (RdfError e) {
-		warning ("%s", e.message);
-	}
-}
-
-public void set_double (string predicate,
-                        double object) {
-	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.DOUBLE);
-		set_double_by_index (index, object);
-	}
-	catch (RdfError e) {
-		warning ("%s", e.message);
-	}
-}
-
-public void set_date (string predicate,
-                      Date   object) {
-	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.DATE);
-		set_date_by_index (index, object);
-	}
-	catch (RdfError e) {
-		warning ("%s", e.message);
-	}
-}
-
-public void set_datetime (string   predicate,
-                          DateTime object) {
-	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.DATETIME);
-		set_datetime_by_index (index, object);
-	}
-	catch (RdfError e) {
-		warning ("%s", e.message);
-	}
-}
-
-public void set_float (string predicate,
-                       float object) {
-	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.FLOAT);
-		set_float_by_index (index, object);
-	}
-	catch (RdfError e) {
-		warning ("%s", e.message);
-	}
-}
-
-/* Fast variants: no type or bounds checking is done */
-
-public void set_entity_by_index (uint            predicate_index,
-                                 Charango.Entity object_resource) {
-	if (data.length <= predicate_index)
-		data.length = (int)(predicate_index + 1);
-
-	data[predicate_index] = Value.from_entity (object_resource);
-}
-
-public void set_string_by_index (uint   predicate_index,
-                                 string object_literal) {
-	if (data.length <= predicate_index)
-		data.length = (int)(predicate_index + 1);
-
-	data[predicate_index] = Value.from_string (object_literal);
-}
-
-public void set_boolean_by_index (uint predicate_index,
-                                  bool object_literal) {
-	if (data.length <= predicate_index)
-		data.length = (int)(predicate_index + 1);
-
-	data[predicate_index] = Value.from_boolean (object_literal);
-}
-
-public void set_integer_by_index (uint  predicate_index,
-                                  int64 object_literal) {
-	if (data.length <= predicate_index)
-		data.length = (int)(predicate_index + 1);
-
-	data[predicate_index] = Value.from_int64 (object_literal);
-}
-
-public void set_double_by_index (uint   predicate_index,
-                                 double object_literal) {
-	if (data.length <= predicate_index)
-		data.length = (int)(predicate_index + 1);
-
-	data[predicate_index] = Value.from_double (object_literal);
-}
-
-public void set_date_by_index (uint predicate_index,
-                               Date object_literal) {
-	if (data.length <= predicate_index)
-		data.length = (int)(predicate_index + 1);
-
-	data[predicate_index] = Value.from_date (object_literal);
-}
-
-public void set_datetime_by_index (uint     predicate_index,
-                                   DateTime object_literal) {
-	if (data.length <= predicate_index)
-		data.length = (int)(predicate_index + 1);
-
-	data[predicate_index] = Value.from_datetime (object_literal);
-}
-
-public void set_float_by_index (uint  predicate_index,
-                                float object_literal) {
-	if (data.length <= predicate_index)
-		data.length = (int)(predicate_index + 1);
-
-	data[predicate_index] = Value.from_float (object_literal);
-}
-
-
-public unowned string? get_string (string predicate) {
-	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.STRING);
-		return get_string_by_index (index);
+		uint index = 0;
+		this.rdf_type.intern_property (predicate_uri, &index);
+		return this.get_predicate_by_index (index);
 	}
 	catch (RdfError e) {
 		warning ("%s", e.message);
@@ -333,99 +169,64 @@ public unowned string? get_string (string predicate) {
 	}
 }
 
-public unowned bool get_boolean (string predicate) {
+public unowned Value get_predicate_by_index (uint index) {
+	return this.data.values[index];
+}
+
+public void set_predicate (string predicate_uri,
+                           Value  object) {
 	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.BOOLEAN);
-		return get_boolean_by_index (index);
+		uint index = 0;
+		Charango.Property property = this.rdf_type.intern_property (predicate_uri,
+		                                                            &index);
+
+		check_property_type (property, object.type ());
+
+		set_predicate_by_index (index, object);
 	}
 	catch (RdfError e) {
 		warning ("%s", e.message);
-		return false;
 	}
 }
 
-public unowned int64 get_integer (string predicate) {
+public void set_predicate_from_literal (string   property_uri,
+                                        Rdf.Node node)
+
+            requires (node.is_literal()) {
 	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.INT64);
-		return get_integer_by_index (index);
+		uint index = 0;
+		Charango.Property property = this.rdf_type.intern_property (property_uri,
+		                                                            &index);
+
+		string literal = node.get_literal_value ();
+
+		/*check_property_type (property, this.ns.context.rdfs_literal);*/
+
+		/* FIXME: would be useful to use a more appropriate storage_type if
+		 * we can work that out from property.range
+		 */
+
+		Value v;
+		v = Value (typeof (string));
+		v.set_string (literal);
+
+		set_predicate_by_index (index, v);
 	}
 	catch (RdfError e) {
 		warning ("%s", e.message);
-		return 0;
 	}
 }
 
-public unowned double get_double (string predicate) {
-	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.DOUBLE);
-		return get_double_by_index (index);
+private void set_predicate_by_index (uint  index,
+                                     Value value) {
+	if (index >= this.data.n_values) {
+		/* FIXME: this sucks a bit */
+		for (uint i = data.n_values; i < index; i++)
+			this.data.append (GLib.Value (typeof (string)));
+		this.data.append (value);
+	} else {
+		this.data.values[index] = value;
 	}
-	catch (RdfError e) {
-		warning ("%s", e.message);
-		return 0.0;
-	}
-}
-
-/* Practically this cannot be null, but vala bug prevents specifying that */
-public unowned Date? get_date (string predicate) {
-	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.DATE);
-		return get_date_by_index (index);
-	}
-	catch (RdfError e) {
-		warning ("%s", e.message);
-		return null;
-	}
-}
-
-public unowned DateTime? get_datetime (string predicate) {
-	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.DATETIME);
-		return get_datetime_by_index (index);
-	}
-	catch (RdfError e) {
-		warning ("%s", e.message);
-		return null;
-	}
-}
-
-public unowned float get_float (string predicate) {
-	try {
-		int index = check_and_intern_property (predicate, ValueBaseType.FLOAT);
-		return get_float_by_index (index);
-	}
-	catch (RdfError e) {
-		warning ("%s", e.message);
-		return (float)0.0;
-	}
-}
-
-public unowned string get_string_by_index (uint predicate_index) {
-	return data[predicate_index].get_string ();
-}
-
-public unowned bool get_boolean_by_index (uint predicate_index) {
-	return data[predicate_index].get_boolean ();
-}
-
-public unowned int64 get_integer_by_index (uint predicate_index) {
-	return data[predicate_index].get_int64 ();
-}
-
-public unowned double get_double_by_index (uint predicate_index) {
-	return data[predicate_index].get_double ();
-}
-
-public unowned Date? get_date_by_index (uint predicate_index) {
-	return data[predicate_index].get_date ();
-}
-
-public unowned DateTime get_datetime_by_index (uint predicate_index) {
-	return data[predicate_index].get_datetime ();
-}
-
-public unowned float get_float_by_index (uint predicate_index) {
-	return data[predicate_index].get_float ();
 }
 
 public virtual void dump () {
