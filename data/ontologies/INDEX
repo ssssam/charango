@@ -97,7 +97,9 @@ prefix=time-entry
 file=time.owl
 prefix=time
 
+# time-entry: gives uses the (broken) alias URI
 [http://www.w3.org/2006/timezone#]
+alias=http://www.isi.edu/~pan/damltime/timezone-ont.owl#
 file=timezone.owl
 prefix=tzont
 

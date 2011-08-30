@@ -22,8 +22,6 @@ using Rdf;
  */
 public class Charango.Ontology: Entity {
 
-public List<string> alias_list = null;
-
 /**
  * source_file_name: on-disk source of the ontology
  */

@@ -183,8 +183,8 @@ public void add_local_ontology_source (string path)
 		try {
 			if (index.has_key (namespace_uri, "alias"))
 				foreach (string alias_uri in index.get_string_list (namespace_uri, "alias"))
-					if (ns.ontology.alias_list.find (alias_uri) == null)
-						ns.ontology.alias_list.prepend (alias_uri);
+					if (ns.alias_list.find (alias_uri) == null)
+						ns.alias_list.prepend (alias_uri);
 		}
 		  catch (KeyFileError error) {
 			throw new RdfError.INDEX_PARSE_ERROR (error.message);
