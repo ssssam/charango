@@ -37,7 +37,7 @@ public void parse_uri_as_resource_strings (string      uri_string,
 	// Expand namespace abbreviations
 	if (uri_string.index_of_char ('/') == -1)
 		throw new RdfError.URI_PARSE_ERROR
-		            ("parse_uri_as_resource_strings(): cannot parse %s; note " + 
+		            ("parse_uri_as_resource_strings(): cannot parse <%s>; note " + 
 		             "this function cannot resolve prefixes.",
 		             uri_string);
 
