@@ -25,13 +25,9 @@ public class Charango.Property: Entity {
 public string name;
 public string label;
 
-/* type: basic type of literal stored by the property, or ValueBaseType.RESOURCE */
+/* type: basic type of literal stored by the property, or ValueBaseType.RESOURCE. This is
+ * derived from the rdfs:range property. */
 public Charango.ValueBaseType type;
-
-/* range: actual range of the resource. Note that XSD literal types and derivations share
- *        an id space with RDFS classes.
- */
-public Charango.Class range;
 
 public Property (Charango.Namespace ns,
                  string             uri,

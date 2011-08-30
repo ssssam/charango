@@ -48,10 +48,7 @@ public Charango.Class rdf_type;
 
 internal Charango.Namespace ns;
 
-/* FIXME: would be nicer if we could store the values directly in the array,
- * but that lrequires wrapping GArray in Vala which might be hard ..
- */
-GenericArray<Charango.Value?> data;
+ValueArray data;
 
 public Entity (Charango.Namespace ns,
                string             uri,
@@ -60,7 +57,7 @@ public Entity (Charango.Namespace ns,
 	this.uri = uri;
 	this.rdf_type = rdf_type;
 
-	this.data = new GenericArray<Charango.Value?>();
+	this.data = new ValueArray ();
 
 	this.fix_uri ();
 }
@@ -70,7 +67,7 @@ public Entity.prototype (Charango.Namespace ns,
 	this.ns = ns;
 	this.uri = uri;
 
-	this.data = new GenericArray<Charango.Value?>();
+	this.data = new ValueArray ();
 }
 
 /* Automatically fix non-canonical URI's, if eg. its namespace is an alias of
@@ -134,36 +131,44 @@ internal void copy_properties (Entity source) {
 	data = source.data;
 }
 
-/* FIXME: this is a horribly bloated amount of code. If only Vala had a macro
- * language ... well, one day when you have lots of time, go on the Vala list
- * and see if anyone has any ideas for good ways to reduce the amount of code
- * here. Generics or some such.
- */
-
 /* These functions warn on errors instead of throwing exceptions because the
  * possible errors are ontology errors and the ontology is part of the
  * application API. Exceptions are used elsewhere for convenience.
  */
 
-int check_and_intern_property (string                 predicate,
-                               Charango.ValueBaseType type)
+int check_and_intern_property (string         predicate,
+                               Charango.Class value_type,
+                               out Type       value_storage_type)
            throws RdfError
+
            requires (this.rdf_type is Charango.Class) {
 	int index = 0;
 	Charango.Property property = this.rdf_type.intern_property (predicate, &index);
 
-	if (property.type != type)
-		throw new RdfError.TYPE_MISMATCH
-		  ("Type mismatch: property '%s' expects %s but got %s",
-		   predicate,
-		   value_base_type_name[property.type],
-		   value_base_type_name[type]);
+	Charango.Class? range = property.get_property_as_entity
+	                          ("http://www.w3.org/2000/01/rdf-schema#range");
+
+	if (range != null)
+		// Set the storage type from range.literal_value
+		storage_type = null;
+
+		/* FIXME: check value_type is the same as or a descendent of range */
+		/*if (property.type != type)
+			throw new RdfError.TYPE_MISMATCH
+			  ("Type mismatch: property '%s' expects %s but got %s",
+			   predicate,
+			   value_base_type_name[property.type],
+			   value_base_type_name[type]);*/
+	}
 
 	return index;
 }
 
 public void set_literal (string   predicate,
-                         Rdf.Node node) {
+                         Rdf.Node node)
+
+            requires (node.is_literal()) {
+
 	//print ("Setting %s to %s\n", predicate, node.to_string());
 }
 

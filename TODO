@@ -32,21 +32,26 @@ To do
 -----
 
 * Add an 'ontology-browser' example - simple Gtk+ 3 app
-  1. concept browser
-    - & make sure everything works!
   2. display the properties in a separate pane
+    - make the window big!
   3. fix crash on type-search in treeview
 
 Current issues
 
-* Why does creativecommons.org#ns contain no resources?
-
-* You pass Namespace to Entity() etc. - but you can discover it from the
-  URI.
-
-* rename OntologyError - RdfError? NamespaceError?
+Use GValue instead of CharangoValueBaseType
 
 get/set properties should work again - actually store the data :)
+
+Implement type checking on property setting.
+
+Write the main tests for that!
+
+Check that all these axioms hold:
+http://www.w3.org/TR/2004/REC-rdf-mt-20040210/#rdfs_interp
+
+Check that evaluating certain triples correctly applies implied logic.
+eg a rdfs:range b -> a rdf:type rdfs:Property.
+http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_properties
 
 6. add accessors for concept properties that wrap get/set_entity etc.
 
@@ -58,8 +63,6 @@ get/set properties should work again - actually store the data :)
   everything is loaded I suppose. Is this Charango's responsibility? Actually
   it shouldn't be too hard since we can do it automatically on a property-by-property
   basis once we know the domains and ranges are accurate, for example.
-
-* Since you're using Vala, why not use GValue for values since it's built in!!
 
 * class.to_string(): don't put : in non-key URI's
 
@@ -292,6 +295,12 @@ Blue sky things
   directly, we aren't doing any querying beyond simple SQL joins (well, complex
   SQL joins) so it's just a matter of being a tracker hacker ...
 
+* http://www.w3.org/RDF/ --> "RDF has features that facilitate data merging even
+  if the underlying schemas differ, and it specifically supports the evolution
+  of schemas over time without requiring all the data consumers to be changed."
+
+  How?? We should use this!
+
 Fixes in other projects
 -----------------------
 
@@ -338,3 +347,9 @@ Waiting for
 
 Vala 0.12.1:
   https://bugzilla.gnome.org/show_bug.cgi?id=645178
+
+Before release:
+---------------
+
+distcheck
+./waf check

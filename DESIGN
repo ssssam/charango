@@ -85,6 +85,18 @@ included would be cool but not sure if they will do this :) If not, Calliope
 will be able to install it itself at least.
 
 
+Value storage
+-------------
+
+GValue is used to store property values, inside a GValueArray. There is
+a fair amount of memory wasted - each value takes up 24 bytes, when most
+are simply storing pointers (4 or 8 bytes). There are a few gains - int64
+and double values can be stored inline on all platforms which saves a
+memory dereference. Additionally the GType system can be reused to identify
+the value type being stored - either CharangoEntityType, or one of
+G_TYPE_STRING, G_TYPE_INT64 etc.
+
+
 Error handling
 --------------
 
