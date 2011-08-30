@@ -3,18 +3,18 @@
 
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix test_heirarchy: <http://example.com/test-heirarchy#> .
+@prefix test_structure: <http://example.com/test-structure#> .
 
-test_heirarchy: a owl:Ontology ;
-	rdfs:label "test_heirarchy" .
+test_structure: a owl:Ontology ;
+	rdfs:label "test_structure" .
 
-test_heirarchy:Animal a rdfs:Class .
+test_structure:Animal a rdfs:Class .
 
-test_heirarchy:Food a rdfs:Class .
+test_structure:Food a rdfs:Class .
 
-test_heirarchy:Monkey a rdfs:Class ;
-	rdfs:subClassOf test_heirarchy:Animal .
+test_structure:Monkey a rdfs:Class ;
+	rdfs:subClassOf test_structure:Animal .
 
-test_heirarchy:Chicken a rdfs:Class ;
-	rdfs:subClassOf test_heirarchy:Animal ,
-	                test_heirarchy:Food .
+test_structure:Chicken a rdfs:Class ;
+	rdfs:subClassOf test_structure:Animal ,
+	                test_structure:Food .
