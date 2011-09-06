@@ -13,6 +13,19 @@ This provides a simple and intuitive way of working with the data.
 See the examples/ directory and ./DESIGN for more information.
 
 
+Overview
+--------
+
+Since the GObject and RDF typing systems are incompatible (RDF's is much more
+flexible that GType), all resources are represented as Charango.Entity, with
+the type accessibled through the rdf:type predicate.
+
+Some resource classes have special meanings inside Charango, such as
+rdfs:Property and rdfs:Class. For these there are "concept classes" which are
+simply subclasses of Charango.Entity which expose extra helpers and
+functionality such as accessors for important properties. It's simple to
+implement your own concept classes.
+
 Philosophical Q & A
 -------------------
 

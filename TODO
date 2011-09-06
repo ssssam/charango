@@ -38,13 +38,14 @@ To do
 
 Current issues
 
-Use GValue instead of CharangoValueBaseType
+* write entity.dump () and use in examples/basic
 
-get/set properties should work again - actually store the data :)
+* fix compile of tests/entity-1
 
-Implement type checking on property setting.
+* profile why the ontology load takes such a long time
 
-Write the main tests for that!
+Is Entity really a necessary concept? Any resource has an rdf:type,
+it just might be rdf:Resource ... I actually think you should rename.
 
 Check that all these axioms hold:
 http://www.w3.org/TR/2004/REC-rdf-mt-20040210/#rdfs_interp
@@ -53,7 +54,7 @@ Check that evaluating certain triples correctly applies implied logic.
 eg a rdfs:range b -> a rdf:type rdfs:Property.
 http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_properties
 
-6. add accessors for concept properties that wrap get/set_entity etc.
+Implement type checking on property setting.
 
 * Write up a proper spec
 
@@ -72,7 +73,7 @@ http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_properties
 * don't access members, make them properties and use accessors - this is a library !
 
 -> We should start warning on unrecognised predicates for classes and properties too.
-
+ 
 *  Get 'basic' example working - simply create an entity
 
 
@@ -246,13 +247,9 @@ General things
   applications that use them (since it's their API) or Tracker (if they want to
   delegate the responsibility)
 
-* Value storage is enourmously inefficient currently because we store all
-  integer values as a pointer to a heap-allocated 64 bit int. I guess the
-  ideal system is to dynamically store numeric values in the smallest
-  possible size, so word-size by default and then up to bigint if
-  necessary. We mainly store strings, so it is probably worth having a
-  32-bit struct on 32-bit pointer systems. How would storing ints based
-  on value work? ... complicatedly.
+* Value storage is fairly inefficient memory-wise, GValue takes 24 bytes to store
+  a string pointer. Maybe a memory-optimised GValue implementation would be worth
+  the while, or maybe then things would become too slow ...
 
 * I had  an idea (not sure if necessary) that we should have one giant 'Resource'
   hash table that could somehow identify a URI as type, class, property or entity.
@@ -264,11 +261,6 @@ General things
 
 Minor things
 --------------------------------------
-
-* Core
-	Should we store namespace URI's with the trailing # and / or without? The
-	overwhelming convention seems to be that they should have the #, but it
-	feels slightly weird to require that ..
 
 * Tests
 	Use valadate? http://gitorious.org/valadate/pages/Home
@@ -351,5 +343,5 @@ Vala 0.12.1:
 Before release:
 ---------------
 
-distcheck
+./waf distcheck
 ./waf check
