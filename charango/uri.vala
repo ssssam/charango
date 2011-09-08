@@ -113,19 +113,19 @@ public string? get_namespace_from_uri (string uri_string) {
 
 }*/
 
-public string? get_name_from_uri (string uri_string) {
-	var hash_index = uri_string.last_index_of_char ('#');
+public string? get_name_from_uri (string uri) {
+	var hash_index = uri.last_index_of_char ('#');
 
 	if (hash_index == -1)
-		hash_index = uri_string.last_index_of_char ('/');
+		hash_index = uri.last_index_of_char ('/');
 
 	// Check for invalid URI's
 	return_val_if_fail (hash_index > -1, null);
 
-	if (hash_index >= uri_string.length - 1)
+	if (hash_index >= uri.length - 1)
 		return null;
 
-	return uri_string[hash_index + 1: uri_string.length];
+	return uri[hash_index + 1: uri.length];
 }
 
 }
