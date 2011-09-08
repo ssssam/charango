@@ -41,11 +41,16 @@ namespace Charango {
   *   store would still notify on changes, just that the object optionally
   *   would as well.
   */
+
 public class Entity: Object {
 
 public string uri;
 internal Charango.Namespace ns;
+
 private ValueArray data;
+
+/* FIXME: 'name' could just be a pointer to the fragment part of the uri string */
+public string? name;
 
 public Charango.Class rdf_type {
 	get { return (Charango.Class) get_predicate_by_index (0); }
@@ -59,9 +64,15 @@ public Entity (Charango.Namespace ns,
 	this.ns = ns;
 	this.data = new ValueArray (2);
 
+	this.rdf_type = rdf_type;
+
 	this.fix_uri ();
 
-	this.rdf_type = rdf_type;
+	this.name = get_name_from_uri (uri);
+
+	Value.register_transform_func (typeof (Entity),
+	                               typeof (string),
+	                               this.to_string_value);
 }
 
 public Entity.prototype (Charango.Namespace ns,
@@ -71,6 +82,12 @@ public Entity.prototype (Charango.Namespace ns,
 	this.data = new ValueArray (2);
 
 	this.rdf_type = ns.context.rdfs_resource;
+
+	this.name = get_name_from_uri (uri);
+
+	Value.register_transform_func (typeof (Entity),
+	                               typeof (string),
+	                               this.to_string_value);
 }
 
 /* Automatically fix non-canonical URI's, if eg. its namespace is an alias of
@@ -229,7 +246,38 @@ private void set_predicate_by_index (uint  index,
 	}
 }
 
+public static void to_string_value (Value     entity_value,
+                                    out Value string_value) {
+	string_value = Value (typeof (string));
+	string_value.set_string (((Entity)entity_value.get_object()).to_string());
+}
+
+public string to_string () {
+	var builder = new StringBuilder("<");
+
+	if (this.ns.prefix != null)
+		builder.append (this.ns.prefix);
+	else
+		builder.append (this.ns.uri);
+
+	builder.append (":");
+	builder.append (name);
+	builder.append (">");
+
+	return builder.str;
+}
+
 public virtual void dump () {
+	print ("%s\n", this.to_string());
+	for (uint i = 0; i < this.data.n_values; i++) {
+		Property predicate = this.rdf_type.get_property_by_index (i);
+
+		Value value = this.data.values[i];
+		Value str_value = Value (typeof (string));
+		value.transform (ref str_value);
+
+		print ("\t%s %s\n", predicate.to_string (), (string) str_value);
+	}
 }
 
 }

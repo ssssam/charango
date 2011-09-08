@@ -31,7 +31,6 @@ public enum Charango.ConceptType {
 public class Charango.Class: Entity {
 
 public int id;
-public string name;
 public string label;
 public string comment;
 
@@ -57,7 +56,6 @@ public Class (Charango.Namespace ns,
               int                id) {
 	base (ns, uri, rdf_type);
 
-	this.name = get_name_from_uri (uri);
 	this.id = id;
 
 	// Give a default superclass; this will be overwritten if/when
@@ -74,7 +72,6 @@ internal Class.internal (Charango.Namespace ns,
 
 	base  (ns, uri, ns.context.rdfs_class);
 
-	this.name = name;
 	this.id = id;
 	this.main_parent = ns.context.rdfs_resource;
 	this.builtin = true;
@@ -87,7 +84,6 @@ internal Class.prototype (Charango.Namespace ns,
                           int                id) {
 	base.prototype (ns, uri);
 
-	this.name = get_name_from_uri (uri);
 	this.id = id;
 
 	this.initialize_properties ();
@@ -167,19 +163,8 @@ public Charango.Property intern_property (string  property_uri,
 	return p;
 }
 
-
-public string to_string () {
-	var builder = new StringBuilder();
-
-	if (this.ns.prefix != null)
-		builder.append (this.ns.prefix);
-	else
-		builder.append (this.ns.uri);
-
-	builder.append (":");
-	builder.append (name);
-
-	return builder.str;
+internal Charango.Property get_property_by_index (uint index) {
+	return (Charango.Property) properties.index (index);
 }
 
 public override void dump () {

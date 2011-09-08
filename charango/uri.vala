@@ -122,10 +122,8 @@ public string? get_name_from_uri (string uri_string) {
 	// Check for invalid URI's
 	return_val_if_fail (hash_index > -1, null);
 
-	if (hash_index >= uri_string.length - 1) {
-		warning ("get_name_from_uri: URI <%s> has no fragment", uri_string);
+	if (hash_index >= uri_string.length - 1)
 		return null;
-	}
 
 	return uri_string[hash_index + 1: uri_string.length];
 }

@@ -22,31 +22,16 @@
  */
 public class Charango.Property: Entity {
 
-public string name;
-public string label;
-
 public Property (Charango.Namespace ns,
                  string             uri,
                  Charango.Class     rdf_type)
        throws Charango.RdfError {
 	base (ns, uri, rdf_type);
-
-	this.name = get_name_from_uri (uri);
 }
 
 public Property.prototype (Charango.Namespace ns,
                            string             uri) {
 	base.prototype (ns, uri);
-
-	this.name = get_name_from_uri (uri);
-}
-
-public string to_string () {
-	return "%s:%s".printf (this.ns.prefix ?? this.ns.uri, name);
-}
-
-public override void dump () {
-	print ("rdf:Property '%s'\n", this.to_string());
 }
 
 }
