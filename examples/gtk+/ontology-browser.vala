@@ -69,6 +69,7 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 
 	bool get_iter (out Gtk.TreeIter iter,
 	               Gtk.TreePath     path) {
+		iter = Gtk.TreeIter ();
 		iter.stamp = this.stamp;
 		iter.user_data = null;
 
@@ -122,7 +123,7 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 
 		return_if_fail (e != null);
 
-		value.init (typeof (string));
+		value = Value (typeof (string));
 		value.set_string (e.uri);
 	}
 
@@ -155,6 +156,7 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 	bool iter_children (out Gtk.TreeIter iter,
 	                    Gtk.TreeIter?    parent) {
 		Node *node;
+		iter = Gtk.TreeIter ();
 
 		if (parent == null)
 			node = this.root;
@@ -203,6 +205,7 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 	                     Gtk.TreeIter?    parent,
 	                     int              n) {
 		Node *node;
+		iter = Gtk.TreeIter ();
 
 		if (parent == null)
 			node = this.root;
@@ -231,6 +234,7 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 		return_val_if_fail (child.user_data != null, false);
 
 		Node *node = child.user_data;
+		iter = Gtk.TreeIter ();
 
 		if (node->parent == this.root)
 			return false;
@@ -370,6 +374,7 @@ public class PropertyList: GLib.Object, Gtk.TreeModel {
 		return_val_if_fail (path.get_depth() == 1, false);
 
 		int index = path.get_indices()[0];
+		iter = Gtk.TreeIter ();
 
 		if (index < 0 || index >= this.max_index)
 			return false;
@@ -394,7 +399,7 @@ public class PropertyList: GLib.Object, Gtk.TreeModel {
 		return_if_fail (iter.stamp == this.stamp);
 
 		int index = (int)iter.user_data;
-		value.init (typeof (string));
+		value = Value (typeof (string));
 
 		if (column == 0) {
 			// Property name
@@ -440,6 +445,8 @@ public class PropertyList: GLib.Object, Gtk.TreeModel {
 
 	bool iter_children (out Gtk.TreeIter iter,
 	                    Gtk.TreeIter?    parent) {
+		iter = Gtk.TreeIter ();
+
 		if (parent == null && this.n_predicates > 0) {
 			iter.stamp = this.stamp;
 			iter.user_data = (void *)0;
@@ -479,6 +486,7 @@ public class PropertyList: GLib.Object, Gtk.TreeModel {
 
 	bool iter_parent (out Gtk.TreeIter iter,
 	                  Gtk.TreeIter     child) {
+		iter = Gtk.TreeIter ();
 		return false;
 	}
 
