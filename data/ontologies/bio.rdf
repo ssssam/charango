@@ -327,20 +327,6 @@
     <dct:creator>Ian Davis</dct:creator>
   </rdf:Description>
 
-  <rdf:Description rdf:nodeID="mor4e1a123f1cfdb">
-    <rdf:type rdf:resource="http://open.vocab.org/terms/SchemaExample"/>
-    <rdfs:label>The birth of Albert Einstein</rdfs:label>
-    <rdfs:comment rdf:parseType="Literal">
-        <pre><code>_:e a bio:Birth 
-    ; dc:date "1879-03-14"
-    ; bio:principal &lt;http://dbpedia.org/resource/Albert_Einstein&gt;
-    ; bio:parent &lt;http://dbpedia.org/resource/Pauline_Koch&gt;
-    ; bio:parent &lt;http://dbpedia.org/resource/Hermann_Einstein&gt;
-    ; bio:place &lt;http://dbpedia.org/resource/Ulm&gt;
-    .</code></pre>
-</rdfs:comment>
-  </rdf:Description>
-
   <rdf:Description rdf:about="http://purl.org/vocab/bio/0.1/Marriage">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
     <rdfs:label xml:lang="en">Marriage</rdfs:label>
@@ -366,19 +352,6 @@
     <dct:creator>Ian Davis</dct:creator>
   </rdf:Description>
 
-  <rdf:Description rdf:nodeID="mor4e1a123f1febc">
-    <rdf:type rdf:resource="http://open.vocab.org/terms/SchemaExample"/>
-    <rdfs:label>The marriage of Albert Einstein and Mileva Marić</rdfs:label>
-    <rdfs:comment rdf:parseType="Literal">
-        <pre><code>_:e a bio:Marriage 
-    ; dc:date "1903"
-    ; bio:partner &lt;http://dbpedia.org/resource/Albert_Einstein&gt;
-    ; bio:partner &lt;http://dbpedia.org/resource/Mileva_Mari%C4%87&gt;
-    ; bio:place &lt;http://dbpedia.org/resource/Bern&gt;
-    .</code></pre>
-</rdfs:comment>
-  </rdf:Description>
-
   <rdf:Description rdf:about="http://purl.org/vocab/bio/0.1/Death">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
     <rdfs:label xml:lang="en">Death</rdfs:label>
@@ -396,17 +369,6 @@
     <dct:creator>Ian Davis</dct:creator>
   </rdf:Description>
 
-  <rdf:Description rdf:nodeID="mor4e1a123f21dfc">
-    <rdf:type rdf:resource="http://open.vocab.org/terms/SchemaExample"/>
-    <rdfs:label>The death of Albert Einstein</rdfs:label>
-    <rdfs:comment rdf:parseType="Literal">
-        <pre><code>_:e a bio:Death 
-    ; dc:date "1955-04-18"
-    ; bio:principal &lt;http://dbpedia.org/resource/Albert_Einstein&gt;
-    ; bio:place &lt;http://dbpedia.org/resource/Princeton,_New_Jersey&gt;
-    .</code></pre>
-</rdfs:comment>
-  </rdf:Description>
 
   <rdf:Description rdf:about="http://purl.org/vocab/bio/0.1/Annulment">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
@@ -427,19 +389,6 @@
     <status:term_status>unstable</status:term_status>
     <dct:issued>2010-05-03</dct:issued>
     <vann:example rdf:nodeID="mor4e1a123f22d9c"/>
-  </rdf:Description>
-
-  <rdf:Description rdf:nodeID="mor4e1a123f22d9c">
-    <rdf:type rdf:resource="http://open.vocab.org/terms/SchemaExample"/>
-    <rdfs:label>The divorce of Albert Einstein and Mileva Marić</rdfs:label>
-    <rdfs:comment rdf:parseType="Literal">
-        <pre><code>_:e a bio:Divorce 
-    ; dc:date "1919-02-14"
-    ; bio:partner &lt;http://dbpedia.org/resource/Albert_Einstein&gt;
-    ; bio:partner &lt;http://dbpedia.org/resource/Mileva_Mari%C4%87&gt;
-    ; bio:place &lt;http://dbpedia.org/resource/Zurich&gt;
-    .</code></pre>
-</rdfs:comment>
   </rdf:Description>
 
   <rdf:Description rdf:about="http://purl.org/vocab/bio/0.1/Funeral">
@@ -471,18 +420,6 @@
     <status:term_status>unstable</status:term_status>
     <dct:issued>2010-05-03</dct:issued>
     <vann:example rdf:nodeID="mor4e1a123f23d3d"/>
-  </rdf:Description>
-
-  <rdf:Description rdf:nodeID="mor4e1a123f23d3d">
-    <rdf:type rdf:resource="http://open.vocab.org/terms/SchemaExample"/>
-    <rdfs:label>The cremation of Albert Einstein</rdfs:label>
-    <rdfs:comment rdf:parseType="Literal">
-        <pre><code>_:e a bio:Cremation 
-    ; dc:date "1955-04-18"
-    ; bio:principal &lt;http://dbpedia.org/resource/Albert_Einstein&gt;
-    ; bio:place &lt;http://dbpedia.org/resource/Princeton,_New_Jersey&gt;
-    .</code></pre>
-</rdfs:comment>
   </rdf:Description>
 
   <rdf:Description rdf:about="http://purl.org/vocab/bio/0.1/Adoption">
@@ -583,18 +520,6 @@
     <vann:example rdf:nodeID="mor4e1a123f25c7d"/>
   </rdf:Description>
 
-  <rdf:Description rdf:nodeID="mor4e1a123f25c7d">
-    <rdf:type rdf:resource="http://open.vocab.org/terms/SchemaExample"/>
-    <rdfs:label>Albert Einstein becoming a citizen of the United States</rdfs:label>
-    <rdfs:comment rdf:parseType="Literal">
-        <pre><code>_:e a bio:Emigration 
-    ; dc:date "1940"
-    ; bio:principal &lt;http://dbpedia.org/resource/Albert_Einstein&gt;
-    ; bio:state &lt;http://dbpedia.org/resource/United_States&gt;
-    .</code></pre>
-</rdfs:comment>
-  </rdf:Description>
-
   <rdf:Description rdf:about="http://purl.org/vocab/bio/0.1/Emigration">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
     <rdfs:label xml:lang="en">Emigration</rdfs:label>
@@ -604,18 +529,6 @@
     <status:term_status>unstable</status:term_status>
     <dct:issued>2010-05-03</dct:issued>
     <vann:example rdf:nodeID="mor4e1a123f26c1d"/>
-  </rdf:Description>
-
-  <rdf:Description rdf:nodeID="mor4e1a123f26c1d">
-    <rdf:type rdf:resource="http://open.vocab.org/terms/SchemaExample"/>
-    <rdfs:label>Albert Einstein emigrating to the United States</rdfs:label>
-    <rdfs:comment rdf:parseType="Literal">
-        <pre><code>_:e a bio:Emigration 
-    ; dc:date "1933"^^xsd:gYear
-    ; bio:principal &lt;http://dbpedia.org/resource/Albert_Einstein&gt;
-    ; bio:state &lt;http://dbpedia.org/resource/United_States&gt;
-    .</code></pre>
-</rdfs:comment>
   </rdf:Description>
 
   <rdf:Description rdf:about="http://purl.org/vocab/bio/0.1/Enrolment">
@@ -637,18 +550,6 @@
     <status:term_status>unstable</status:term_status>
     <dct:issued>2010-05-03</dct:issued>
     <vann:example rdf:nodeID="mor4e1a123f27bbe"/>
-  </rdf:Description>
-
-  <rdf:Description rdf:nodeID="mor4e1a123f27bbe">
-    <rdf:type rdf:resource="http://open.vocab.org/terms/SchemaExample"/>
-    <rdfs:label>Albert Einstein receiving his Doctorate from the University of Zurich</rdfs:label>
-    <rdfs:comment rdf:parseType="Literal">
-        <pre><code>_:e a bio:Graduation 
-    ; dc:date "1905"^^xsd:gYear
-    ; bio:principal &lt;http://dbpedia.org/resource/Albert_Einstein&gt;
-    ; bio:organization &lt;http://dbpedia.org/resource/University_of_Zurich&gt;
-    .</code></pre>
-</rdfs:comment>
   </rdf:Description>
 
   <rdf:Description rdf:about="http://purl.org/vocab/bio/0.1/Imprisonment">
@@ -1436,385 +1337,6 @@
     <rdf:_3 rdf:resource="http://purl.org/vocab/bio/0.1/precedingEvent"/>
     <rdf:_4 rdf:resource="http://purl.org/vocab/bio/0.1/immediatelyFollowingEvent"/>
     <rdf:_5 rdf:resource="http://purl.org/vocab/bio/0.1/immediatelyPrecedingEvent"/>
-  </rdf:Description>
-
-  <rdf:Description rdf:about="http://purl.org/vocab/bio/examples/1">
-    <rdf:type rdf:resource="http://open.vocab.org/terms/SchemaExample"/>
-    <rdfs:label>A Biography of Henry VIII, King of England</rdfs:label>
-    <rdfs:comment rdf:parseType="Literal"><p>Based on information at <a href="http://en.wikipedia.org/wiki/Henry_VIII_of_England">Wikipedia</a> and <a href="http://www3.dcs.hull.ac.uk/cgi-bin/gedlkup/n=royal?royal00828">Hull University</a></p>
-<pre><code>@prefix bio: &lt;http://purl.org/vocab/bio/0.1/&gt; .
-@prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt; .
-@prefix rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt; .
-
-_:henryviii
-  a foaf:Person
-  ; foaf:name "Henry VIII, King of England"
-  ; bio:father _:henryvii
-  ; bio:mother _:elizplantagenet
-  ; bio:child _:child1, _:child2, _:child3, _:child4, _:child5, _:child6, _:child7, _:child8
-  ; bio:event _:birth, _:death, _:burial, _:accession, _:coronation, _:marriage1
-            , _:marriage2, _:marriage3, _:marriage4, _:marriage5, _:marriage6
-  .
-
-_:henryvii
-  a foaf:Person
-  ; foaf:name "Henry VII Tudor, King of England"
-  ; bio:child _:henryviii
-  .
-
-_:elizplantagenet
-  a foaf:Person
-  ; foaf:name "Elizabeth of York"
-  ; bio:child _:henryviii
-  .
-  
-_:birth
-  a bio:Birth
-  ; rdfs:label "The birth of Henry VIII to Henry VII and Elizabeth Plantagenet on 28 June 1491"
-  ; bio:date "1491-06-28"
-  ; bio:place &lt;http://dbpedia.org/resource/Palace_of_Placentia&gt;
-  ; bio:parent _:henryvii, _:elizplantagenet
-  ; bio:principal _:henryviii
-  .
-
-_:death
-  a bio:Death
-  ; rdfs:label "The death of Henry VIII on 28 January 1547"
-  ; bio:date "1547-01-28"
-  ; bio:place &lt;http://dbpedia.org/resource/Palace_of_Whitehall&gt;
-  ; bio:principal _:henryviii
-  .
-  
-
-_:accession
-  a bio:Accession
-  ; rdfs:label "The accession of Henry VIII to the throne of England on 21 April 1509"
-  ; bio:date "1509-06-24"
-  ; bio:principal _:henryviii
-  ; bio:state &lt;http://dbpedia.org/resource/Kingdom_of_England&gt;
-  ; bio:immediatelyPrecedingEvent [ a bio:Death
-                                    ; rdfs:label "The death of Henry VII on 9 May 1509"
-                                    ; bio:date "1509-05-09"
-                                    ; bio:place &lt;http://dbpedia.org/resource/Richmond_Palace&gt;
-                                    ; bio:principal _:henryvii
-                                  ]
-  .
-
-_:coronation
-  a bio:Coronation
-  ; rdfs:label "The coronation of Henry VIII as King of England on 24 June 1509"
-  ; bio:date "1509-06-24"
-  ; bio:place &lt;http://dbpedia.org/page/Westminster_Abbey&gt;
-  ; bio:principal _:henryviii
-  ; bio:precedingEvent _:accession
-  .
-
-_:burial
-  a bio:Burial
-  ; rdfs:label "The burial of Henry VII at St.George's Chapel, Windsor Castle,England"
-  ; bio:place &lt;http://dbpedia.org/resource/St_George%E2%80%99s_Chapel%2C_Windsor&gt;
-  ; bio:principal _:henryviii
-  ; bio:precedingEvent _:death
-  .
-
-_:marriage1
-  a bio:Marriage
-  ; rdfs:label "The marriage of Henry VIII and Catherine of Aragon"
-  ; bio:date "1509-06-11"
-  ; bio:place &lt;http://dbpedia.org/resource/Palace_of_Placentia&gt;
-  ; bio:partner _:henryvii, _:catharagon
-  .
-
-_:annulment1
-  a bio:Annulment
-  ; rdfs:label "The annulment of the marriage between Henry VIII and Catherine of Aragon"
-  ; bio:date "1533-05-23"
-  ; bio:partner _:henryvii, _:catharagon 
-  ; bio:officiator &lt;http://dbpedia.org/resource/Thomas_Cranmer&gt;
-  .
-
-_:catharagon
-  a foaf:Person
-  ; foaf:name "Anne Boleyn"
-  ; bio:child _:child1, _:child2, _:child3, _:child4, _:child5
-  ; bio:event _:marriage1, _:annulment1
-  .
-
-_:child1
-  a foaf:Person
-  ; rdfs:label "Unnamed daughter of Henry VIII and Catherine of Aragon"
-  ; bio:event [ a bio:Birth
-                ; bio:date "1510-01-31"
-                ; bio:principal _:child1
-                ; bio:parent _:henryviii, _:catharagon
-              ]
-  ; bio:event [ a bio:Death
-                ; bio:date "1510-02-02"
-                ; bio:principal _:child1
-              ]
-  .
-
-_:child2
-  a foaf:Person
-  ; foaf:name "Henry"
-  ; bio:event [ a bio:Birth
-                ; bio:date "1511-01-01"
-                ; bio:principal _:child2
-                ; bio:parent _:henryviii, _:catharagon
-              ]
-  ; bio:event [ a bio:Death
-                ; bio:date "1511-02-22"
-                ; bio:principal _:child2
-              ]
-  .
-  
-_:child3
-  a foaf:Person
-  ; foaf:name "Henry"
-  ; bio:event [ a bio:Birth
-                ; bio:date "1514-12"
-                ; bio:principal _:child3
-                ; bio:parent _:henryviii, _:catharagon
-              ]
-  ; bio:event [ a bio:Death
-                ; bio:principal _:child3
-              ]
-  .
-
-_:child4
-  a foaf:Person
-  ; foaf:name "Mary"
-  ; bio:event [ a bio:Birth
-                ; bio:date "1516-02-18"
-                ; bio:principal _:child4
-                ; bio:parent _:henryviii, _:catharagon
-              ]
-  ; bio:event [ a bio:Death
-                ; bio:date "1558-11-17"
-                ; bio:principal _:child4
-              ]
-  .
-
-
-_:child5
-  a foaf:Person
-  ; rdfs:label "Unnamed daughter of Henry VIII and Catherine of Aragon"
-  ; bio:event [ a bio:Birth
-                ; bio:date "1518-11"
-                ; bio:principal _:child5
-                ; bio:parent _:henryviii, _:catharagon
-              ]
-  ; bio:event [ a bio:Death
-                ; bio:principal _:child5
-              ]
-  .
-  
-
-_:marriage2
-  a bio:Marriage
-  ; rdfs:label "The marriage of Henry VIII and Anne Boleyn"
-  ; bio:date "1533-01-25"
-  ; bio:partner _:henryvii, _:anneboleyn
-  ; bio:place &lt;http://dbpedia.org/resource/Westminster_Abbey&gt;
-  .
-
-_:anneboleyn
-  a foaf:Person
-  ; foaf:name "Anne Boleyn"
-  ; bio:child _:child6
-  ; bio:event _:marriage2, _:annulment2, _:anneboleyn-death
-  .
-
-_:annulment2
-  a bio:Annulment
-  ; rdfs:label "The annulment of the marriage between Henry VIII and Anne Boleyn"
-  ; bio:date "1536-05-17"
-  ; bio:partner _:henryvii, _:anneboleyn 
-  .
-  
-_:anneboleyn-death
-  a bio:Execution
-  ; rdfs:label "The beheading of Anne Boleyn"
-  ; bio:date "1536-05-19"
-  ; bio:place &lt;http://dbpedia.org/resource/Tower_of_London&gt;
-  ; bio:principal _:anneboleyn
-  .
-
-_:child6
-  a foaf:Person
-  ; foaf:name "Elizabeth"
-  ; bio:event [ a bio:Birth
-                ; bio:date "1533-09-07"
-                ; bio:principal _:child6
-                ; bio:parent _:henryviii, _:anneboleyn
-              ]
-  ; bio:event [ a bio:Death
-                ; bio:date "1603-03-24"
-                ; bio:principal _:child6
-              ]
-  .
-
-_:marriage3
-  a bio:Marriage
-  ; bio:date "1536-05-20"
-  ; bio:partner _:henryviii, _:janeseymour
-  ; bio:place &lt;http://dbpedia.org/resource/York_Place&gt;
-  .
-
-_:janeseymour
-  a foaf:Person
-  ; foaf:name "Jane Seymour"
-  ; bio:event _:marriage3, _:janeseymour-death
-  ; bio:child _:child7
-  .
-
-_:janeseymour-death
-  a bio:Death
-  ; rdfs:label "The death of Jane Seymour on 24 October 1537"
-  ; bio:date "1537-10-24"
-  ; bio:principal _:janeseymour
-  ; bio:place &lt;http://dbpedia.org/resource/Hampton_Court_Palace&gt;
-  .
-  
-
-_:child7
-  a foaf:Person
-  ; foaf:name "Edward"
-  ; bio:event [ a bio:Birth
-                ; bio:date "1537-10-12"
-                ; bio:principal _:child7
-                ; bio:parent _:henryviii, _:janeseymour
-                ; bio:place &lt;http://dbpedia.org/resource/Hampton_Court_Palace&gt;
-              ]
-  ; bio:event [ a bio:Accession
-                ; bio:immediatelyPrecedingEvent _:death
-              ]
-  ; bio:event [ a bio:Death
-                ; bio:date "1553-07-06"
-                ; bio:principal _:child7
-                ; bio:place &lt;http://dbpedia.org/resource/Palace_of_Placentia&gt;
-              ]
-  .
-
-_:marriage4
-  a bio:Marriage
-  ; bio:date "1540-01-06"
-  ; bio:partner _:henryvii, _:annecleves
-  ; bio:place &lt;http://dbpedia.org/resource/Palace_of_Placentia&gt;
-  ; bio:officiator &lt;http://dbpedia.org/resource/Thomas_Cranmer&gt;
-  .
-    
-_:annulment3
-  a bio:Annulment
-  ; rdfs:label "The annulment of the marriage between Henry VIII and Anne of Cleves"
-  ; bio:date "1540-07-09"
-  ; bio:partner _:henryviii, _:annecleves
-  .
-
-_:annecleves
-  a foaf:Person
-  ; foaf:name "Anne of Cleves"
-  ; bio:event _:marriage4, _:annulment3
-  .
-
-_:marriage5
-  a bio:Marriage
-  ; bio:date "1540-07-28"
-  ; bio:partner _:henryviii, _:cathhoward
-  ; bio:place &lt;http://dbpedia.org/resource/Oatlands_Palace&gt;
-  .
-  
-_:cathhoward
-  a foaf:Person
-  ; foaf:name "Catherine Howard"
-  ; bio:event _:marriage5, _:cathhoward-death
-  .
-  
-_:cathhoward-death
-  a bio:Execution
-  ; rdfs:label "The beheading of Catherine Howard"
-  ; bio:date "1542-02-13"
-  ; bio:place &lt;http://dbpedia.org/resource/Tower_of_London&gt;
-  ; bio:principal _:cathhoward
-  .
-
-_:marriage6
-  a bio:Marriage
-  ; rdfs:label "The marriage between Henry VIII and Catherine Parr"
-  ; bio:date "1543-07-12"
-  ; bio:place &lt;http://dbpedia.org/resource/Hampton_Court_Palace&gt;
-  ; bio:partner _:henryviii, _:cathparr
-  .
-  
-_:cathparr
-  a foaf:Person
-  ; foaf:name "Catherine Parr"
-  ; bio:event _:marriage6
-  .
-
-
-_:elizblount
-  a foaf:Person
-  ; foaf:name "Elizabeth Blount"
-  ; bio:child _:child8
-  .
-  
-_:child8
-  a foaf:Person
-  ; foaf:name "Henry FitzRoy"
-  ; foaf:mother _:elizblount
-  ; foaf:father _:henryviii
-  ; bio:event [ a bio:Birth
-                ; bio:principal _:child8
-                ; bio:date "1519-06-15"
-                ; bio:parent _:henryviii, _:elizblount
-                ; bio:place &lt;http://dbpedia.org/resource/Blackmore&gt;
-                ]
-  .
-
-_:marriage1-interval
-  a bio:Interval
-  ; rdfs:label "The period of time during which Henry VIII and Catherine of Aragon were married"
-  ; bio:initiatingEvent _:marriage1
-  ; bio:concludingEvent _:annulment1
-  .
-
-_:marriage2-interval
-  a bio:Interval
-  ; rdfs:label "The period of time during which Henry VIII and Anne Boleyn were married"
-  ; bio:initiatingEvent _:marriage2
-  ; bio:concludingEvent _:annulment2
-  .
-  
-_:marriage3-interval
-  a bio:Interval
-  ; rdfs:label "The period of time during which Henry VIII and Jane Seymour were married"
-  ; bio:initiatingEvent _:marriage3
-  ; bio:concludingEvent _:janeseymour-death
-  .
-
-_:marriage4-interval
-  a bio:Interval
-  ; rdfs:label "The period of time during which Henry VIII and Anne of Cleves were married"
-  ; bio:initiatingEvent _:marriage4
-  ; bio:concludingEvent _:annulment3
-  .
-
-_:marriage5-interval
-  a bio:Interval
-  ; rdfs:label "The period of time during which Henry VIII and Catherine Howard were married"
-  ; bio:initiatingEvent _:marriage5
-  ; bio:terminatingEvent _:cathhoward-death
-  .
-
-_:marriage6-interval
-  a bio:Interval
-  ; rdfs:label "The period of time during which Henry VIII and Catherine Parr were married"
-  ; bio:initiatingEvent _:marriage6
-  ; bio:terminatingEvent _:henryviii-death
-  .
-</code></pre>
-</rdfs:comment>
   </rdf:Description>
 
 </rdf:RDF>
