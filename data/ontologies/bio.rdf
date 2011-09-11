@@ -90,7 +90,9 @@
     <skos:changeNote rdf:nodeID="mor4e1a123f087b6"/>
     <skos:changeNote rdf:nodeID="mor4e1a123f0a6f7"/>
     <skos:changeNote rdf:nodeID="mor4e1a123f0b697"/>
+    <!--
     <ov:discussionList rdf:resource="http://lists.foaf-project.org/mailman/listinfo/foaf-dev"/>
+    -->
     <vann:preferredNamespaceUri>http://purl.org/vocab/bio/0.1/</vann:preferredNamespaceUri>
     <vann:preferredNamespacePrefix>bio</vann:preferredNamespacePrefix>
     <vann:example rdf:resource="http://purl.org/vocab/bio/examples/1"/>
