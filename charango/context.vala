@@ -336,7 +336,9 @@ public Charango.Property find_property_with_error (string uri)
 
 public Charango.Namespace? find_namespace (string uri) {
 	// FIXME: there must be a better way to search lists in vala
-	foreach (Namespace ns in namespace_list) {
+	foreach (Namespace ns in this.namespace_list) {
+		assert (ns is Charango.Namespace);
+
 		if (namespace_uris_match (ns.uri, uri))
 			return ns;
 
