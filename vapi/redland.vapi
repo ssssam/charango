@@ -179,7 +179,7 @@ namespace Rdf {
 	 * Log
 	 */
 
-	[CCode (cprefix = "LIBRDF_LOG_")]
+	[CCode (cprefix = "LIBRDF_LOG_", cname = "librdf_log_level")]
 	public enum LogLevel {
 		NONE,
 		DEBUG,
