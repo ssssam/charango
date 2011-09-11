@@ -96,7 +96,7 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 		return true;
 	}
 
-	Gtk.TreePath get_path (Gtk.TreeIter iter) {
+	Gtk.TreePath? get_path (Gtk.TreeIter iter) {
 		return_val_if_fail (iter.stamp == this.stamp, false);
 		return_val_if_fail (iter.user_data != null, false);
 
@@ -379,7 +379,7 @@ public class PropertyList: GLib.Object, Gtk.TreeModel {
 		return true;
 	}
 
-	Gtk.TreePath get_path (Gtk.TreeIter iter) {
+	Gtk.TreePath? get_path (Gtk.TreeIter iter) {
 		return_val_if_fail (iter.stamp == this.stamp, false);
 
 		Gtk.TreePath path = new Gtk.TreePath ();
