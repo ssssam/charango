@@ -17,13 +17,24 @@
 
 namespace Charango {
 
+/* namespace_uris_match():
+ * Match two namespace URIs, ignoring # or / terminators.
+ */
 public bool namespace_uris_match (string ns, string m) {
-	if (ns == m)
+	char *ns_c = ns;
+	char *m_c = m;
+
+	while (*ns_c != '\0' && *m_c != '\0') {
+		if (*ns_c != *m_c)
+			break;
+
+		ns_c ++; m_c ++;
+	}
+
+	if ((*ns_c=='\0' || ((*ns_c=='#' || *ns_c=='/') && *(ns_c+1)=='\0')) &&
+		(*m_c=='\0' || ((*m_c=='#' || *m_c=='/') && *(m_c+1)=='\0')))
 		return true;
-	if (ns.has_suffix("#") && ns == m + "#")
-		return true;
-	if (ns.has_suffix("/") && ns == m + "/")
-		return true;
+
 	return false;
 }
 

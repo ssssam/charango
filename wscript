@@ -1,7 +1,8 @@
 # Charango is nested within Calliope during development
 
 test_execution_order = \
-  ["context-1",
+  ["utils-1",
+   "context-1",
    "entity-1"]
 
 import os
