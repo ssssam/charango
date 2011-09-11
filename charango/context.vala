@@ -32,8 +32,8 @@ public class Charango.Context: GLib.Object {
  */
 internal Rdf.World *redland;
 
-List<Charango.Namespace> namespace_list = null;
-List<Charango.Ontology>  ontology_list = null;
+HashTable<string, Charango.Namespace> namespace_table;
+List<Charango.Ontology> ontology_list = null;
 
 /* Fundamental constants of the universe */
 public Charango.Property rdf_type;
@@ -66,10 +66,11 @@ public Context() {
 	// No external definition of XML Schema, it makes no sense as RDF
 	xsd_namespace.loaded = true;
 
-	this.namespace_list.prepend (xsd_namespace);
-	this.namespace_list.prepend (rdf_namespace);
-	this.namespace_list.prepend (rdfs_namespace);
-	this.namespace_list.prepend (owl_namespace);
+	this.namespace_table = new HashTable<string, Charango.Namespace> (str_hash, str_equal);
+	this.namespace_table.insert (xsd_namespace.uri, xsd_namespace);
+	this.namespace_table.insert (rdf_namespace.uri, rdf_namespace);
+	this.namespace_table.insert (rdfs_namespace.uri, rdfs_namespace);
+	this.namespace_table.insert (owl_namespace.uri, owl_namespace);
 
 	rdf_type = new Charango.Property.prototype
 	  (rdf_namespace, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
@@ -159,7 +160,7 @@ public void add_local_ontology_source (string path)
 
 		if (ns == null) {
 			ns = new Charango.Namespace (this, namespace_uri, prefix);
-			this.namespace_list.prepend (ns);
+			this.namespace_table.insert (namespace_uri, ns);
 		}
 
 		if (ignore == true) {
@@ -195,8 +196,7 @@ public void add_local_ontology_source (string path)
 		try {
 			if (index.has_key (namespace_uri, "alias"))
 				foreach (string alias_uri in index.get_string_list (namespace_uri, "alias"))
-					if (ns.alias_list.find (alias_uri) == null)
-						ns.alias_list.prepend (alias_uri);
+					this.namespace_table.insert (alias_uri, ns);
 		}
 		  catch (KeyFileError error) {
 			throw new RdfError.INDEX_PARSE_ERROR (error.message);
@@ -241,14 +241,25 @@ public void load_namespace (string            uri,
 		current_namespace.loaded = true;
 		load_list.remove_link (load_list);
 
-		foreach (Namespace ns in this.namespace_list)
+		Charango.Namespace ns;
+		var iter = HashTableIter<string, Charango.Namespace> (this.namespace_table);
+
+		while (iter.next (null, out ns))
 			if (ns.required_by == current_namespace && ! ns.loaded && ! ns.external)
 				load_list.prepend (ns);
 	}
 }
 
 public List<unowned Charango.Namespace> get_namespace_list () {
-	return this.namespace_list.copy ();
+	Charango.Namespace ns;
+	var iter = HashTableIter<string, Charango.Namespace> (this.namespace_table);
+	List<unowned Charango.Namespace> result = null;
+
+	while (iter.next (null, out ns))
+		if (result.find (ns) == null)
+			result.prepend (ns);
+
+	return result;
 }
 
 /**
@@ -269,8 +280,6 @@ public Charango.Entity? find_entity (string uri) {
 
 public Charango.Entity find_entity_with_error (string uri)
                        throws RdfError {
-	/* FIXME: let's hash the namespaces */
-
 	string namespace_uri, entity_name;
 
 	parse_uri_as_resource_strings (uri, out namespace_uri, out entity_name);
@@ -335,19 +344,15 @@ public Charango.Property find_property_with_error (string uri)
 }
 
 public Charango.Namespace? find_namespace (string uri) {
-	// FIXME: there must be a better way to search lists in vala
-	foreach (Namespace ns in this.namespace_list) {
-		assert (ns is Charango.Namespace);
+	Charango.Namespace? result = this.namespace_table.lookup (uri);
 
-		if (namespace_uris_match (ns.uri, uri))
-			return ns;
+	if (result == null)
+		result = this.namespace_table.lookup (uri + "#");
 
-		foreach (string alias_uri in ns.alias_list)
-			if (namespace_uris_match (alias_uri, uri))
-				return ns;
-	}
+	if (result == null)
+		result = this.namespace_table.lookup (uri + "/");
 
-	return null;
+	return result;
 }
 
 /* process_uri:
@@ -448,7 +453,7 @@ internal Entity find_or_create_entity (Ontology        owner,
 
 			ns = new Charango.Namespace (this, ns_uri, null);
 			ns.external = true;
-			this.namespace_list.prepend (ns);
+			this.namespace_table.insert (ns_uri, ns);
 
 			canonical_uri = ns_uri + entity_name;
 		}
@@ -523,9 +528,10 @@ internal Entity find_or_create_entity (Ontology        owner,
  */
 public void replace_entity (Entity *old_entity,
                             Entity *new_entity) {
-	foreach (Namespace ns in this.namespace_list) {
+	var iter = HashTableIter<string, Charango.Namespace> (this.namespace_table);
+	Charango.Namespace ns;
+	while (iter.next (null, out ns))
 		ns.replace_entity (old_entity, new_entity);
-	}
 }
 
 public void dump () {
