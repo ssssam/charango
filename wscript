@@ -26,7 +26,7 @@ def build(bld):
 	#
 	src_dir = bld.path.find_dir ('charango')
 	build_library (bld,
-	               source = src_dir.ant_glob('*.vala value-internal.c', src=True, dir=False),
+	               source = src_dir.ant_glob('*.vala', src=True, dir=False),
 	               target = 'charango',
 	               uselib = charango_uselib,
 	               packages = charango_packages,
