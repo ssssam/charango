@@ -64,13 +64,13 @@ public void test_primitive_types () { /* Unit test */
 
 	entity.set_predicate ("http://example.com/test-entity#float", (float)1.0);
 
-	assert (entity.get_predicate ("http://example.com/test-entity#string") == "test");
-	assert (entity.get_predicate ("http://example.com/test-entity#boolean") == true);
-	assert (entity.get_predicate ("http://example.com/test-entity#integer") == -1);
-	assert (entity.get_predicate ("http://example.com/test-entity#double") == 0.1);
+	assert ((string)entity.get_predicate ("http://example.com/test-entity#string") == "test");
+	assert ((bool)entity.get_predicate ("http://example.com/test-entity#boolean") == true);
+	assert ((int)entity.get_predicate ("http://example.com/test-entity#integer") == -1);
+	assert ((double)entity.get_predicate ("http://example.com/test-entity#double") == 0.1);
 	assert (date.compare ((GLib.Date) entity.get_predicate ("http://example.com/test-entity#date")) == 0);
 	assert (datetime.compare ((GLib.DateTime) entity.get_predicate ("http://example.com/test-entity#dateTime")) == 0);
-	assert (entity.get_predicate ("http://example.com/test-entity#float") == 1.0);
+	assert ((float)entity.get_predicate ("http://example.com/test-entity#float") == 1.0);
 }
 
 static int warning_count;
