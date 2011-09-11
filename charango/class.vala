@@ -163,8 +163,13 @@ public Charango.Property intern_property (string  property_uri,
 	return p;
 }
 
-internal Charango.Property get_property_by_index (uint index) {
+/* FIXME: would be nice to make these two private, but property list views need it */
+public Charango.Property get_interned_property (uint index) {
 	return (Charango.Property) properties.index (index);
+}
+
+public uint get_n_interned_properties () {
+	return properties.len;
 }
 
 public override void dump () {

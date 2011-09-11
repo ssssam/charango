@@ -31,21 +31,36 @@ To do (stuff I won't really do)
 To do
 -----
 
-* Add an 'ontology-browser' example - simple Gtk+ 3 app
-  2. display the properties in a separate pane
-    - make the window big!
-  3. fix crash on type-search in treeview
+* ontology-browser:
+  * why are some properties shown but blank?
+  * use key URI's more for readability
+  - would be nice to have special views for classes, properties and entities
 
 Current issues
 
-* write entity.dump () and use in examples/basic
-
 * fix compile of tests/entity-1
 
-* profile why the ontology load takes such a long time
+* Fix the slowness! Profile shows:
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 36.84      0.07     0.07    22261     0.00     0.01  charango_context_find_namespace
+ 31.58      0.13     0.06  1211321     0.00     0.00  charango_namespace_uris_match
+ 15.79      0.16     0.03    36069     0.00     0.00  charango_namespace_replace_entity
+
+ Basically your choice for faster namespace lookup is a hash table or a tree.
+ Tree might make sense for entities, but I think hash for namespaces fo' sure.
+ Either way you must sum or cmp each string character, tree also involves more
+ derefs and memory fragments. Hash may take up more space but I think it's worth
+ it in all cases.
+
+* Support key URI's etc.
+  -> just store them in the hash :)
 
 Is Entity really a necessary concept? Any resource has an rdf:type,
 it just might be rdf:Resource ... I actually think you should rename.
+
+I also think maybe Property -> Predicate *everywhere*, just to avoid
+confusion with the GObject property system. Okay we still have Class, but ...
 
 Check that all these axioms hold:
 http://www.w3.org/TR/2004/REC-rdf-mt-20040210/#rdfs_interp
@@ -65,20 +80,10 @@ Implement type checking on property setting.
   it shouldn't be too hard since we can do it automatically on a property-by-property
   basis once we know the domains and ranges are accurate, for example.
 
-* class.to_string(): don't put : in non-key URI's
-
-* Support key URI's etc.
-  ->
-
 * don't access members, make them properties and use accessors - this is a library !
 
 -> We should start warning on unrecognised predicates for classes and properties too.
  
-*  Get 'basic' example working - simply create an entity
-
-
-* Relationship properties
-
 * The store/source interface (beginnings are stashed)
 Charango.Namespace:
   - should implement charango.source, charango.store is related too .. not
@@ -339,6 +344,8 @@ Waiting for
 
 Vala 0.12.1:
   https://bugzilla.gnome.org/show_bug.cgi?id=645178
+
+https://bugzilla.gnome.org/show_bug.cgi?id=658720
 
 Before release:
 ---------------

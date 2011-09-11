@@ -174,6 +174,16 @@ void check_property_type (Charango.Property property,
 	}*/
 }
 
+public bool has_predicate_index (uint index) {
+	if (index >= this.data.n_values)
+		return false;
+
+	if (this.data.get_nth (index) == null)
+		return false;
+
+	return true;
+}
+
 public unowned Value? get_predicate (string predicate_uri) {
 	try {
 		uint index = 0;
@@ -276,7 +286,7 @@ public string to_string () {
 public virtual void dump () {
 	print ("%s\n", this.to_string());
 	for (uint i = 0; i < this.data.n_values; i++) {
-		Property predicate = this.rdf_type.get_property_by_index (i);
+		Property predicate = this.rdf_type.get_interned_property (i);
 
 		Value value = this.data.values[i];
 		Value str_value = Value (typeof (string));

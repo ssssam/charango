@@ -49,7 +49,6 @@ public class Node {
 	}
 }
 
-
 public class ConceptTree: GLib.Object, Gtk.TreeModel {
 	Charango.Context context;
 	int stamp;
@@ -104,7 +103,7 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 		Node *node = (Node *)iter.user_data;
 		Gtk.TreePath path = new Gtk.TreePath ();
 
-		for (int d=node->depth-1; d>=0; d--) {
+		for (int d=node->depth; d>=0; d--) {
 			path.prepend_index (node->index);
 			node = node->parent;
 		}
@@ -333,8 +332,183 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 	}
 }
 
+
+/* PropertyList:
+ * A GtkTreeModel listing the properties of a specific entity.
+ * 
+ * This is complicated slightly by the fact that predicates are indexed on the
+ * whole class, but not all of them may have values on the specific resource.
+ * We store the absolute index in the iterator and iter_next() fast-forwards
+ * through any that are not set for this resource.
+ *
+ * Iterator format:
+ *  - user_data: property index
+ */
+public class PropertyList: GLib.Object, Gtk.TreeModel {
+	public Charango.Entity subject;
+
+	Charango.Context context;
+	int stamp;
+
+	uint n_predicates;
+	uint max_index;
+
+	Gtk.TreeModelFlags get_flags () {
+		return 0;
+	}
+
+	int get_n_columns () {
+		return 2;
+	}
+
+	GLib.Type get_column_type (int index) {
+		return typeof(string);
+	}
+
+	bool get_iter (out Gtk.TreeIter iter,
+	               Gtk.TreePath     path) {
+		return_val_if_fail (path.get_depth() == 1, false);
+
+		int index = path.get_indices()[0];
+
+		if (index < 0 || index >= this.max_index)
+			return false;
+
+		iter.stamp = this.stamp;
+		iter.user_data = (void *)index;
+		return true;
+	}
+
+	Gtk.TreePath get_path (Gtk.TreeIter iter) {
+		return_val_if_fail (iter.stamp == this.stamp, false);
+
+		Gtk.TreePath path = new Gtk.TreePath ();
+		path.append_index ((int) iter.user_data);
+
+		return path;
+	}
+
+	void get_value (Gtk.TreeIter   iter,
+	                int            column,
+	                out GLib.Value value) {
+		return_if_fail (iter.stamp == this.stamp);
+
+		int index = (int)iter.user_data;
+		value.init (typeof (string));
+
+		if (column == 0) {
+			// Property name
+			Charango.Property property = this.subject.rdf_type.get_interned_property (index);
+			value.set_string (property.uri);
+		}
+
+		if (column == 1) {
+			Value predicate_value = this.subject.get_predicate_by_index (index);
+			predicate_value.transform (ref value);
+		}
+	}
+
+	bool iter_next (ref Gtk.TreeIter iter) {
+		return_val_if_fail (iter.stamp == this.stamp, false);
+
+		int index = (int) iter.user_data;
+		do {
+			index ++;
+
+			if (index >= this.max_index)
+				return false;
+		} while (! this.subject.has_predicate_index (index));
+
+		iter.user_data = (void *)index;
+		return true;
+	}
+
+	bool iter_previous (ref Gtk.TreeIter iter) {
+		return_val_if_fail (iter.stamp == this.stamp, false);
+
+		int index = (int) iter.user_data;
+		do {
+			index --;
+
+			if (index < 0)
+				return false;
+		} while (! this.subject.has_predicate_index (index));
+
+		iter.user_data = (void *)index;
+		return true;
+	}
+
+	bool iter_children (out Gtk.TreeIter iter,
+	                    Gtk.TreeIter?    parent) {
+		if (parent == null && this.n_predicates > 0) {
+			iter.stamp = this.stamp;
+			iter.user_data = (void *)0;
+			return true;
+		}
+
+		return false;
+	}
+
+	bool iter_has_child (Gtk.TreeIter iter) {
+		return false;
+	}
+
+	int iter_n_children (Gtk.TreeIter? iter) {
+		return_val_if_fail (iter.stamp == this.stamp, false);
+
+		if (iter == null)
+			return (int)this.n_predicates;
+
+		return 0;
+	}
+
+	bool iter_nth_child (out Gtk.TreeIter iter,
+	                     Gtk.TreeIter?    parent,
+	                     int              n) {
+		this.iter_children (out iter, parent);
+
+		for (int i = 0; i < n; i ++) {
+			bool valid = this.iter_next (ref iter);
+
+			if (! valid)
+				return false;
+		}
+
+		return true;
+	}
+
+	bool iter_parent (out Gtk.TreeIter iter,
+	                  Gtk.TreeIter     child) {
+		return false;
+	}
+
+	void ref_node (Gtk.TreeIter iter) {
+	}
+
+	void unref_node (Gtk.TreeIter iter) {
+	}
+
+	public PropertyList (Charango.Context context,
+	                     Charango.Entity  subject) {
+		this.context = context;
+		this.stamp = (int) Random.next_int ();
+
+		this.subject = subject;
+		this.max_index = subject.rdf_type.get_n_interned_properties ();
+
+		this.n_predicates = 0; 
+		for (int i = 0; i < this.max_index; i ++) {
+			if (this.subject.has_predicate_index (i))
+				this.n_predicates ++;
+		}
+	}
+}
+
+
 public class MainWindow: Gtk.Window {
 	Charango.Context context;
+
+	Gtk.TreeView properties_tree_view;
 
 	void build_ui () {
 		var concepts = new Gtk.TreeView ();
@@ -345,17 +519,59 @@ public class MainWindow: Gtk.Window {
 		                                        "text", 0);
 
 		var concepts_scrolled_window = new Gtk.ScrolledWindow (null, null);
-		concepts_scrolled_window.set_size_request (150, 350);
+		concepts_scrolled_window.set_size_request (200, 500);
 		concepts_scrolled_window.expand = true;
 		concepts_scrolled_window.margin = 4;
 		concepts_scrolled_window.add (concepts);
 
-		var grid = new Gtk.Grid ();
-		grid.attach (concepts_scrolled_window, 0, 0, 1, 1);
+		var properties = new Gtk.TreeView ();
+		properties.insert_column_with_attributes (-1,
+		                                          "Property",
+		                                          new Gtk.CellRendererText (),
+		                                          "text", 0);
+		properties.insert_column_with_attributes (-1,
+		                                          "Value",
+		                                          new Gtk.CellRendererText (),
+		                                          "text", 1);
 
-		this.add (grid);
-		grid.show_all ();
+		var properties_scrolled_window = new Gtk.ScrolledWindow (null, null);
+		properties_scrolled_window.set_size_request (400, 500);
+		properties_scrolled_window.expand = true;
+		properties_scrolled_window.margin = 4;
+		properties_scrolled_window.add (properties);
 
+		var paned = new Gtk.Paned (Orientation.HORIZONTAL);
+		paned.add1 (concepts_scrolled_window);
+		paned.add2 (properties_scrolled_window);
+
+		this.properties_tree_view = properties;
+
+		var concepts_selection = concepts.get_selection ();
+		concepts_selection.changed.connect ((selection) => {
+			Gtk.TreeModel concepts_model;
+			Gtk.TreeIter concepts_row;
+			PropertyList properties_model = (PropertyList)this.properties_tree_view.get_model ();
+
+			bool has_selection = selection.get_selected (out concepts_model, out concepts_row);
+
+			if (! has_selection) {
+				this.properties_tree_view.set_model (null);
+				return;
+			}
+
+			Value selected_concept_uri;
+			concepts_model.get_value (concepts_row, 0, out selected_concept_uri);
+
+			if (properties_model != null && properties_model.subject.uri == selected_concept_uri.get_string ())
+				return;
+
+			Entity selected_concept = this.context.find_entity (selected_concept_uri.get_string ());
+			properties_model = new PropertyList (this.context, selected_concept);
+			this.properties_tree_view.set_model (properties_model);
+		});
+
+		this.add (paned);
+		paned.show_all ();
 	}
 
 	public MainWindow (Charango.Context context) {
@@ -383,7 +599,6 @@ int main (string[] args) {
 		// FIXME: would be cool if we could do the loading incrementally based
 		// on what the user clicks on :)
 		context.load_namespace ("http://purl.org/ontology/mo/", out warning_list);
-		context.load_namespace ("http://creativecommons.org/ns#", null);
 	}
 	  catch (FileError error) {
 		print ("Unable to find ontologies: %s\n", error.message);
