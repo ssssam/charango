@@ -4,8 +4,7 @@ To do (stuff I won't really do)
 -------------------------------
 
 -> disable static build, add a 'waf run' command similar to 'libtool exec' to fix ld_library_path.
-
--> Fix waf no longer keeping the vala c output because a c file is included in the build
+   or, use runr :)
 
 * Bug https://bugzilla.gnome.org/show_bug.cgi?id=649644
   - Vala doesn't support returning the test function .. perhaps what
@@ -15,18 +14,6 @@ To do (stuff I won't really do)
 * Tracing - using #ifdef's correctly, we can making tracing free when disabled.
   Currently ... we don't.
 
-  -> I guess you also need a resources hash. Per-namespace to avoid hashing the
-     whole URI each time.
-     Also, it makes far more sense to index namespaces on their prefix than on
-     the URI .. is it fair to make unique prefixes a requirement? There's ultimately
-     no reason you can't just invent one/add a postfix index if the user can't make
-     it unique, so this idea is definitely a mover and shaker
-  -> actually, it might make much more sense to use a tree of some sort for this.
-     rather than hashing the whole URI to get the namespace, using esp. the prefix
-     to look things up this would probably be the fastest route
-
-  -> Do you need entity Id's? I'm not sure at the moment. We can probably use
-     pointers most places.
 
 To do
 -----
@@ -36,25 +23,26 @@ To do
   * use key URI's more for readability
   - would be nice to have special views for classes, properties and entities
 
+* tracker-browser:
+  * similar to tracker-explorer :)
+  * list of all classes that can stored in Tracker on left and count,
+    details on right
+  * maybe curate list by default so only primary resources are shown
+  * requires Charango.Source, Charango.SparqlSource, Charango.TrackerSource
+
 Current issues
 
-* fix compile of tests/entity-1
-
-* Fix the slowness! Profile shows:
-  %   cumulative   self              self     total           
- time   seconds   seconds    calls  ms/call  ms/call  name    
- 36.84      0.07     0.07    22261     0.00     0.01  charango_context_find_namespace
- 31.58      0.13     0.06  1211321     0.00     0.00  charango_namespace_uris_match
- 15.79      0.16     0.03    36069     0.00     0.00  charango_namespace_replace_entity
-
- Basically your choice for faster namespace lookup is a hash table or a tree.
- Tree might make sense for entities, but I think hash for namespaces fo' sure.
- Either way you must sum or cmp each string character, tree also involves more
- derefs and memory fragments. Hash may take up more space but I think it's worth
- it in all cases.
+* Some namespaces are duplicated since the hash table was introduced ... what??
 
 * Support key URI's etc.
   -> just store them in the hash :)
+
+* Handle internationalised triples correctly - see label.rdf for an example
+
+* Use key URI's by preference -
+  where should we use <> - on both key and full URI's?
+    - see turtle/sparql rules
+    - where might you want to pass a result directly to find_entity() etc .. ?
 
 Is Entity really a necessary concept? Any resource has an rdf:type,
 it just might be rdf:Resource ... I actually think you should rename.
@@ -337,6 +325,27 @@ Fixes in other projects
 	     library .. maybe built on top of libsoup ! This would need a new name
 	     I guess, like SoaLib or libdata or something like that. Why do you
 	     always worry about names!
+
+
+Performance
+-----------
+
+* Ontology load (from examples/basic):
+
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 33.33      0.03     0.03    37163     0.00     0.00  charango_namespace_replace_entity
+ 22.22      0.05     0.02    17972     0.00     0.00  charango_namespace_find_local_property
+ 11.11      0.06     0.01  1147780     0.00     0.00  _g_object_ref0
+ 11.11      0.07     0.01    22120     0.00     0.00  charango_namespace_find_local_class
+ 11.11      0.08     0.01    22113     0.00     0.00  charango_context_find_or_create_entity
+ 11.11      0.09     0.01                             charango_property_instance_init
+
+* The most obvious load-time fix is to serialise the ontology data after load.
+  Since an ontology is just data in a Charango.Source, the API should go there -
+  the generic in-memory source may as well just have an option to save itself
+  & load itself to for example a gvdb ...
+
 
 
 Waiting for

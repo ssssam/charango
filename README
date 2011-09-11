@@ -13,6 +13,12 @@ This provides a simple and intuitive way of working with the data.
 See the examples/ directory and ./DESIGN for more information.
 
 
+Building
+-----------
+
+Charango must be compiled with Vala 0.13 or later.
+
+
 Overview
 --------
 
