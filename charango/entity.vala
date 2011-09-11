@@ -53,7 +53,7 @@ private ValueArray data;
 public string? name;
 
 public Charango.Class rdf_type {
-	get { return (Charango.Class) get_predicate_by_index (0); }
+	get { return (Charango.Class) get_predicate_by_index(0).get_object(); }
 	set { set_predicate_by_index (0, value); }
 }
 
@@ -186,8 +186,11 @@ public unowned Value? get_predicate (string predicate_uri) {
 	}
 }
 
-public unowned Value get_predicate_by_index (uint index) {
-	return this.data.values[index];
+/* FIXME: return type is not actually nullable, but we need to mark it so to
+ * work around https://bugzilla.gnome.org/show_bug.cgi?id=658720
+ */
+public unowned Value? get_predicate_by_index (uint index) {
+	return this.data.get_nth(index);
 }
 
 public void set_predicate (string predicate_uri,
@@ -253,6 +256,9 @@ public static void to_string_value (Value     entity_value,
 }
 
 public string to_string () {
+	if (name == null)
+		return this.uri;
+
 	var builder = new StringBuilder("<");
 
 	if (this.ns.prefix != null)

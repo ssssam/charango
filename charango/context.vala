@@ -247,8 +247,8 @@ public void load_namespace (string            uri,
 	}
 }
 
-public List<Charango.Namespace> get_namespace_list () {
-	return (owned) this.namespace_list;
+public List<unowned Charango.Namespace> get_namespace_list () {
+	return this.namespace_list.copy ();
 }
 
 /**

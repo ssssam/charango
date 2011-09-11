@@ -92,12 +92,12 @@ internal void set_ontology (Ontology o) {
 	/*this.entity_list.prepend (o);*/
 }
 
-public List<Charango.Class> get_class_list () {
-	return (owned) this.class_list;
+public List<unowned Charango.Class> get_class_list () {
+	return this.class_list.copy();
 }
 
-public List<Charango.Property> get_property_list () {
-	return (owned) this.property_list;
+public List<unowned Charango.Property> get_property_list () {
+	return this.property_list.copy();
 }
 
 /* FIXME: it's a bit weird that this only returns things aren't classes
