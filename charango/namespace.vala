@@ -158,6 +158,9 @@ internal void replace_entity (Entity old_entity,
 	warn_if_fail (old_entity.ns == new_entity.ns);
 
 	if (new_entity.ns == this) {
+		if (this.ontology == old_entity)
+			this.ontology = (Ontology)new_entity;
+
 		if (old_entity is Charango.Class)
 			this.class_list.remove ((Charango.Class) old_entity);
 		else if (old_entity is Charango.Property)
