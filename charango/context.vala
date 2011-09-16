@@ -231,15 +231,17 @@ public void load_namespace (string            uri,
 		// All namespaces referenced in 'ontology' that are available but
 		// not yet loaded will be queued for reading
 		var current_namespace = load_list.data;
+		load_list.remove_link (load_list);
+
+		if (current_namespace.loaded)
+			continue;
 
 		if (current_namespace.ontology == null)
 			throw new RdfError.MISSING_DEFINITION
 			  ("No ontology available for namespace: %s", current_namespace.uri);
 
 		current_namespace.ontology.load (ref warning_list);
-
 		current_namespace.loaded = true;
-		load_list.remove_link (load_list);
 
 		Charango.Namespace ns;
 		var iter = HashTableIter<string, Charango.Namespace> (this.namespace_table);
@@ -256,7 +258,7 @@ public List<unowned Charango.Namespace> get_namespace_list () {
 	List<unowned Charango.Namespace> result = null;
 
 	while (iter.next (null, out ns))
-		if (result.find (ns) == null)
+		if (ns.ignore == false && result.find (ns) == null)
 			result.prepend (ns);
 
 	return result;
