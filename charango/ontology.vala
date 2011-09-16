@@ -160,6 +160,11 @@ internal void load (ref List<Warning>  warning_list)
 		try {
 			subject = context.find_or_create_entity
 			            (this, subject_uri, subject_type, true);
+
+			if (subject_type != null)
+				// We're done if this was an rdf:type statement
+				continue;
+
 			arc = (Charango.Property) context.find_or_create_entity
 			            (this, arc_uri, context.rdf_property, false);
 		}
@@ -171,10 +176,6 @@ internal void load (ref List<Warning>  warning_list)
 			else
 				throw (e);
 		}
-
-		if (subject_type != null)
-			// We're done if this was an rdf:type statement
-			continue;
 
 		if (object_node.is_literal ())
 			subject.set_predicate_from_literal (arc.uri, object_node);
