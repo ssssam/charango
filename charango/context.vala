@@ -482,6 +482,18 @@ internal Entity find_or_create_entity (Ontology        owner,
 	}
 
 	if (e == null) {
+		// Handle corner case of nested namespaces - in the case where both
+		// http://purl.org/vocab/frbr/ and http://purl.org/vocab/frbr/core/
+		// exist as namespaces, here we ensure
+		// <http://purl.org/vocab/frbr/core> matches to the ontology of the
+		// latter instead of creating a new entity in the former.
+		Charango.Namespace whole_ns = find_namespace (uri);
+
+		if (whole_ns != null && whole_ns.ontology != null)
+			return whole_ns.ontology;
+	}
+
+	if (e == null) {
 		e = create_entity (ns, canonical_uri, expected_type);
 
 		switch (expected_type.get_concept_type ()) {
