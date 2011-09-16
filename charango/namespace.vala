@@ -128,7 +128,7 @@ internal Charango.Entity? find_local_entity (string uri)
 			return e;
 
 	if (this.ontology != null)
-		if (uri == this.uri || (uri + "#") == this.uri || (uri + "/") == this.uri)
+		if (namespace_uris_match (this.uri, uri))
 			return this.ontology;
 
 	throw new RdfError.UNKNOWN_RESOURCE ("Unable to find entity '%s'", uri);
