@@ -520,19 +520,22 @@ public class MainWindow: Gtk.Window {
 
 	void build_ui () {
 		var concepts = new Gtk.TreeView ();
-		concepts.set_model (new ConceptTree (this.context));
 		concepts.insert_column_with_attributes (-1, 
 		                                        "Concept", 
 		                                        new Gtk.CellRendererText (),
 		                                        "text", 0);
+		concepts.set_headers_visible (false);
+		concepts.set_model (new ConceptTree (this.context));
 
 		var concepts_scrolled_window = new Gtk.ScrolledWindow (null, null);
+		concepts_scrolled_window.set_shadow_type (Gtk.ShadowType.IN);
 		concepts_scrolled_window.set_size_request (200, 500);
 		concepts_scrolled_window.expand = true;
 		concepts_scrolled_window.margin = 4;
 		concepts_scrolled_window.add (concepts);
 
 		var properties = new Gtk.TreeView ();
+		properties.set_headers_visible (false);
 		properties.insert_column_with_attributes (-1,
 		                                          "Property",
 		                                          new Gtk.CellRendererText (),
@@ -543,6 +546,7 @@ public class MainWindow: Gtk.Window {
 		                                          "text", 1);
 
 		var properties_scrolled_window = new Gtk.ScrolledWindow (null, null);
+		properties_scrolled_window.set_shadow_type (Gtk.ShadowType.IN);
 		properties_scrolled_window.set_size_request (400, 500);
 		properties_scrolled_window.expand = true;
 		properties_scrolled_window.margin = 4;
@@ -599,14 +603,15 @@ int main (string[] args) {
 
 	var path = Path.build_filename (SRCDIR, "charango", "data", "ontologies", null);
 
+	List<Warning> warning_list = null;
 	var context = new Charango.Context ();
-	List<Warning> warning_list;
 	try {
 		context.add_local_ontology_source (path);
-		// These two pull in every available ontology.
-		// FIXME: would be cool if we could do the loading incrementally based
-		// on what the user clicks on :)
-		context.load_namespace ("http://purl.org/ontology/mo/", out warning_list);
+
+		var namespace_list = context.get_namespace_list ();
+		foreach (Namespace ns in namespace_list) {
+			context.load_namespace (ns.uri, out warning_list);
+		}
 	}
 	  catch (FileError error) {
 		print ("Unable to find ontologies: %s\n", error.message);

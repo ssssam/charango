@@ -28,6 +28,7 @@ public int main (string[] args) {
 	try {
 		context.add_local_ontology_source (path);
 		context.load_namespace ("http://purl.org/ontology/mo/", out warning_list);
+		context.load_namespace ("http://open.vocab.org/terms/", out warning_list);
 	}
 	  catch (FileError error) {
 		print ("Unable to find ontologies: %s\n", error.message);
