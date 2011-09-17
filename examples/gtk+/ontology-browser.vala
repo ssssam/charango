@@ -422,7 +422,6 @@ public class PropertyList: GLib.Object, Gtk.TreeModel {
 				return false;
 		};
 
-		print ("iter next: accepting %i\n", index);
 		iter.user_data = (void *)index;
 		return true;
 	}
@@ -436,7 +435,6 @@ public class PropertyList: GLib.Object, Gtk.TreeModel {
 				return false;
 		};
 
-		print ("iter prev: accepting %i\n", index);
 		iter.user_data = (void *)index;
 		return true;
 	}
@@ -474,7 +472,6 @@ public class PropertyList: GLib.Object, Gtk.TreeModel {
 
 		for (int i = 0; i < n; i ++) {
 			bool valid = this.iter_next (ref iter);
-			print ("nth child: %i / %i\n", i, n);
 
 			if (! valid)
 				return false;

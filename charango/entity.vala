@@ -47,7 +47,8 @@ public class Entity: Object {
 public string uri;
 internal Charango.Namespace ns;
 
-private ValueArray data;
+/* Use a GenericArray instead of ValueArray so we can store null values */
+private GenericArray<GLib.Value?> data;
 
 /* FIXME: 'name' could just be a pointer to the fragment part of the uri string */
 public string? name;
@@ -62,7 +63,7 @@ public Entity (Charango.Namespace ns,
                Charango.Class     rdf_type) {
 	this.uri = uri;
 	this.ns = ns;
-	this.data = new ValueArray (2);
+	this.data = new GenericArray<GLib.Value?>();
 
 	this.rdf_type = rdf_type;
 
@@ -79,7 +80,7 @@ public Entity.prototype (Charango.Namespace ns,
                          string             uri) {
 	this.uri = uri;
 	this.ns = ns;
-	this.data = new ValueArray (2);
+	this.data = new GenericArray<GLib.Value?>();
 
 	this.rdf_type = ns.context.rdfs_resource;
 
@@ -148,7 +149,7 @@ internal bool requires_promotion (Charango.Class to_class)
  * Duplicate 'source' into 'this'.
  */
 internal void copy_properties (Entity source) {
-	data = (owned)source.data;
+	this.data = (owned)source.data;
 }
 
 /* These functions warn on errors instead of throwing exceptions because the
@@ -175,10 +176,10 @@ void check_property_type (Charango.Property property,
 }
 
 public bool has_predicate_index (uint index) {
-	if (index >= this.data.n_values)
+	if (index >= this.data.length)
 		return false;
 
-	if (this.data.get_nth (index) == null)
+	if (this.data.get (index) == null)
 		return false;
 
 	return true;
@@ -200,7 +201,7 @@ public unowned Value? get_predicate (string predicate_uri) {
  * work around https://bugzilla.gnome.org/show_bug.cgi?id=658720
  */
 public unowned Value? get_predicate_by_index (uint index) {
-	return this.data.get_nth(index);
+	return this.data.get (index);
 }
 
 public void set_predicate (string predicate_uri,
@@ -249,13 +250,13 @@ public void set_predicate_from_literal (string   property_uri,
 
 private void set_predicate_by_index (uint  index,
                                      Value value) {
-	if (index >= this.data.n_values) {
+	if (index >= this.data.length) {
 		/* FIXME: this sucks a bit */
-		for (uint i = data.n_values; i < index; i++)
-			this.data.append (GLib.Value (typeof (string)));
-		this.data.append (value);
+		for (uint i = data.length; i < index; i++)
+			this.data.add (null);
+		this.data.add (value);
 	} else {
-		this.data.values[index] = value;
+		this.data.set (index, value);
 	}
 }
 
@@ -285,10 +286,14 @@ public string to_string () {
 
 public virtual void dump () {
 	print ("%s\n", this.to_string());
-	for (uint i = 0; i < this.data.n_values; i++) {
+	for (uint i = 0; i < this.data.length; i++) {
 		Property predicate = this.rdf_type.get_interned_property (i);
 
-		Value value = this.data.values[i];
+		Value? value = this.data.get (i);
+
+        if (value == null)
+            continue;
+
 		Value str_value = Value (typeof (string));
 		value.transform (ref str_value);
 
