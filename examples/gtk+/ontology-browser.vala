@@ -376,19 +376,18 @@ public class PropertyList: GLib.Object, Gtk.TreeModel {
 		int index = path.get_indices()[0];
 		iter = Gtk.TreeIter ();
 
-		if (index < 0 || index >= this.max_index)
-			return false;
-
-		iter.stamp = this.stamp;
-		iter.user_data = (void *)index;
-		return true;
+		return this.iter_nth_child (out iter, null, index);
 	}
 
 	Gtk.TreePath? get_path (Gtk.TreeIter iter) {
 		return_val_if_fail (iter.stamp == this.stamp, false);
 
+		int index;
+		Gtk.TreeIter probe_iter = iter;
+		for (index = 0; this.iter_previous (ref probe_iter); );
+
 		Gtk.TreePath path = new Gtk.TreePath ();
-		path.append_index ((int) iter.user_data);
+		path.append_index ((int) index);
 
 		return path;
 	}
@@ -408,22 +407,22 @@ public class PropertyList: GLib.Object, Gtk.TreeModel {
 		}
 
 		if (column == 1) {
-			Value predicate_value = this.subject.get_predicate_by_index (index);
-			predicate_value.transform (ref value);
+			Value? predicate_value = this.subject.get_predicate_by_index (index);
+			if (predicate_value != null)
+				predicate_value.transform (ref value);
 		}
 	}
 
 	bool iter_next (ref Gtk.TreeIter iter) {
 		return_val_if_fail (iter.stamp == this.stamp, false);
 
-		int index = (int) iter.user_data;
-		do {
-			index ++;
-
+		int index = (int) iter.user_data ;
+		while (! this.subject.has_predicate_index (++ index)) {
 			if (index >= this.max_index)
 				return false;
-		} while (! this.subject.has_predicate_index (index));
+		};
 
+		print ("iter next: accepting %i\n", index);
 		iter.user_data = (void *)index;
 		return true;
 	}
@@ -432,13 +431,12 @@ public class PropertyList: GLib.Object, Gtk.TreeModel {
 		return_val_if_fail (iter.stamp == this.stamp, false);
 
 		int index = (int) iter.user_data;
-		do {
-			index --;
-
+		while (! this.subject.has_predicate_index (-- index)) {
 			if (index < 0)
 				return false;
-		} while (! this.subject.has_predicate_index (index));
+		};
 
+		print ("iter prev: accepting %i\n", index);
 		iter.user_data = (void *)index;
 		return true;
 	}
@@ -476,6 +474,7 @@ public class PropertyList: GLib.Object, Gtk.TreeModel {
 
 		for (int i = 0; i < n; i ++) {
 			bool valid = this.iter_next (ref iter);
+			print ("nth child: %i / %i\n", i, n);
 
 			if (! valid)
 				return false;
