@@ -19,12 +19,16 @@ To do
 -----
 
 * ontology-browser:
-  * why are some properties shown but blank?
   * use key URI's more for readability
+  - hyperlink to resources
   - would be nice to have special views for classes, properties and entities
 
+* sparql-source, tracker-sparql-source:
+  * might require some reworking - how to do fetch properties? You can't just
+    query all on a resource ... wait, yes you can.
+
 * tracker-browser:
-  * similar to tracker-explorer :)
+  * similar to tracker-explorer, tracker-zilla :)
   * list of all classes that can stored in Tracker on left and count,
     details on right
   * maybe curate list by default so only primary resources are shown
@@ -32,7 +36,10 @@ To do
 
 Current issues
 
-* Some namespaces are duplicated since the hash table was introduced ... what??
+* http://purl.org/vocab/bio/0.1/termgroup1 - broken ??
+  something to do with the fact that these are lists ...
+
+* also http://purl.org/NET/c4dm/keys.owl#AFlat etc.
 
 * Support key URI's etc.
   -> just store them in the hash :)
@@ -285,6 +292,11 @@ Blue sky things
   of schemas over time without requiring all the data consumers to be changed."
 
   How?? We should use this!
+
+* Is there a way to generate the views without requiring the Entity/Resource
+  business? I ask because this whole-object representation of a resource is
+  an inefficient way of querying a triple store, although good for object
+  stores perhaps ...
 
 Fixes in other projects
 -----------------------
