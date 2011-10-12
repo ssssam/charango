@@ -20,7 +20,7 @@ using Rdf;
 /*
  * Charango.Namespace
  */
-public class Charango.Namespace: GLib.Object {
+public class Charango.Namespace: GLib.Object, Charango.Source {
 
 internal Charango.Context context;
 

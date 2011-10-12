@@ -215,7 +215,7 @@ public void add_local_ontology_source (string path)
  * add_local_ontology_source().
  */
 public void load_namespace (string            uri,
-                            out List<Warning> warning_list = null)
+                            ref List<Warning> warning_list)
             throws FileError, RdfError {
 	List<Charango.Namespace> load_list = null;
 

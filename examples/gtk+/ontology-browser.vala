@@ -613,7 +613,7 @@ int main (string[] args) {
 
 		var namespace_list = context.get_namespace_list ();
 		foreach (Namespace ns in namespace_list) {
-			context.load_namespace (ns.uri, out warning_list);
+			context.load_namespace (ns.uri, ref warning_list);
 		}
 	}
 	  catch (FileError error) {
@@ -628,8 +628,8 @@ int main (string[] args) {
 	if (warning_list != null)
 		print ("[%u warnings]\n", warning_list.length());
 
-	/*foreach (unowned Warning w in warning_list)
-		print ("\t%s\n", w.message);*/
+	foreach (unowned Warning w in warning_list)
+		print ("\t%s\n", w.message);
 
 	var app_window = new MainWindow(context);
 	app_window.show ();

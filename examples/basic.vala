@@ -23,12 +23,12 @@ public int main (string[] args) {
 	var context = new Charango.Context ();
 	/* FIXME: make relocatable */
 	var path = Path.build_filename (SRCDIR, "charango", "data", "ontologies", null);
-	List<Charango.Warning> warning_list;
+	List<Charango.Warning> warning_list = null;
 
 	try {
 		context.add_local_ontology_source (path);
-		context.load_namespace ("http://purl.org/ontology/mo/", out warning_list);
-		context.load_namespace ("http://open.vocab.org/terms/", out warning_list);
+		context.load_namespace ("http://purl.org/ontology/mo/", ref warning_list);
+		context.load_namespace ("http://open.vocab.org/terms/", ref warning_list);
 	}
 	  catch (FileError error) {
 		print ("Unable to find ontologies: %s\n", error.message);
