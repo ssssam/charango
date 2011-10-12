@@ -35,6 +35,8 @@ To do
   * maybe curate list by default so only primary resources are shown
   * requires Charango.Source, Charango.SparqlSource, Charango.TrackerSource
 
+* An example with changes, and then a tree viewer too
+
 Current issues
 
 * make Entity.dump() look less retarded & more like turtle !
@@ -378,9 +380,7 @@ Performance
 Waiting for
 -----------
 
-Vala 0.12.1:
-  https://bugzilla.gnome.org/show_bug.cgi?id=645178
-
+https://bugzilla.gnome.org/show_bug.cgi?id=645178
 https://bugzilla.gnome.org/show_bug.cgi?id=658720
 
 Before release:
