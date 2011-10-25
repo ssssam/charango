@@ -22,6 +22,7 @@ To do
   * use key URI's more for readability
   - hyperlink to resources
   - would be nice to have special views for classes, properties and entities
+  - use the generic tree browser
 
 * sparql-source, tracker-sparql-source:
   * might require some reworking - how to do fetch properties? You can't just
@@ -36,8 +37,7 @@ To do
 
 Current issues
 
-* http://purl.org/vocab/bio/0.1/termgroup1 - broken ??
-  something to do with the fact that these are lists ...
+* make Entity.dump() look less retarded & more like turtle !
 
 * also http://purl.org/NET/c4dm/keys.owl#AFlat etc.
 
@@ -269,6 +269,21 @@ Minor things
 	an exe). Has some nice API extensions like wait_for_signal() and stuff.
 
 	Organise the tests .. unit, functional, integration, live ...
+
+* Support lists
+	http://purl.org/vocab/bio/0.1/termgroup* could be represented, for example ..
+
+	finish context-1/lists
+
+	Implementing container support: we can get list items in any order, so the lists are really
+	SPARSE ARRAYS on parsing ... ? How can you access them though - is the _n actually
+	significant for access or does it just denote ordering?
+
+	- rdf:Bag: order not significant; possibly includes duplicates
+	- rdf:Seq: order significant, can include duplicates
+	- rdf:Alt: set of alternatives: so a set, basically; rdf:_1 is default choice
+
+	These seem to be almost never used
 
 Blue sky things
 --------------------------------------
