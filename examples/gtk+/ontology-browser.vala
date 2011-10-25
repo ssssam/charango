@@ -185,10 +185,17 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 	}
 
 	int iter_n_children (Gtk.TreeIter? iter) {
-		return_val_if_fail (iter.stamp == this.stamp, false);
-		return_val_if_fail (iter.user_data != null, false);
+		Node *node;
 
-		Node *node = iter.user_data;
+		if (iter == null)
+			node = this.root;
+		else {
+			return_val_if_fail (iter.stamp == this.stamp, false);
+			return_val_if_fail (iter.user_data != null, false);
+
+			node = iter.user_data;
+		}
+
 		int n = 0;
 
 		if (node->child == null)
@@ -457,10 +464,10 @@ public class PropertyList: GLib.Object, Gtk.TreeModel {
 	}
 
 	int iter_n_children (Gtk.TreeIter? iter) {
-		return_val_if_fail (iter.stamp == this.stamp, false);
-
 		if (iter == null)
 			return (int)this.n_predicates;
+
+		return_val_if_fail (iter.stamp == this.stamp, 0);
 
 		return 0;
 	}
