@@ -30,6 +30,8 @@ public ContextTest() {
 	                    this.test_local_ontology_sources);
 	Test.add_data_func ("/charango/context/heirarchy",
 	                    this.test_heirarchy);
+	Test.add_data_func ("/charango/context/lists",
+	                    this.test_lists);
 	Test.add_data_func ("/charango/context/live",
 	                    this.test_live);
 }
@@ -130,6 +132,29 @@ public void test_heirarchy () {
 	// We should have one warning, about the unavailable external link
 	assert (warning_list.length() == 1);
 }*/
+
+/* lists:
+ *
+ */
+public void test_lists () {
+	var context = new Charango.Context();
+	List<Warning> warning_list = null;
+
+	try {
+		context.add_local_ontology_source (SRCDIR + "/charango/tests/data/ontologies");
+		context.add_local_ontology_source (ontology_dir);
+		context.load_namespace ("http://example.com/test-lists#", out warning_list);
+	}
+	  catch (FileError e) { error (e.message); }
+	  catch (RdfError e) { error (e.message); }
+
+	foreach (unowned Warning w in warning_list)
+		print ("Warning: %s\n", w.message);
+
+	var list = context.find_entity ("http://example.com/test-lists#list1");
+	assert (list != null);
+	list.dump ();
+}
 
 /* live:
  *

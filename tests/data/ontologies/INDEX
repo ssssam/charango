@@ -3,3 +3,6 @@ file=test-entity.ontology
 
 [http://example.com/test-structure#]
 file=test-structure.ontology
+
+[http://example.com/test-lists#]
+file=test-lists.rdf
