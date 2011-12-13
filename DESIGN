@@ -35,8 +35,55 @@ Key design decisions
   the same and run SPARQL queries across them because it could take DAYS to
   execute!
 
+Tree view language
+------------------
+
+     -> get started! remember RDF syntax needs <, >, :, /
+
+
+     rdfs:Class [rdf:label]
+
+     what about coalescing properties? Should you just make the whole thing
+     borrow from SPARQL? eg.
+
+     foaf:Agent (fn:coalesce (foaf:name, rdf:name) | >>
+
+     then for the joins - presumably you then have to specify the predicate?
+     well, it should often be implicit, if only one property in the ontology
+     links the classes, but you will definitely need a way to specify ..
+
+     # Show all the uncles and aunts
+     xx:Person [fn:coalesce (xx:fullName, xx:surname)] - {
+       (xx:parent) xx:Person [xx:age] >> {
+         (xx:brother) xx:Person [fn:coalesce (xx:fullName, xx:surname)],
+         (xx:sister) xx:Person [fn:coalesce (xx:fullName, xx:surname)]
+       } ||
+       (xx:guardian) xx:Person [xx:age]
+     }
+
+     -- Why not SQL syntax?? It's horrid!
+     xx:Person ORDER BY COALESCE (xx:fullName, xx:surname)
+       (JOIN ON xx:parent xx:Person ORDER BY COALESCE (xx:fullName, xx:surname)
+       TREE JOIN ON xx:brother) xx:Person [xx:fullName / xx:surname]
+       |  (xx:guardian) xx:Person [xx:fullName / xx:surname]
+     }
+
+     Examples of records:
+
+     Any prior art as to what symbols should be what?
+     
+     regexp:
+       [] are character classes
+       () groups
+
+     C:
+       {} statement groups / blocks
+
+     Need to read about query languages ...
+       
+
 Internal design
-----------------
+---------------
 
 No premature optimisation. I'm aware we waste time comparing and parsing
 strings repeatedly. At least the code is clear and not scattered with

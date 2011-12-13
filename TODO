@@ -24,6 +24,8 @@ To do
   - would be nice to have special views for classes, properties and entities
   - use the generic tree browser
 
+     - get started on designing the syntax!
+
 * sparql-source, tracker-sparql-source:
   * might require some reworking - how to do fetch properties? You can't just
     query all on a resource ... wait, yes you can.
