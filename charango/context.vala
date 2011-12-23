@@ -161,6 +161,8 @@ public void add_local_ontology_source (string path)
 		if (ns == null) {
 			ns = new Charango.Namespace (this, namespace_uri, prefix);
 			this.namespace_table.insert (namespace_uri, ns);
+			if (prefix != null)
+				this.namespace_table.insert (prefix + ":", ns);
 		}
 
 		if (ignore == true) {
@@ -266,7 +268,7 @@ public List<unowned Charango.Namespace> get_namespace_list () {
 
 /**
  * find_entity()
- * @uri: resource identifier string
+ * @uri: resource identifier string. Key URIs are allowed.
  *
  * Locates the given entity, checking all known data sources.
  */
@@ -284,7 +286,7 @@ public Charango.Entity find_entity_with_error (string uri)
                        throws RdfError {
 	string namespace_uri, entity_name;
 
-	parse_uri_as_resource_strings (uri, out namespace_uri, out entity_name);
+	split_uri (uri, out namespace_uri, out entity_name, true);
 
 	Namespace ns = find_namespace (namespace_uri);
 
@@ -309,7 +311,7 @@ public Charango.Class find_class_with_error (string uri)
                       throws RdfError {
 	string namespace_uri, class_name;
 
-	parse_uri_as_resource_strings (uri, out namespace_uri, out class_name);
+	split_uri (uri, out namespace_uri, out class_name, true);
 
 	Charango.Namespace ns = find_namespace (namespace_uri);
 
@@ -334,7 +336,7 @@ public Charango.Property find_property_with_error (string uri)
                          throws RdfError {
 	string namespace_uri, property_name;
 
-	parse_uri_as_resource_strings (uri, out namespace_uri, out property_name);
+	split_uri (uri, out namespace_uri, out property_name, true);
 
 	Charango.Namespace ns = find_namespace (namespace_uri);
 
@@ -345,6 +347,7 @@ public Charango.Property find_property_with_error (string uri)
 	return ns.find_local_property (uri);
 }
 
+/* Key URIs are permitted */
 public Charango.Namespace? find_namespace (string uri) {
 	Charango.Namespace? result = this.namespace_table.lookup (uri);
 
@@ -368,7 +371,7 @@ private Charango.Namespace? process_uri (string      uri,
 	Charango.Namespace? ns;
 	string ns_uri;
 
-	parse_uri_as_resource_strings (uri, out ns_uri, out entity_name);
+	split_uri (uri, out ns_uri, out entity_name, false);
 
 	ns = find_namespace (ns_uri);
 
@@ -451,7 +454,7 @@ internal Entity find_or_create_entity (Ontology        owner,
 	catch (RdfError e) {
 		if (e is RdfError.UNKNOWN_NAMESPACE && allow_unknown_namespace) {
 			string ns_uri;
-			parse_uri_as_resource_strings (uri, out ns_uri, null);
+			split_uri (uri, out ns_uri, null, false);
 
 			ns = new Charango.Namespace (this, ns_uri, null);
 			ns.external = true;

@@ -45,6 +45,8 @@ namespace Charango {
 public class Entity: Object {
 
 public string uri;
+public string? key_uri;
+
 internal Charango.Namespace ns;
 
 /* Use a GenericArray instead of ValueArray so we can store null values */
@@ -61,15 +63,17 @@ public Charango.Class rdf_type {
 public Entity (Charango.Namespace ns,
                string             uri,
                Charango.Class     rdf_type) {
-	this.uri = uri;
 	this.ns = ns;
 	this.data = new GenericArray<GLib.Value?>();
 
 	this.rdf_type = rdf_type;
 
-	this.fix_uri ();
+	this.set_uri (uri);
 
 	this.name = get_name_from_uri (uri);
+
+	if (this.ns.prefix != null)
+		this.key_uri = this.ns.prefix + ":" + this.uri.slice (this.ns.uri.length, this.uri.length);
 
 	Value.register_transform_func (typeof (Entity),
 	                               typeof (string),
@@ -86,19 +90,22 @@ public Entity.prototype (Charango.Namespace ns,
 
 	this.name = get_name_from_uri (uri);
 
+	if (this.ns.prefix != null)
+		this.key_uri = this.ns.prefix + ":" + this.uri.slice (this.ns.uri.length, this.uri.length);
+
 	Value.register_transform_func (typeof (Entity),
 	                               typeof (string),
 	                               this.to_string_value);
 }
 
-/* Automatically fix non-canonical URI's, if eg. its namespace is an alias of
- * the actual one.
- */
-private void fix_uri () {
+/* Assign the resource its URI (construct-only). */
+private void set_uri (string uri) {
 	string namespace_uri, entity_name;
 
+	this.uri = uri;
+
 	try {
-		parse_uri_as_resource_strings (this.uri, out namespace_uri, out entity_name);
+		split_uri (this.uri, out namespace_uri, out entity_name, false);
 	}
 	catch (Charango.RdfError e) {
 		warning ("Parse error in URI <%s>", this.uri);
@@ -110,17 +117,22 @@ private void fix_uri () {
 		return;
 	}
 
-	if (namespace_uris_match (this.ns.uri, namespace_uri))
-		return;
+	// Ensure the URI is canonical (replace aliased forms)
+	if (! namespace_uris_match (this.ns.uri, namespace_uri)) {
+		bool matched = false;
 
-	// Swap our namespace for the ontology's canonical namespace
-	foreach (string alias_uri in this.ns.alias_list)
-		if (namespace_uris_match (alias_uri, namespace_uri)) {
-			this.uri = this.ns.uri + entity_name;
+		foreach (string alias_uri in this.ns.alias_list)
+			if (namespace_uris_match (alias_uri, namespace_uri)) {
+				this.uri = this.ns.uri + entity_name;
+				matched = true;
+				break;
+			}
+
+		if (! matched) {
+			warning ("Unknown namespace for URI <%s> (expected %s)", uri, this.ns.uri);
 			return;
 		}
-
-	warning ("Unknown namespace for URI <%s> (expected %s)", uri, this.ns.uri);
+	}
 }
 
 /* requires_promotion:
@@ -267,21 +279,7 @@ public static void to_string_value (Value     entity_value,
 }
 
 public string to_string () {
-	if (name == null)
-		return this.uri;
-
-	var builder = new StringBuilder("<");
-
-	if (this.ns.prefix != null)
-		builder.append (this.ns.prefix);
-	else
-		builder.append (this.ns.uri);
-
-	builder.append (":");
-	builder.append (name);
-	builder.append (">");
-
-	return builder.str;
+	return this.key_uri ?? "<" + this.uri + ">";
 }
 
 public virtual void dump () {

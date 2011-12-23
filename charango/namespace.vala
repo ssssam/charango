@@ -110,6 +110,7 @@ public List<Charango.Entity> get_entity_list () {
 
 
 /* FIXME: is it good to have a nullable type .. */
+/* Key URIs are allowed here */
 internal Charango.Entity? find_local_entity (string uri)
                           throws RdfError {
 	try {
@@ -124,12 +125,15 @@ internal Charango.Entity? find_local_entity (string uri)
 	  }
 
 	foreach (Charango.Entity e in this.entity_list)
-		if (e.uri == uri)
+		if (e.uri == uri || e.key_uri == uri)
 			return e;
 
-	if (this.ontology != null)
+	if (this.ontology != null) {
+		if (uri == this.prefix + ":")
+			return this.ontology;
 		if (namespace_uris_match (this.uri, uri))
 			return this.ontology;
+	}
 
 	throw new RdfError.UNKNOWN_RESOURCE ("Unable to find entity '%s'", uri);
 }
@@ -137,7 +141,7 @@ internal Charango.Entity? find_local_entity (string uri)
 internal Charango.Class find_local_class (string uri)
                         throws RdfError {
 	foreach (Charango.Class c in this.class_list)
-		if (c.uri == uri)
+		if (c.uri == uri || c.key_uri == uri)
 			return c;
 
 	throw new RdfError.UNKNOWN_CLASS ("Unable to find class '%s'", uri);
@@ -146,7 +150,7 @@ internal Charango.Class find_local_class (string uri)
 internal Charango.Property find_local_property (string uri)
                         throws RdfError {
 	foreach (Charango.Property p in this.property_list)
-		if (p.uri == uri)
+		if (p.uri == uri || p.key_uri == uri)
 			return p;
 
 	throw new RdfError.UNKNOWN_PROPERTY ("Unable to find property '%s'", uri);

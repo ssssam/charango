@@ -5,6 +5,23 @@ extern static const string SRCDIR;
 
 namespace OntologyBrowser {
 
+/* FIXME: it would be nice to merge this into glib */
+private delegate bool ListFilterFunc (List *node);
+
+private void filter_list (ref List       list,
+                          ListFilterFunc filter_func) {
+	List *node = list;
+	while (node != null) {
+		if (filter_func (node) == false) {
+			List *dead_node = node;
+			node = node->next;
+			/* FIXME: We could do this much more optimally in C ... */
+			list.delete_link (dead_node);
+		} else
+			node = node->next;
+	}
+}
+
 /* FIXME: should be able to do this with a Charango view :) */
 /* Gives a view in the following form:
  *
@@ -124,7 +141,7 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 		return_if_fail (e != null);
 
 		value = Value (typeof (string));
-		value.set_string (e.uri);
+		value.set_string (e.key_uri ?? e.uri);
 	}
 
 	bool iter_next (ref Gtk.TreeIter iter) {
@@ -257,14 +274,15 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 	void unref_node (Gtk.TreeIter iter) {
 	}
 
-	private static int compare_namespaces_by_uri (Charango.Namespace a,
-	                                              Charango.Namespace b) {
-		return strcmp (a.uri, b.uri);
+	private static int compare_namespaces_by_ontology_key_uri (Charango.Namespace a,
+	                                                           Charango.Namespace b) {
+		return_val_if_fail (a.ontology != null && b.ontology != null, false);
+		return strcmp (a.ontology.key_uri ?? a.uri, b.ontology.key_uri ?? a.uri);
 	}
 
-	private static int compare_entities_by_uri (Charango.Entity a,
-	                                            Charango.Entity b) {
-		return strcmp (a.uri, b.uri);
+	private static int compare_entities_by_key_uri (Charango.Entity a,
+	                                                Charango.Entity b) {
+		return strcmp (a.key_uri ?? a.uri, b.key_uri ?? a.uri);
 	}
 
 	public ConceptTree (Charango.Context context) {
@@ -272,7 +290,12 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 		this.stamp = (int) Random.next_int ();
 
 		var namespace_list = context.get_namespace_list();
-		namespace_list.sort ((GLib.CompareFunc<Charango.Namespace>)compare_namespaces_by_uri);
+		filter_list (ref namespace_list, (node) => {
+			/* Filter out the alias namespaces, sub/super-namespaces etc. */
+			Namespace ns = ((List<Namespace> *)node)->data;
+			return ns.ontology != null;
+		});
+		namespace_list.sort ((GLib.CompareFunc<Charango.Namespace>)compare_namespaces_by_ontology_key_uri);
 
 		this.root = new Node (null, 0, -1);
 
@@ -291,7 +314,7 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 			ns_prev = ns_node;
 
 			var class_list = ns.get_class_list ();
-			class_list.sort ((GLib.CompareFunc<Charango.Class>)compare_entities_by_uri);
+			class_list.sort ((GLib.CompareFunc<Charango.Class>)compare_entities_by_key_uri);
 
 			int j = 0;
 			Node *x_prev = null;
@@ -302,7 +325,7 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 			}
 
 			var property_list = ns.get_property_list ();
-			property_list.sort ((GLib.CompareFunc<Charango.Property>)compare_entities_by_uri);
+			property_list.sort ((GLib.CompareFunc<Charango.Property>)compare_entities_by_key_uri);
 
 			foreach (Property x in property_list) {
 				Node *x_node = new Node (x, j ++, 1);
@@ -311,7 +334,7 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 			}
 
 			var entity_list = ns.get_entity_list ();
-			entity_list.sort (compare_entities_by_uri);
+			entity_list.sort (compare_entities_by_key_uri);
 
 			foreach (Entity x in entity_list) {
 				Node *x_node = new Node (x, j ++, 1);
@@ -410,7 +433,7 @@ public class PropertyList: GLib.Object, Gtk.TreeModel {
 		if (column == 0) {
 			// Property name
 			Charango.Property property = this.subject.rdf_type.get_interned_property (index);
-			value.set_string (property.uri);
+			value.set_string (property.key_uri);
 		}
 
 		if (column == 1) {

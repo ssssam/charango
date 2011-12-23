@@ -1,5 +1,6 @@
 Charango 0.3.0 ...
 
+
 To do (stuff I won't really do)
 -------------------------------
 
@@ -19,11 +20,9 @@ To do
 -----
 
 * ontology-browser:
-  * use key URI's more for readability
   - hyperlink to resources
   - would be nice to have special views for classes, properties and entities
   - use the generic tree browser
-
      - get started on designing the syntax!
 
 * sparql-source, tracker-sparql-source:
@@ -45,15 +44,7 @@ Current issues
 
 * also http://purl.org/NET/c4dm/keys.owl#AFlat etc.
 
-* Support key URI's etc.
-  -> just store them in the hash :)
-
 * Handle internationalised triples correctly - see label.rdf for an example
-
-* Use key URI's by preference -
-  where should we use <> - on both key and full URI's?
-    - see turtle/sparql rules
-    - where might you want to pass a result directly to find_entity() etc .. ?
 
 Is Entity really a necessary concept? Any resource has an rdf:type,
 it just might be rdf:Resource ... I actually think you should rename.

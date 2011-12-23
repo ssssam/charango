@@ -38,32 +38,36 @@ public bool namespace_uris_match (string ns, string m) {
 	return false;
 }
 
-public void parse_uri_as_resource_strings (string      uri_string,
-                                           out string  namespace_uri,
-                                           out string  fragment)
-            throws RdfError                                    {
+public void split_uri (string     uri,
+                       out string namespace_uri,
+                       out string fragment,
+                       bool       allow_key_uri)
+            throws RdfError                      {
+	int split_index;
+
 	namespace_uri = null;
 	fragment = null;
 
-	// Expand namespace abbreviations
-	if (uri_string.index_of_char ('/') == -1)
-		throw new RdfError.URI_PARSE_ERROR
-		            ("parse_uri_as_resource_strings(): cannot parse <%s>; note " + 
-		             "this function cannot resolve prefixes.",
-		             uri_string);
+	if (uri.index_of_char ('/') == -1) {
+		split_index = uri.index_of_char (':');
 
-	var hash_index = uri_string.last_index_of_char ('#');
+		if (split_index <= 0 || split_index > uri.length - 1)
+			throw new RdfError.URI_PARSE_ERROR ("Cannot understand \"%s\" as a URI.", uri);
 
-	if (hash_index == -1)
-		// Some don't use the #fragment-identifier convention
-		hash_index = uri_string.last_index_of_char ('/');
+		if (allow_key_uri == false)
+			throw new RdfError.URI_PARSE_ERROR ("%s is not a full URI", uri);
+	} else {
+		split_index = uri.last_index_of_char ('#');
 
-	if (hash_index <= 0 || hash_index > uri_string.length -1)
-		throw new RdfError.URI_PARSE_ERROR
-		            ("Invalid URI: %s", uri_string);
+		if (split_index == -1)
+			split_index = uri.last_index_of_char ('/');
 
-	namespace_uri = uri_string [0: hash_index + 1];
-	fragment = uri_string[hash_index + 1: uri_string.length];
+		if (split_index <= 0 || split_index > uri.length - 1)
+			throw new RdfError.URI_PARSE_ERROR ("Invalid URI: %s", uri);
+	}
+
+	namespace_uri = uri [0: split_index + 1];
+	fragment = uri [split_index + 1: uri.length];
 }
 
 /*
