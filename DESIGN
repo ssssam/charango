@@ -44,7 +44,33 @@ Tree view language
      rdfs:Class [rdf:label]
 
      what about coalescing properties? Should you just make the whole thing
-     borrow from SPARQL? eg.
+     borrow from SPARQL?  It should draw from SPARQL as much as possible!
+
+	 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+	 COLUMN "Person" foaf:name(?person)
+	 COLUMN "Aunt/uncle" foaf:name(?family)
+	 COLUMN "Age"  foaf:name
+	 SELECT foaf:Person AS ?person ORDER BY fn:coalesce (foaf:fullName, foaf:surname)
+	   { [foaf:parent] foaf:Person ORDER BY foaf:age >>
+	        [foaf:brother] foaf:Person AS ?family ORDER BY (fn:coalesce (foaf:fullName, foaf:surname)),
+	        [foaf:sister]  foaf:Person AS ?family ORDER BY (fn:coalesce (foaf:fullName, foaf:surname)).
+	   } ELSE
+	   [foaf:guardian] foaf:Person ORDER BY foaf:age
+	  }
+
+     I think you should also read about XPath !!!
+
+     ISSUES:
+       - how to represent a JOIN - [predicate] if on a predicate?
+       - how to represent an IMPLICIT join - [] ? - ?
+       - how to represent an ORDERED GROUP on the same level - I guess you need to be able to choose
+         between *all* results for a join and ONE as well ...
+       - how to represent ORPHANS FROM A JOIN
+       - how to represent the columns? separately? in the list?
+
+     Basically, the key elements are JOINS. Sorts are easy, I suppose
+
+     maybe you should think like a tree? except we're a horizontal treee ... 
 
      foaf:Agent (fn:coalesce (foaf:name, rdf:name) | >>
 
@@ -80,7 +106,20 @@ Tree view language
        {} statement groups / blocks
 
      Need to read about query languages ...
+
        
+Examples in this language
+-------------------------
+
+	SELECT owl:Ontology ORDER BY rdf:uri [] >>
+		{ rdfs:Class ORDER BY rdf:uri [] >>
+			rdfs:Property ORDER BY rdf:uri },
+		{ rdf, resource }.
+
+	* the associativity of the multi-join levels is a bit of a pain. I think
+	wrapping up the individual lines rather than the group is the best bet.
+	  
+
 
 Internal design
 ---------------
@@ -116,6 +155,26 @@ The following indexing schemes exist:
 	  that the Xsd literal types and derivations are themselves Rdfs
 	  classes.
 	  FIXME: is this any use?
+
+
+Data sources 
+------------
+
+Charango.Source is implemented by anything that holds resources. A view can be
+made of any source. Examples
+  * Context (contains Ontologies, Properties, Resources and Classes)
+  * SparqlSource (writes sparql queries :( )
+  * FileSource (reads ttl files / rdf files / what have you ??)
+  * all of the stores
+
+Charango.Store adds a CRUD API. This cannot be done through a query language!
+It must be done through API calls!
+
+  * SparqlStore
+  * TrackerStore
+  * FileStore ??
+  * MemoryStore
+
 
 Ontology sources
 ----------------
