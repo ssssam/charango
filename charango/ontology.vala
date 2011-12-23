@@ -72,7 +72,7 @@ private string get_format_for_file (string file_name) {
  * 
  * Load ontology into memory.
  */
-internal void load (ref List<Warning>  warning_list)
+internal void load (ref List<Warning>? warning_list)
          throws RdfError {
 	Charango.Context context = this.ns.context;
 	Rdf.World *redland = context.redland;
@@ -105,18 +105,20 @@ internal void load (ref List<Warning>  warning_list)
 		stream.next ();
 
 		if (subject_node.is_literal() || !arc_node.is_resource()) {
-			warning_list.prepend (new Warning (
-				"Invalid statement: <%s %s %s>",
-				subject_node.to_string (), arc_node.to_string (), object_node.to_string ()
-			));
+			if (&warning_list != null)
+				warning_list.prepend (new Warning (
+					"Invalid statement: <%s %s %s>",
+					subject_node.to_string (), arc_node.to_string (), object_node.to_string ()
+				));
 			continue;
 		}
 
 		if (subject_node.is_blank ()) {
-			warning_list.prepend (new Warning (
-				"Ignored statement due to blank: <%s %s %s>",
-				subject_node.to_string (), arc_node.to_string (), object_node.to_string ()
-			));
+			if (&warning_list != null)
+				warning_list.prepend (new Warning (
+					"Ignored statement due to blank: <%s %s %s>",
+					subject_node.to_string (), arc_node.to_string (), object_node.to_string ()
+				));
 			continue;
 		}
 
@@ -127,10 +129,11 @@ internal void load (ref List<Warning>  warning_list)
 
 		if (arc_uri == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
 			if (! object_node.is_resource()) {
-				warning_list.prepend (new Warning ("Invalid statement: <%s %s %s>",
-				                                   subject_node.to_string (),
-				                                   arc_node.to_string (),
-				                                   object_node.to_string ()));
+				if (&warning_list != null)
+					warning_list.prepend (new Warning ("Invalid statement: <%s %s %s>",
+									   subject_node.to_string (),
+									   arc_node.to_string (),
+									   object_node.to_string ()));
 				continue;
 			}
 
@@ -142,10 +145,11 @@ internal void load (ref List<Warning>  warning_list)
 		if (arc_uri.length > 44 &&
 		    arc_uri.substring (0, 44) == "http://www.w3.org/1999/02/22-rdf-syntax-ns#_" &&
 		    int.parse(arc_uri.substring(44)) > 0) {
-			warning_list.prepend (new Warning (
-				"Ignored statement due to container: <%s %s %s>",
-				subject_node.to_string (), arc_node.to_string (), object_node.to_string ()
-			));
+			if (&warning_list != null)
+				warning_list.prepend (new Warning (
+					"Ignored statement due to container: <%s %s %s>",
+					subject_node.to_string (), arc_node.to_string (), object_node.to_string ()
+				));
 			continue;
 		}
 
@@ -194,10 +198,11 @@ internal void load (ref List<Warning>  warning_list)
 			subject.set_predicate (arc.uri, object);
 		}
 		else if (object_node.is_blank ())
-			warning_list.prepend (new Warning (
-				"Ignored statement due to blank: <%s %s %s>",
-				subject_node.to_string (), arc_node.to_string (), object_node.to_string ()
-			));
+			if (&warning_list != null)
+				warning_list.prepend (new Warning (
+					"Ignored statement due to blank: <%s %s %s>",
+					subject_node.to_string (), arc_node.to_string (), object_node.to_string ()
+				));
 	}
 }
 
