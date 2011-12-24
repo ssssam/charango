@@ -14,9 +14,11 @@ See the examples/ directory and ./DESIGN for more information.
 
 
 Building
------------
+--------
 
 Charango must be compiled with Vala 0.13 or later.
+
+It depends on the Redland and Raptor RDF libraries.
 
 
 Overview
@@ -31,6 +33,7 @@ rdfs:Property and rdfs:Class. For these there are "concept classes" which are
 simply subclasses of Charango.Entity which expose extra helpers and
 functionality such as accessors for important properties. It's simple to
 implement your own concept classes.
+
 
 Philosophical Q & A
 -------------------

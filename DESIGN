@@ -49,7 +49,7 @@ Tree view language
 	 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 	 COLUMN "Person" foaf:name(?person)
 	 COLUMN "Aunt/uncle" foaf:name(?family)
-	 COLUMN "Age"  foaf:name
+	 COLUMN "Age"  foaf:name(*)
 	 SELECT foaf:Person AS ?person ORDER BY fn:coalesce (foaf:fullName, foaf:surname)
 	   { [foaf:parent] foaf:Person ORDER BY foaf:age >>
 	        [foaf:brother] foaf:Person AS ?family ORDER BY (fn:coalesce (foaf:fullName, foaf:surname)),
@@ -60,9 +60,41 @@ Tree view language
 
      I think you should also read about XPath !!!
 
+     Could you make it just columns on top of a SPARQL query ???
+     Surely you could ..... 
+      -- essentially here you're EXTENDING sparql to provide
+       - groupings of results
+       - a weird new syntax for joins. Not sure if that's entirely necessary.
+       I think leave it out for now, and try later if you think it's needed
+
+
+	 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+	 SELECT foaf:name(?person) AS "Person"
+	        foaf:name(?family) AS "Aunt/uncle" 
+	        foaf:age(*) AS "Age"  
+	 FROM { foaf:Person AS ?person ORDER BY fn:coalesce (foaf:fullName, foaf:surname) ,
+	   { foaf:parent ?parent ORDER BY foaf:age >>
+	        foaf:brother ?family ORDER BY (fn:coalesce (foaf:fullName, foaf:surname)),
+	        foaf:sister ?family ORDER BY (fn:coalesce (foaf:fullName, foaf:surname)).
+	   } ELSE
+	   foaf:guardian ?parent ORDER BY foaf:age
+	  }
+	 }
+
+     So, the good news is that now you get to reimplement sparql :)
+     But in a more rigid form, I guess .. and it's ugly, but
+        a) it's more or less standard, so at least RDF people are on the level already
+        b) you can be smart and build a "view builder" ... I hope, to make this all more palletable.
+           Although the programmatical query has dropped the idea of "you specify the resource
+           types, not the join properties" maybe this has some legs in the user-facing query
+           builder UI ... at least, everything should all be done automatically :)
+
      ISSUES:
        - how to represent a JOIN - [predicate] if on a predicate?
        - how to represent an IMPLICIT join - [] ? - ?
+   -> I think the answer to these is that it's weird in a query to specify the
+      desired type but not the join property :)
+    
        - how to represent an ORDERED GROUP on the same level - I guess you need to be able to choose
          between *all* results for a join and ONE as well ...
        - how to represent ORPHANS FROM A JOIN
@@ -155,25 +187,6 @@ The following indexing schemes exist:
 	  that the Xsd literal types and derivations are themselves Rdfs
 	  classes.
 	  FIXME: is this any use?
-
-
-Data sources 
-------------
-
-Charango.Source is implemented by anything that holds resources. A view can be
-made of any source. Examples
-  * Context (contains Ontologies, Properties, Resources and Classes)
-  * SparqlSource (writes sparql queries :( )
-  * FileSource (reads ttl files / rdf files / what have you ??)
-  * all of the stores
-
-Charango.Store adds a CRUD API. This cannot be done through a query language!
-It must be done through API calls!
-
-  * SparqlStore
-  * TrackerStore
-  * FileStore ??
-  * MemoryStore
 
 
 Ontology sources
