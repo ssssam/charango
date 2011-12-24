@@ -45,4 +45,28 @@ public Store() {
 		         (ulong)queues_lock);
 }
 
+/* Notify code:
+
+	queue_removal_if_notifying() - pushes to removal queue if the notify
+            flag is set, or returns FALSE
+	queue_checkin_if_notifying()
+
+	add_entry()  => cannot be called during notify (need to return ID so can't defer exec)
+	remove_entry() => (defers if notifying)
+	checkout_entry() => all cool
+	checkin_entry() => (defers if notifying - so only one tree of objects gets committed in
+                            one transaction)
+	update_entry_property() => convenience func
+*/
+
+/* Editing code:
+
+	The tree of related entries gets checked out and a copy is returned to the caller.
+	It's like an SVN working tree - especially in that merges are impossible. On checkin,
+	the whole tree is notified upon and then any queued changes are executed as a new
+	transaction. One checkout/checkin = one transaction!
+
+	Merging - this is RDF's problem now :)
+*/
+
 }

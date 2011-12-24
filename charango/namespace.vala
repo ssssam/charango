@@ -20,9 +20,16 @@ using Rdf;
 /*
  * Charango.Namespace
  */
-public class Charango.Namespace: GLib.Object, Charango.Source {
+public class Charango.Namespace: GLib.Object {
 
 internal Charango.Context context;
+
+/* Applications can access the source for free, but they must keep track of
+ * the store interface (if there is one) themselves. Internally we keep track
+ * inside the namespace :)
+ */
+public Charango.Source source;
+internal Charango.Store store;
 
 public bool builtin = false;
 public bool loaded = false;
@@ -50,15 +57,6 @@ public List<string> alias_list = null;
 public string  uri;
 public string? prefix;
 
-/* FIXME: really, classes and properties are entities as well. ... */
-/* Should we store these in the Charango.Ontology? I think not, because some
- * namespaces do not have an ontology defined, definitions come from other
- * places ...
- */
-internal List<Charango.Entity>   entity_list = null;
-internal List<Charango.Class>    class_list = null;
-internal List<Charango.Property> property_list = null;
-
 public Namespace (Context context,
                   string  uri,
                   string? prefix)
@@ -82,78 +80,6 @@ public Namespace.builtin_internal (Context context,
 	catch (RdfError e) { warning (e.message); }
 
 	this.builtin = true;
-}
-
-internal void set_ontology (Ontology o) {
-	this.ontology = o;
-
-	// Don't treat the ontology as an entity, it's inconsistent because we
-	// don't treat classes or properties are entities either.
-	/*this.entity_list.prepend (o);*/
-}
-
-public List<unowned Charango.Class> get_class_list () {
-	return this.class_list.copy();
-}
-
-public List<unowned Charango.Property> get_property_list () {
-	return this.property_list.copy();
-}
-
-/* FIXME: it's a bit weird that this only returns things aren't classes
- * or properties, in terms of consistency. However this API is temporary
- * anyway, one day you will use Charango.Source API's to get this info
- */
-public List<Charango.Entity> get_entity_list () {
-	return (owned) this.entity_list;
-}
-
-
-/* FIXME: is it good to have a nullable type .. */
-/* Key URIs are allowed here */
-internal Charango.Entity? find_local_entity (string uri)
-                          throws RdfError {
-	try {
-		return find_local_class (uri);
-	}
-	  catch (RdfError e) { }
-
-	try {
-		return find_local_property (uri);
-	}
-	  catch (RdfError e) {
-	  }
-
-	foreach (Charango.Entity e in this.entity_list)
-		if (e.uri == uri || e.key_uri == uri)
-			return e;
-
-	if (this.ontology != null) {
-		if (uri == this.prefix + ":")
-			return this.ontology;
-		if (namespace_uris_match (this.uri, uri))
-			return this.ontology;
-	}
-
-	throw new RdfError.UNKNOWN_RESOURCE ("Unable to find entity '%s'", uri);
-}
-
-internal Charango.Class find_local_class (string uri)
-                        throws RdfError {
-	foreach (Charango.Class c in this.class_list)
-		if (c.uri == uri || c.key_uri == uri)
-			return c;
-
-	throw new RdfError.UNKNOWN_CLASS ("Unable to find class '%s'", uri);
-}
-
-internal Charango.Property find_local_property (string uri)
-                        throws RdfError {
-	foreach (Charango.Property p in this.property_list)
-		if (p.uri == uri || p.key_uri == uri)
-			return p;
-
-	throw new RdfError.UNKNOWN_PROPERTY ("Unable to find property '%s'", uri);
 }
 
 internal void replace_entity (Entity old_entity,

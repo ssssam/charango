@@ -289,7 +289,7 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 		this.context = context;
 		this.stamp = (int) Random.next_int ();
 
-		var namespace_list = context.get_namespace_list();
+		var namespace_list = context.get_namespace_list ();
 		filter_list (ref namespace_list, (node) => {
 			/* Filter out the alias namespaces, sub/super-namespaces etc. */
 			Namespace ns = ((List<Namespace> *)node)->data;
@@ -313,7 +313,7 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 			ns_node->add_to_tree (this.root, ns_prev);
 			ns_prev = ns_node;
 
-			var class_list = ns.get_class_list ();
+			var class_list = ns.source.list_resources (context.rdfs_class, 10);
 			class_list.sort ((GLib.CompareFunc<Charango.Class>)compare_entities_by_key_uri);
 
 			int j = 0;
@@ -324,7 +324,7 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 				x_prev = x_node;
 			}
 
-			var property_list = ns.get_property_list ();
+			var property_list = ns.source.list_resources (context.rdf_property, 10);
 			property_list.sort ((GLib.CompareFunc<Charango.Property>)compare_entities_by_key_uri);
 
 			foreach (Property x in property_list) {
@@ -333,10 +333,14 @@ public class ConceptTree: GLib.Object, Gtk.TreeModel {
 				x_prev = x_node;
 			}
 
-			var entity_list = ns.get_entity_list ();
+			var entity_list = ns.source.list_resources (context.rdfs_resource, 10);
+
 			entity_list.sort (compare_entities_by_key_uri);
 
 			foreach (Entity x in entity_list) {
+				if (class_list.find (x) || property_list.find (x))
+					continue;
+
 				Node *x_node = new Node (x, j ++, 1);
 				x_node->add_to_tree (ns_node, x_prev);
 				x_prev = x_node;
@@ -603,7 +607,8 @@ public class MainWindow: Gtk.Window {
 			if (properties_model != null && properties_model.subject.uri == selected_concept_uri.get_string ())
 				return;
 
-			Entity selected_concept = this.context.find_entity (selected_concept_uri.get_string ());
+			Entity selected_concept = this.context.find_resource (context.rdfs_resource,
+			                                                      selected_concept_uri.get_string ());
 			properties_model = new PropertyList (this.context, selected_concept);
 			this.properties_tree_view.set_model (properties_model);
 		});

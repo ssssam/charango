@@ -15,9 +15,34 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* Simple object store implementation.
+ *
+ * FIXME: there are probably some efficiency gains to be made ;)
+ */
+
 public class Charango.MemoryStore: Store {
 
-public MemoryStore() {
+private HashTable<Charango.Class,List<Charango.Entity>> data;
+
+public MemoryStore () {
+	this.data = new GLib.HashTable<Charango.Class,List<Charango.Entity>> (direct_hash, direct_equal);
+}
+
+public List<unowned Charango.Entity> list_resources (Charango.Class type,
+                                                     uint           limit) {
+	/* FIXME: limit is not honoured */
+	return this.data.lookup(type).copy();
+}
+
+public abstract Charango.Entity find_resource (Charango.Class type,
+                                               string         uri) {
+	var entity_list = this.data.lookup (type);
+
+	foreach (Charango.Entity e in entity_list)
+		if (e.uri == uri || e.key_uri == uri)
+			return e;
+
+	return null;
 }
 
 }

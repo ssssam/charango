@@ -18,6 +18,39 @@
 
 public interface Charango.Source {
 
+/**
+ * list_all_resources
+ * @type: class of resource to return.
+ * @limit: suggested batch size
+ *
+ * Backends should always honour @limit, but it is not required - be aware
+ * that you may be returned more results than you requested.
+ *
+ * Depending on the source and the size of the dataset, this operation may be
+ * very slow! Use the batch size option sensibly, and never block waiting for
+ * data in your UI thread!
+ *
+ * Remember that all resources have type rdfs:Resource. Most resources have
+ * more than one type.
+ */
+public abstract List<unowned Charango.Entity> list_resources (Charango.Class type,
+                                                              uint           limit);
+
+/**
+ * find_resource():
+ * @type: type of resource to return
+ * @uri: resource identifier string. Key URIs are allowed.
+ *
+ * Locates the given entity of the correct type inside the current namespace.
+ * Remember that all resources have type rdfs:Resource, so you can use this
+ * type to search all resources in the namespace.
+ *
+ * Returns %NULL if the resource could not be found.
+ */
+public abstract Charango.Entity? find_resource (Charango.Class type,
+                                                string         uri);
+
+
 /*public struct ResourceChange {
 	Charango.Entity? old_resource;
 	Charango.Entity? new_resource;
@@ -67,30 +100,6 @@ public ResourceWatchClosure connect_resource_watch (Charango.Class type,
                    or vice versa
 
 	also query_n_relations ()
-*/
-
-/* Notify code:
-
-	queue_removal_if_notifying() - pushes to removal queue if the notify
-            flag is set, or returns FALSE
-	queue_checkin_if_notifying()
-
-	add_entry()  => cannot be called during notify (need to return ID so can't defer exec)
-	remove_entry() => (defers if notifying)
-	checkout_entry() => all cool
-	checkin_entry() => (defers if notifying - so only one tree of objects gets committed in
-                            one transaction)
-	update_entry_property() => convenience func
-*/
-
-/* Editing code:
-
-	The tree of related entries gets checked out and a copy is returned to the caller.
-	It's like an SVN working tree - especially in that merges are impossible. On checkin,
-	the whole tree is notified upon and then any queued changes are executed as a new
-	transaction. One checkout/checkin = one transaction!
-
-	Merging - this is RDF's problem now :)
 */
 
 }
