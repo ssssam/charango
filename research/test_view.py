@@ -15,17 +15,32 @@ test_queries = [
 ]
 
 
-class MockDataSource(CharangoPagedData):
+class SimpleMockDataSource(view.CharangoPagedData):
     '''
     Data source usable for testing.
     '''
-    pass
+    def __init__(self, rows, page_size=None):
+        super(MockDataSource, self).__init__(page_size=page_size)
+        self.rows = rows
+
+    def _estimate_row_n_children(self, row):
+        # This is a list, not a tree ... no nesting.
+        assert row == self._root_row
+
+        return len(self.rows)
 
 
 class TestPagedData():
     def test_simple(self):
         '''
         '''
+        data = SimpleMockDataSource(range(100), page_size=10)
+
+        root_row = data.get_root()
+        assert root_row._estimated_n_children == 100
+
+        first_page = root_row.next_page()
+
         # Need to ... have 10 pages, query the row of page 5, but have page 3 and 4 be tiny so
         # lots of row changes occur .... OK!
 

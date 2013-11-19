@@ -16,92 +16,54 @@
 # actually, you can't because fn:starts-with needs a string literal
 # as its second argument ...
 
-# Things to do on this still
-# --------------------------
-#
-# Design the 'preferred' API! Mimicking GtkTreeModel is not ideal. But what is
-# better? EggListBox uses a GSequence of elements, which supports like 1-5k
-# rows, and just implements GtkContainer. That's no good for us because we
-# can't add all the elements.  I think emitting row-added and row-removed on
-# estimation changes is actually pretty reasonable. range-removed and
-# range-added is even better.
-#
-# The real problem is, what if you want to use your PagedData to tell you stuff
-# about the underlying query too, i.e. if you just want a live data model. You
-# could argue that's Tracker's job ... which it is, but still, it doesn't exist.
-# Could you build PagedData on top of it? No, because it would need to be lazy
-# model... I guess what you'd want would be something that ate results from the
-# cursor and remembered them and then emitted when soemthing had been added or
-# changed. But you don't really *want* that unless you're trying to ORDER things
-# .... so you don't need to separate these concepts at all!
-
 from gi.repository import GObject
 from gi.repository import Gtk
 from gi.repository import Tracker
 
 import re
 
-class CharangoRow():
+
+class Row():
     '''
-    A single row in a CharangoPagedData model.
+    Base class single row in a Charango model.
+
+    Currently we assume all rows are leaf rows (no children). When extending
+    Charango to display trees as well as just lists, this class should probably
+    start to implement PagedDataInterface.
     '''
-    def __init__(self, data, page_row_n, values, parent_page=None):
-        self.data = data
-        self.page_row_n = page_row_n
-        self.values = values
+    def __init__(self, parent_page, relative_n, values):
+        '''
+        :param relative_n: Row number relative to ``parent_page``
+        '''
         self.parent_page = parent_page
-
-        self.n_children = 0
-        self.e_n_children = 0
-
-        # FIXME: make this a GSequence
-        self._pages = []
-
-    def _store_page(self, page):
-        for other_page in self._pages:
-            if other_page.start_row_n > page.start_row_n:
-                self._pages.insert(page, other_page)
-        else:
-            self._pages.append(page)
-
-    def get_estimated_nth_child(self, estimated_n):
-        # If row has not been read & has no estimated number of
-        # children, read it now.
-
-        # Now, we have estimated number of children. If estimated_n
-        # > estimated_child_count, what do you do? Shouldn't ever
-        # happen.
-
-        # Next, find row object for 'estimated_n'. In the course
-        # of this we need to find the page for the row. This
-        # involves ... complexity!
-
-        # Still, the complexity at this point is all in the underlying
-        # model. We know the nearest in-memory page because we already
-        # searched the list of pages for it ... 
-        return some-kind-of-row-iter
+        self.relative_n = relative_n
+        self.values = values
 
 
-class CharangoPage():
+class Page():
     '''
     A page of data.
 
-    Rows are read from the data source one page at a time.
+    The data within a page is not subject to change unless the underlying data
+    changes.
     '''
-    def __init__(self, start_row_n=None, start_row_en=None):
-        if start_row_n and start_row_en:
-            assert start_row_n == start_row_en
-        self.start_row_n = start_row_n
-        self.start_row_en = start_row_en
+    def __init__(self, offset=None):
+        self.offset = offset
 
-        # FIXME: Make this a GSequence
+        # FIXME: Make this a GSequence, perhaps
         self._rows = []
 
     def append_row(self, row):
+        '''
+        FIXME: should add them all at once
+        '''
         self._rows.append(row)
 
+    def get_row(self, n):
+        return self._rows[n]
 
-class CharangoPagedData():
+
+class PagedDataInterface():
     '''
     Abstract lazy data model.
 
@@ -111,32 +73,121 @@ class CharangoPagedData():
     is usually an abstraction built upon a buffer in the data source. It would
     be better for us if the data source would expose a paged interface so that
     we could reuse the buffers inside the data source, instead of having to do
-    our own, superflous paging).
+    our own, additional paging).
+
+    The API is designed to encourage querying one page at a time, so that page
+    sizes can be coordinated with the query engine and the view mechanism.
+    Iterating through every page may be very slow.
     '''
-    def __init__(self, page_size):
-        self.page_size = page_size
-
-    # old Calliope interface was:
-    #  inital_read(node)
-    #  read_page_at(head, tail, estimated_row_number)
-    #  read_next_page(page)
-
-    def next_page(self, current_page=None):
+    def __init__(self, page_read_size):
         '''
-        Might be better if this only read the first page, and
-        subsequent pages were read by a method on the page object...
+        Pages will contain from 1 to ``page_read_size`` rows.
+
+        :param page_read_size: Number of rows to be read per page 
+        '''
+        self.page_read_size = page_read_size
+
+        # FIXME: make this a GSequence
+        self._pages = []
+
+        self._n_rows = None
+        self._estimated_n_rows = self._estimate_row_count()
+
+    def _store_page(self, page, prev_page=None):
+        if prev_page is None:
+            for prev_page in self._pages:
+                if prev_page.offset > page.offset:
+                    break
+        if prev_page is not None:
+            self._pages.insert(index(prev_page), other_page)
+        else:
+            self._pages.append(page)
+
+    def _estimate_row_count(self):
+        '''
+        Count or estimate the number of rows in the data.
+
+        This function can query data from the source but the query *must* be
+        fast. The number of child rows does not have to be exact if returning
+        an exact number would take too long, but the more inaccuracy the less
+        exact the scroll bar is for the user. This is a trade-off that must be
+        worked out for your specific use case.
         '''
         raise NotImplementedError()
 
-    def page_for_row(self, head, tail, estimated_row_number):
+    def _read_and_store_page(self, offset, prev_page=None):
         '''
         '''
         raise NotImplementedError()
 
+    def first_page(self):
+        '''
+        Return the first page, querying for it if necessary.
+        '''
+        return self.next_page(prev_page=None)
 
-class CharangoTrackerQuery(CharangoPagedData):
+    def next_page(self, prev_page=None):
+        '''
+        Return the page after 'prev_page', querying for it if necessary.
+
+        This may involve an expensive database read. Therefore, we do not
+        expose a standard Python iterator interface for pages because a
+        'for page in data' loop might take hours.
+        '''
+        if prev_page:
+            assert prev_page in self._pages
+            assert len(prev_page._rows) == self.page_read_size
+            expected_offset = prev_page.offset + self.page_read_size
+            expected_index = self._pages.index(prev_page) + 1
+        else:
+            expected_offset = 0
+            expected_index = 0
+
+        try:
+            page = self._pages[expected_index]
+            assert page.offset >= expected_offset
+            if page.offset == expected_offset:
+                return page
+        except IndexError:
+            pass
+
+        page = self._read_and_store_page(expected_offset, prev_page=prev_page)
+        return page
+
+    # def prev_page():
+    #   We'll need this eventually too!
+
+    def get_page_for_position(self, position):
+        '''
+        Return the page at ``position``.
+
+        The ``position`` parameter is specified as a floating point value
+        between 0 and 1, where 0 is the first page and 1 the last. Other than
+        the edge values, the accuracy is unspecified. This is necessary when
+        using a lazy data model -- to have an accurate idea of the scale of the
+        underlying data would require querying every row!
+        '''
+        assert 0.0 <= position <= 1.0
+
+        estimated_start_row_n = position * self._estimate_row_count
+        estimated_start_row_n -= estimated_start_row_n % self.page_read_size
+
+        page = None
+        for page in self._pages:
+            if page.offset == estimated_start_row_n:
+                return page
+            if page.offset > estimated_start_row_n:
+                break
+        prev_page = page
+
+        page = self._read_and_store_page(estimated_start_row_n, prev_page=prev_page)
+
+        return page
+
+
+class TrackerQuery(PagedDataInterface):
     '''
-    This model provides a Charango data model from a Tracker query.
+    This model provides a paged data model from a Tracker query.
 
     Paged internally, using OFFSET and LIMIT, which gives the following
     benefits:
@@ -146,7 +197,7 @@ class CharangoTrackerQuery(CharangoPagedData):
     '''
 
     def __init__(self, connection, query, root_term, root_pattern,
-                 page_size=1200):
+                 page_read_size=1000):
         '''
         Finding ``root_term`` and ``root_pattern`` could be done automatically
         by parsing ``query``, but that's too much effort for now.
@@ -157,42 +208,45 @@ class CharangoTrackerQuery(CharangoPagedData):
         :param root_pattern: The triple pattern from ``query`` that matches
             ``root_term``
         '''
-        super(CharangoTrackerQuery, self).__init__(page_size)
-
         self.connection = connection
         self.query = query
         self.root_term = root_term
         self.root_pattern = root_pattern
+
+        super(TrackerQuery, self).__init__(page_read_size)
 
         # No support for multi-level queries ... for now...
         self.depth = 1
 
         # The root row is a special one that cannot be displayed, but has
         # the toplevel pages of the model as its children.
-        self._root_row = None
 
-    def _estimate_size(self):
-        self.root_row = CharangoRow(self, None, 0)
-        self.root_row._root_n_matches = self._count_matches(
+    def _estimate_row_count(self):
+        self._root_n_matches = self._count_matches(
                 self.root_term, self.root_pattern)
 
         # What we should then do is query the 1st, last and middle page to get
         # a good idea of the overall number of rows, using the ratio of
         # root_n_matches / actual page_n_rows. However, for now having a wildly
         # inaccurate number is actually quite useful.
-        first_page = self._read_page_at(self.root_row, 0)
+        first_page = self._read_and_store_page(0)
 
         root_to_row_ratio = len(first_page._rows) / first_page._root_n_matches
-        self.root_row.e_row_count = root_to_row_ratio * self.root_row._root_n_matches
 
+        # FIXME: this algorithm could be improved a lot. First idea: now that
+        # we know the expected total row count, query the last page and see
+        # how far off we are. Basically we want to do a binary search for the
+        # last page, up to a certain error margin / number of tries.
 
-    def _read_page_at(self, parent_row, start_row_n):
+        return root_to_row_ratio * self._root_n_matches
+
+    def _read_and_store_page(self, offset, prev_page=None):
         '''
         Query one page worth of rows from the database, starting at ``offset``.
 
         This function adds the page to the row's list of pages, and returns it.
         '''
-        cursor = self._run_query(offset=start_row_n, limit=self.page_size)
+        cursor = self._run_query(offset=offset, limit=self.page_read_size)
 
         def find_column(cursor, variable_name):
             n_columns = cursor.get_property('n-columns')
@@ -203,7 +257,7 @@ class CharangoTrackerQuery(CharangoPagedData):
 
         root_column = find_column(cursor, self.root_term)
 
-        page = CharangoPage(start_row_n=start_row_n)
+        page = Page(offset)
 
         rows = []
         page_row_n = 0
@@ -220,26 +274,13 @@ class CharangoTrackerQuery(CharangoPagedData):
             for i in range(0, n_columns):
                 values.append(cursor.get_string(i)[0])
 
-            row = CharangoRow(parent_row, page_row_n, values)
+            row = Row(page, page_row_n, values)
             page.append_row(row)
             page_row_n += 1
 
         page._root_n_matches = root_n_matches
-        parent_row._store_page(page)
+        self._store_page(page)
         return page
-
-    def next_page(self, prev_page=None):
-        if not self._root_row:
-            assert prev_page is None, "First call to next_page() must be " \
-                                      "to read the first page."
-            self._estimate_size()
-
-        if prev_page:
-            if prev_page.next_page:
-                return prev_page.next_page
-            start_row_n = prev_page.start_row_n + len(prev_page._rows)
-        else:
-            start_row_n = 0
 
     def _count_matches(self, term, pattern):
         '''
@@ -257,9 +298,9 @@ class CharangoTrackerQuery(CharangoPagedData):
         return cursor
 
     def _show_estimation(self):
-        print("Root (primary sort key): %i values" % self.root_row._root_n_matches)
+        print("Root (primary sort key): %i values" % self._root_n_matches)
         print("Page %i rows total: estimated total row count %i" % (
-            len(self.root_row._pages[0]._rows), self.root_row.e_n_children))
+            len(self._pages[0]._rows), self._estimated_row_count))
 
         cursor = self.connection.query(self.query, None)
         n_rows = 0
@@ -268,7 +309,7 @@ class CharangoTrackerQuery(CharangoPagedData):
         print("Actual row count: %i" % n_rows)
 
 
-class CharangoGtkTreeModel(GObject.Object, Gtk.TreeModel):
+class GtkTreeModelLazyShim(GObject.Object, Gtk.TreeModel):
     '''
     Adapter for GtkTreeView to allow its use with a lazy data model.
 
@@ -301,35 +342,42 @@ class CharangoGtkTreeModel(GObject.Object, Gtk.TreeModel):
     '''
 
     def __init__(self, data):
-        super(CharangoGtkTreeModel, self).__init__()
+        super(GtkTreeModelLazyShim, self).__init__()
         self.data = data
 
-    def _get_row_from_iter(self, iter):
+        # Can't store data in the iterator value directly in PyGObject, see:
+        # https://bugzilla.gnome.org/show_bug.cgi?id=683599
+        # Use a dict of iters for now.
+
+        self._iters = {}
+
+    def _get_page_interface_from_iter(self, iter):
         if iter is None:
-            return self._root_row
-        # FIXME: read rowiter from iter
+            return self.data
+        raise NotImplementedError("Only flat lists of data are supported so far.")
 
     def do_get_flags(self):
         return 0
 
     def do_get_n_columns(self):
-        first_page = self.data.root_row._pages[0]
+        first_page = self.data.first_page()
         n_columns = len(first_page._rows[0].values)
+        print("GtkTreeModel: n_columns: %i" % n_columns)
         return n_columns
 
     def do_get_column_type(self, index):
         return str
 
     def do_get_iter(self, path):
-        if not (0 < path.get_depth() < self.data.depth):
-            return (False, None)
-
+        #if not (0 < path.get_depth() < self.data.depth):
         iter = None
-        for i in path.get_indices():
-            iter = self.do_iter_nth_child(iter, i)
-            if not iter:
-                return (False, iter)
-        return (True, iter)
+        if path.get_depth() != 1:
+            pass
+        else:
+            for i in path.get_indices():
+                iter = self.do_iter_nth_child(iter, i)[1]
+        print("GtkTreeModel: get_iter: %s ->  %s" % (path, iter))
+        return (iter is not None, iter)
 
     def do_get_path(self, iter):
         '''
@@ -350,9 +398,11 @@ class CharangoGtkTreeModel(GObject.Object, Gtk.TreeModel):
 
     def do_get_value(self, iter, column):
         # Easy!
+        print("GtkTreeModel: get_value: %s %i" % (iter, column))
         return 'Foo'
 
     def do_iter_next(self, iter):
+        print("GtkTreeModel: iter_next: %s" % (iter))
         return None
 
     def do_iter_previous(self, iter):
@@ -362,22 +412,35 @@ class CharangoGtkTreeModel(GObject.Object, Gtk.TreeModel):
         return None
 
     def do_iter_has_child(self, iter):
-        return False
+        has_child = True if iter is None else False
+        print("GtkTreeModel: iter_has_child: %s: %i" % (iter, has_child))
+        return has_child
 
     def do_iter_n_children(self, iter):
+        print("GtkTreeModel: iter_n_children: %s %i" % (iter, 0))
         return 0
 
     def do_iter_nth_child(self, parent_iter, estimated_n):
-        # FIXME: should be implemented in terms of a base class
-        # function.
-        parent_row = self._get_row_from_iter(parent_iter)
+        # 1. get pageddatainterface 
+        pages = self._get_page_interface_from_iter(parent_iter)
 
-        if not parent_row:
-            return None
+        if estimated_n < self.data.page_read_size:
+            page = pages.first_page()
+            row = page.get_row(estimated_n)
+        else:
+            estimated_position = pages._estimated_row_count / estimated_n
+            page = pages.get_page_for_position(estimated_position)
+            row = page.get_row(estimated_n % self.pages.page_read_size)
+            # if we *do* have the row in memory and an accurate idea of
+            # the row number ... what then? go by fraction anyway?
+            # seems silly. Something about this makes me uneasy, like I'm
+            # missing something ... but for now I don't know what.
 
-        row = row.get_estimated_nth_child(estimated_n)
-
-        return self._get_iter_for_row(row)
+        iter = Gtk.TreeIter()
+        iter.stamp = 0
+        self._iters[iter] = row
+        print("GtkTreeModel: iter_nth_child: %s, %i" % (parent_iter, estimated_n))
+        return (True, iter)
 
     def do_iter_parent(self, child_iter):
         return None
@@ -397,7 +460,7 @@ test_queries = [
 class ViewExample():
     def run(self):
         connection = Tracker.SparqlConnection.get(None)
-        data = CharangoTrackerQuery(
+        data = TrackerQuery(
             connection,
             "SELECT ?class ?property {"
             "   ?class a rdfs:Class ."
@@ -406,9 +469,9 @@ class ViewExample():
             "} ORDER BY ?class ?property",
             "class", "?class a rdfs:Class")
 
-        page = data.next_page()
+        page = data.first_page()
 
-        tree_model = CharangoGtkTreeModel(data)
+        tree_model = GtkTreeModelLazyShim(data)
         self.demo_window(tree_model)
 
         #data._show_estimation()
@@ -418,6 +481,9 @@ class ViewExample():
         window.connect('delete-event', Gtk.main_quit)
 
         tree_view = Gtk.TreeView(tree_model)
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn("Foo", renderer, text=0)
+        tree_view.append_column(column)
         window.add(tree_view)
 
         window.show_all()
