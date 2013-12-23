@@ -1,5 +1,11 @@
 import view
 
+'''
+Charango is a way of displaying large, sequentially-access data sources for
+human consumption. In particular it's a way of displaying the results of
+Tracker queries in a GtkTreeView.
+'''
+
 test_queries = [
     ('SELECT ?class ?property ' 
      'WHERE {'
@@ -15,31 +21,39 @@ test_queries = [
 ]
 
 
-class SimpleMockDataSource(view.CharangoPagedData):
+class SimpleMockDataSource(view.PagedDataInterface):
     '''
     Data source usable for testing.
     '''
     def __init__(self, rows, page_size=None):
-        super(MockDataSource, self).__init__(page_size=page_size)
-        self.rows = rows
+        self._rows = rows
+        self._pages = []
+        super(SimpleMockDataSource, self).__init__(page_size=page_size)
 
-    def _estimate_row_n_children(self, row):
-        # This is a list, not a tree ... no nesting.
-        assert row == self._root_row
+    def _estimate_row_count(self):
+        return len(self._rows)
 
-        return len(self.rows)
+    def _read_and_store_page(self, offset, prev_page):
+        page = view.Page(offset)
+        for i, value in enumerate(self._rows[offset:offset + self.page_size]):
+            row = view.Row(page, i, value)
+            page.append_row(row) 
+        self._store_page(page)
+        return page
 
 
 class TestPagedData():
+    '''
+    Test the PagedDataInterface model using a simple mock data source.
+    '''
     def test_simple(self):
         '''
         '''
         data = SimpleMockDataSource(range(100), page_size=10)
 
-        root_row = data.get_root()
-        assert root_row._estimated_n_children == 100
+        assert data._estimated_n_rows == 100
 
-        first_page = root_row.next_page()
+        first_page = data.first_page()
 
         # Need to ... have 10 pages, query the row of page 5, but have page 3 and 4 be tiny so
         # lots of row changes occur .... OK!

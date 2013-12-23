@@ -20,7 +20,10 @@ from gi.repository import GObject
 from gi.repository import Gtk
 from gi.repository import Tracker
 
+import ctypes
+import random
 import re
+import sys
 
 
 class Row():
@@ -53,13 +56,16 @@ class Page():
         # FIXME: Make this a GSequence, perhaps
         self._rows = []
 
+    def __str__(self):
+        return "<Page %x offset %i, %i rows>" % (id(self), self.offset, len(self._rows))
+
     def append_row(self, row):
         '''
         FIXME: should add them all at once
         '''
         self._rows.append(row)
 
-    def get_row(self, n):
+    def row(self, n):
         return self._rows[n]
 
 
@@ -79,13 +85,13 @@ class PagedDataInterface():
     sizes can be coordinated with the query engine and the view mechanism.
     Iterating through every page may be very slow.
     '''
-    def __init__(self, page_read_size):
+    def __init__(self, page_size):
         '''
-        Pages will contain from 1 to ``page_read_size`` rows.
+        Pages will contain from 1 to ``page_size`` rows.
 
-        :param page_read_size: Number of rows to be read per page 
+        :param page_size: Number of rows to be read per page
         '''
-        self.page_read_size = page_read_size
+        self.page_size = page_size
 
         # FIXME: make this a GSequence
         self._pages = []
@@ -99,7 +105,7 @@ class PagedDataInterface():
                 if prev_page.offset > page.offset:
                     break
         if prev_page is not None:
-            self._pages.insert(index(prev_page), other_page)
+            self._pages.insert(self._pages.index(prev_page), page)
         else:
             self._pages.append(page)
 
@@ -136,8 +142,8 @@ class PagedDataInterface():
         '''
         if prev_page:
             assert prev_page in self._pages
-            assert len(prev_page._rows) == self.page_read_size
-            expected_offset = prev_page.offset + self.page_read_size
+            assert len(prev_page._rows) == self.page_size
+            expected_offset = prev_page.offset + self.page_size
             expected_index = self._pages.index(prev_page) + 1
         else:
             expected_offset = 0
@@ -169,8 +175,8 @@ class PagedDataInterface():
         '''
         assert 0.0 <= position <= 1.0
 
-        estimated_start_row_n = position * self._estimate_row_count
-        estimated_start_row_n -= estimated_start_row_n % self.page_read_size
+        estimated_start_row_n = position * self._estimated_n_rows
+        estimated_start_row_n -= estimated_start_row_n % self.page_size
 
         page = None
         for page in self._pages:
@@ -197,7 +203,7 @@ class TrackerQuery(PagedDataInterface):
     '''
 
     def __init__(self, connection, query, root_term, root_pattern,
-                 page_read_size=1000):
+                 page_size=100):
         '''
         Finding ``root_term`` and ``root_pattern`` could be done automatically
         by parsing ``query``, but that's too much effort for now.
@@ -213,7 +219,7 @@ class TrackerQuery(PagedDataInterface):
         self.root_term = root_term
         self.root_pattern = root_pattern
 
-        super(TrackerQuery, self).__init__(page_read_size)
+        super(TrackerQuery, self).__init__(page_size)
 
         # No support for multi-level queries ... for now...
         self.depth = 1
@@ -246,7 +252,7 @@ class TrackerQuery(PagedDataInterface):
 
         This function adds the page to the row's list of pages, and returns it.
         '''
-        cursor = self._run_query(offset=offset, limit=self.page_read_size)
+        cursor = self._run_query(offset=offset, limit=self.page_size)
 
         def find_column(cursor, variable_name):
             n_columns = cursor.get_property('n-columns')
@@ -300,7 +306,7 @@ class TrackerQuery(PagedDataInterface):
     def _show_estimation(self):
         print("Root (primary sort key): %i values" % self._root_n_matches)
         print("Page %i rows total: estimated total row count %i" % (
-            len(self._pages[0]._rows), self._estimated_row_count))
+            len(self._pages[0]._rows), self._estimated_n_rows))
 
         cursor = self.connection.query(self.query, None)
         n_rows = 0
@@ -343,18 +349,46 @@ class GtkTreeModelLazyShim(GObject.Object, Gtk.TreeModel):
 
     def __init__(self, data):
         super(GtkTreeModelLazyShim, self).__init__()
+
         self.data = data
 
-        # Can't store data in the iterator value directly in PyGObject, see:
-        # https://bugzilla.gnome.org/show_bug.cgi?id=683599
-        # Use a dict of iters for now.
+        self._iter_page = dict()
+        self.invalidate_iters()
 
-        self._iters = {}
+    def invalidate_iter(self, iter):
+        iter.stamp = 0
+        if iter.user_data:
+            if iter.user_data in self._iter_page:
+                del self._iter_page[iter.user_data]
+            iter.user_data = None
 
-    def _get_page_interface_from_iter(self, iter):
+    def invalidate_iters(self):
+        self.stamp = random.randint(-2147483648, 2147483647)
+        self._iter_page.clear()
+
+    def _create_iter(self, page_container, page, relative_row_n, loose_count):
+        iter = Gtk.TreeIter()
+        iter.stamp = self.stamp
+        self._update_iter(iter, page_container, page, relative_row_n, loose_count)
+        return iter
+
+    def _update_iter(self, iter, page_container, page, relative_row_n, loose_count=0):
+        # ``page_container`` is ignored because currently we only support flat
+        # lists anyway.
+        iter.user_data = id(page)
+        self._iter_page[iter.user_data] = page
+        iter.user_data2 = relative_row_n
+        iter.user_data3 = loose_count
+        return iter
+
+    def _unpack_iter(self, iter):
+        '''
+        Return tuple of (page container, page, row number inside page)
+        '''
         if iter is None:
-            return self.data
-        raise NotImplementedError("Only flat lists of data are supported so far.")
+            return self.data, None, 0, 0
+        else:
+            return self.data, self._iter_page[iter.user_data], iter.user_data2, iter.user_data3
 
     def do_get_flags(self):
         return 0
@@ -363,6 +397,7 @@ class GtkTreeModelLazyShim(GObject.Object, Gtk.TreeModel):
         first_page = self.data.first_page()
         n_columns = len(first_page._rows[0].values)
         print("GtkTreeModel: n_columns: %i" % n_columns)
+
         return n_columns
 
     def do_get_column_type(self, index):
@@ -375,7 +410,7 @@ class GtkTreeModelLazyShim(GObject.Object, Gtk.TreeModel):
             pass
         else:
             for i in path.get_indices():
-                iter = self.do_iter_nth_child(iter, i)[1]
+                have_iter, iter = self.do_iter_nth_child(iter, i)
         print("GtkTreeModel: get_iter: %s ->  %s" % (path, iter))
         return (iter is not None, iter)
 
@@ -398,12 +433,34 @@ class GtkTreeModelLazyShim(GObject.Object, Gtk.TreeModel):
 
     def do_get_value(self, iter, column):
         # Easy!
-        print("GtkTreeModel: get_value: %s %i" % (iter, column))
-        return 'Foo'
+        print("GtkTreeModel: get_value: %s (%s) %i" % (iter, iter.user_data, column))
+        page_container, page, row_n, loose_count = self._unpack_iter(iter)
+        if loose_count > 0:
+            # This iter should be invisible!
+            return 'invisible'
+            #print("Warning: returning iter with loose count %i to normal" % loose_count)
+            #self._update_iter(iter, page_container, page, row_n, 0)
+        print("row %i in %s" % (row_n, page)) 
+        row = page.row(row_n)
+        return row.values[column]
 
     def do_iter_next(self, iter):
-        print("GtkTreeModel: iter_next: %s" % (iter))
-        return None
+        page_container, page, row_n, loose_count = self._unpack_iter(iter)
+        if loose_count > 0:
+            if row_n + loose_count >= page_container._estimated_n_rows:
+                print("GtkTreeModel: iter_next: %s is done" % (iter))
+                return None
+            else:
+                print("GtkTreeModel: iter_next: %s (%i) is loose, at %i, loose "
+                      "count %i" % (iter, iter.user_data, row_n, loose_count))
+                return self._update_iter(iter, self.data, page, row_n, loose_count+1)
+        if row_n + 1< len(page._rows):
+            iter.user_data2 = row_n + 1
+            print("GtkTreeModel: iter_next: %s to row %i" % (iter, row_n + 1))
+            return iter
+        else:
+            # Set this iter loose! No more real data for you!
+            return self._update_iter(iter, self.data, page, row_n, 1)
 
     def do_iter_previous(self, iter):
         return None
@@ -421,25 +478,30 @@ class GtkTreeModelLazyShim(GObject.Object, Gtk.TreeModel):
         return 0
 
     def do_iter_nth_child(self, parent_iter, estimated_n):
-        # 1. get pageddatainterface 
-        pages = self._get_page_interface_from_iter(parent_iter)
+        pages, page, page_row_n, loose_count = self._unpack_iter(parent_iter)
 
-        if estimated_n < self.data.page_read_size:
-            page = pages.first_page()
-            row = page.get_row(estimated_n)
-        else:
-            estimated_position = pages._estimated_row_count / estimated_n
-            page = pages.get_page_for_position(estimated_position)
-            row = page.get_row(estimated_n % self.pages.page_read_size)
-            # if we *do* have the row in memory and an accurate idea of
-            # the row number ... what then? go by fraction anyway?
-            # seems silly. Something about this makes me uneasy, like I'm
-            # missing something ... but for now I don't know what.
+        # Should never happen because we return 'has_child' == False for all
+        # iters other than the root iter ...
+        assert page is None and page_row_n == 0 and loose_count == 0
 
-        iter = Gtk.TreeIter()
-        iter.stamp = 0
-        self._iters[iter] = row
         print("GtkTreeModel: iter_nth_child: %s, %i" % (parent_iter, estimated_n))
+
+        relative_row_n = estimated_n % pages.page_size
+        if estimated_n < self.data.page_size:
+            page = pages.first_page()
+            row = page.row(relative_row_n)
+        else:
+            estimated_position = estimated_n / pages._estimated_n_rows
+            page = pages.get_page_for_position(estimated_position)
+            print("got page %s for row %i" % (page, relative_row_n))
+
+            try:
+                row = page.row(relative_row_n)
+            except IndexError:
+                # row is off the bottom of the model ... 
+                return (False, None)
+
+        iter = self._create_iter(self.data, page, relative_row_n, False)
         return (True, iter)
 
     def do_iter_parent(self, child_iter):
@@ -481,10 +543,18 @@ class ViewExample():
         window.connect('delete-event', Gtk.main_quit)
 
         tree_view = Gtk.TreeView(tree_model)
+        columns = ["Class", "Property"]
         renderer = Gtk.CellRendererText()
-        column = Gtk.TreeViewColumn("Foo", renderer, text=0)
-        tree_view.append_column(column)
-        window.add(tree_view)
+        for index, title in enumerate(columns):
+            column = Gtk.TreeViewColumn(title, renderer, text=index)
+            column.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
+            tree_view.append_column(column)
+        tree_view.set_fixed_height_mode(True)
+
+        scrolled_window = Gtk.ScrolledWindow()
+        scrolled_window.add(tree_view)
+        scrolled_window.set_size_request(640, 480)
+        window.add(scrolled_window)
 
         window.show_all()
         Gtk.main()
@@ -492,7 +562,22 @@ class ViewExample():
 # Test inserting and removing data from Tracker!
 # Add some contacts, since you don't use those ;)
 
+def install_debug_excepthook():
+    '''
+    Force Gtk main loop to quit on unhandled Python exception
+    '''
+    from gi.repository import Gtk
+    old_hook = sys.excepthook
+    def new_hook(etype, evalue, etb):
+        old_hook(etype, evalue, etb)
+        for i in range(0, Gtk.main_level()):
+            Gtk.main_quit()
+        sys.exit()
+    sys.excepthook = new_hook
 
 if __name__ == '__main__':
+    install_debug_excepthook()
+
     ViewExample().run()
+
 
