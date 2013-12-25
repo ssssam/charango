@@ -1,10 +1,72 @@
 import view
+import uitests
 
-'''
-Charango is a way of displaying large, sequentially-access data sources for
-human consumption. In particular it's a way of displaying the results of
-Tracker queries in a GtkTreeView.
-'''
+from gi.repository import Gtk
+
+import collections
+import pytest
+
+
+class ProfilingNumbersSource(view.NumbersSource):
+    def __init__(self, page_size):
+        super(ProfilingNumbersSource, self).__init__(page_size)
+        self.queried_pages = collections.Counter()
+
+    def _make_page(self, offset):
+        self.queried_pages[offset] += 1
+        return super(ProfilingNumbersSource, self)._make_page(offset)
+
+
+class TestGtkTreeModelLazyShim:
+    '''
+    Show tree view with model and check that correct number of pages were queried.
+
+    These tests are not perfect! Sometimes more or less pages are queried.
+    Probably partly because we need to run xnest or disable all inputs to the
+    widgets or some such.
+    '''
+    def run_widget(self, widget):
+        widget.connect('draw', Gtk.main_quit)
+
+        scrolled_window = Gtk.ScrolledWindow()
+        scrolled_window.add(widget)
+
+        window = Gtk.Window()
+        window.add(scrolled_window)
+        window.set_size_request(640, 480)
+        window.show_all()
+        Gtk.main()
+
+    @pytest.fixture()
+    def data(self):
+        data = ProfilingNumbersSource(10)
+        data.set_n_rows(100)
+        return data
+
+    @pytest.mark.parametrize(('fixed_height', 'expected_pages'), [
+        (False, 10),
+        (True, 10)
+    ])
+    def test_eager_loading(self, data, fixed_height, expected_pages):
+        tree_model = view.GtkTreeModelBasicShim(data)
+        tree_view = uitests.create_gtk_tree_view_for(tree_model, fixed_height=fixed_height)
+        self.run_widget(tree_view)
+
+        assert len(data.queried_pages.keys()) == expected_pages
+
+
+    @pytest.mark.parametrize(('fixed_height', 'expected_pages'), [
+        (False, 4),
+        (True, 3)
+    ])
+    def test_lazy_loading(self, data, fixed_height, expected_pages):
+        tree_model = view.GtkTreeModelLazyShim(data)
+        tree_view = uitests.create_gtk_tree_view_for(tree_model, fixed_height=fixed_height)
+        self.run_widget(tree_view)
+
+        assert len(data.queried_pages.keys()) == expected_pages
+
+
 
 test_queries = [
     ('SELECT ?class ?property ' 
@@ -19,45 +81,3 @@ test_queries = [
      '  ?type rdf:range ?property '
      '}')
 ]
-
-
-class SimpleMockDataSource(view.PagedDataInterface):
-    '''
-    Data source usable for testing.
-    '''
-    def __init__(self, rows, page_size=None):
-        self._rows = rows
-        self._pages = []
-        super(SimpleMockDataSource, self).__init__(page_size=page_size)
-
-    def _estimate_row_count(self):
-        return len(self._rows)
-
-    def _read_and_store_page(self, offset, prev_page):
-        page = view.Page(offset)
-        for i, value in enumerate(self._rows[offset:offset + self.page_size]):
-            row = view.Row(page, i, value)
-            page.append_row(row) 
-        self._store_page(page)
-        return page
-
-
-class TestPagedData():
-    '''
-    Test the PagedDataInterface model using a simple mock data source.
-    '''
-    def test_simple(self):
-        '''
-        '''
-        data = SimpleMockDataSource(range(100), page_size=10)
-
-        assert data._estimated_n_rows == 100
-
-        first_page = data.first_page()
-
-        # Need to ... have 10 pages, query the row of page 5, but have page 3 and 4 be tiny so
-        # lots of row changes occur .... OK!
-
-        # how do you actually emit the row changes?
-        # estimation-changed signal ... BUT then every row needs to be a GObject! That's not so
-        # nice. Not at all!
