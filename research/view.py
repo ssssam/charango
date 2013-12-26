@@ -171,8 +171,7 @@ class PagedDataInterface():
         '''
         if prev_page:
             assert prev_page in self._pages
-            #assert len(prev_page._rows) == self.page_size
-            expected_offset = prev_page.offset + self.page_size
+            expected_offset = prev_page.offset + len(prev_page._rows)
             expected_index = self._pages.index(prev_page) + 1
         else:
             expected_offset = 0
@@ -209,13 +208,13 @@ class PagedDataInterface():
 
         page = None
         for page in self._pages:
-            if page.offset == estimated_start_row_n:
-                return page
-            if page.offset > estimated_start_row_n:
+            page_start = page.offset
+            page_end = page_start + len(page._rows)
+            if page_start <= estimated_start_row_n < page_end:
                 break
-        prev_page = page
-
-        page = self._read_and_store_page(estimated_start_row_n, prev_page=prev_page)
+        else:
+            prev_page = page
+            page = self._read_and_store_page(estimated_start_row_n, prev_page=prev_page)
 
         return page
 
@@ -501,15 +500,15 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):#,
     def _iter_nth_child(self, iter, n):
         assert iter is None
         container = self.data
-        if n < container.page_size:
-            page = container.first_page()
-            row_offset = n
-        else:
-            rough_position = n / container.estimate_row_count()
-            page = container.get_page_for_position(rough_position)
-            row_offset = n % container.page_size
-            if page:
-                print("Got page at offset %i for rough position %f, n %i offset %i" % (page.offset, rough_position, n, row_offset))
+        rough_position = n / container.estimate_row_count()
+        page = container.get_page_for_position(rough_position)
+        # FIXME: this method is great expect where you have a big source and you're on the
+        # boundry of a page. You'll need to go up or down a page or two to actually find
+        # the one that contains 'n', presumably ... and in doing so you'll read more data,
+        # which may change the estimation, so it needs to be done in a loop BUT that's OK!
+        row_offset = n - page.offset
+        if page:
+            print("Got page at offset %i for rough position %f, n %i offset %i" % (page.offset, rough_position, n, row_offset))
         if page is None or row_offset >= len(page._rows):
             print("No page for n %i" % n)
             return None
