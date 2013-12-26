@@ -108,14 +108,10 @@ class PagedDataInterface():
     sizes can be coordinated with the query engine and the view mechanism.
     Iterating through every page may be very slow.
     '''
-    def __init__(self, page_size):
-        '''
-        Pages will contain from 1 to ``page_size`` rows.
 
-        :param page_size: Number of rows to be read per page
-        '''
-        self.page_size = page_size
+    # When rows are added and removed what do you do???
 
+    def __init__(self):
         # FIXME: make this a GSequence
         self._pages = []
 
@@ -226,7 +222,8 @@ class NumbersSource(PagedDataInterface):
     Simple deterministic data source that provides incrementally numbered rows.
     '''
     def __init__(self, page_size):
-        super(NumbersSource, self).__init__(page_size)
+        self.page_size = page_size
+        super(NumbersSource, self).__init__()
 
     def columns(self):
         return ["Number"]
@@ -279,10 +276,13 @@ class TrackerQuery(PagedDataInterface):
     '''
 
     def __init__(self, connection, query, root_term, root_pattern,
-                 page_size=100):
+                 read_size=100):
         '''
         Finding ``root_term`` and ``root_pattern`` could be done automatically
         by parsing ``query``, but that's too much effort for now.
+
+        The 'read_size' parameter would ideally match the viewport size of
+        whatever is displaying the data.
 
         :param query: A SPARQL query.
         :param root_term: The root term, which is usually the primary sort key
@@ -294,8 +294,9 @@ class TrackerQuery(PagedDataInterface):
         self.query = query
         self.root_term = root_term
         self.root_pattern = root_pattern
+        self.read_size = 100
 
-        super(TrackerQuery, self).__init__(page_size)
+        super(TrackerQuery, self).__init__()
 
         self._estimated_n_rows = None
 
@@ -332,7 +333,7 @@ class TrackerQuery(PagedDataInterface):
 
         This function adds the page to the row's list of pages, and returns it.
         '''
-        cursor = self._run_query(offset=offset, limit=self.page_size)
+        cursor = self._run_query(offset=offset, limit=self.read_size)
 
         def find_column(cursor, variable_name):
             n_columns = cursor.get_property('n-columns')
@@ -584,23 +585,23 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):#,
 # an internal method and then override that.
 
 
+# FIXME: rename to GtkTreeViewLazyShim ?? it violates MVC completely :)
 class GtkTreeModelLazyShim(GtkTreeModelBasicShim):
     '''
-    Adapter for GtkTreeView to allow its use with a lazy data model.
+    Adapt GtkTreeView to do lazy querying of the underlying data model.
 
-    This is a non-trivial piece of code, because GtkTreeView is a bit too
-    industrious and queries all of the rows in the model straight away on load.
+    GtkTreeView attempts to touch every row in the GtkTreeModel on load, to
+    calculate its a size, which forces reading the whole of potentially huge,
+    slow data source. To work around this, GtkTreeModelLazyShim takes a
+    'viewport_n_rows' parameter, which specifies the maximum number of rows of
+    data visible on screen. After a single iterator has queried at least enough
+    rows to be displayed, it will become 'loose' and no longer return data from
+    the underlying model.
 
-    We square this circle by spoofing results for GtkTreeView -- we assume that
-    it will only actually be displaying a few hundred rows at any one time, so
-    we don't actually have to query all of the data up front. Instead, we
-    gather the first few hundred rows from the query, and the last few hundred,
-    and use that to estimate the overall size of the model. The size simply
-    affects the size of the scroll bar in most cases, so a little inaccuracy
-    doesn't matter too much.
-
-    This probably all only works in fixed height mode right now. It is all
-    rather horrible, but it beats rewriting GtkTreeView.
+    Theoretically we could calculate 'viewport_n_rows based' on the size
+    request of the GtkTreeView's container (usually a GtkScrolledWindow), but
+    in practice since screen sizes are limited you can probably just pick a big
+    number and get on with your day.
 
     Practical implications are:
       - gtk_tree_model_iter_nth_child() may not return exactly the nth child,
@@ -610,19 +611,6 @@ class GtkTreeModelLazyShim(GtkTreeModelBasicShim):
         gtk_tree_model_get_iter() may not return the same row for the same path.
         Again, this is already true if your underlying data model changes.
       - GtkTreeRowReference() works just as with any GtkTreeModel
-    '''
-
-    '''
-    Iterator layout.
-
-    Needs to track:
-       - starting row N and whether we are in freefall
-       - could just track row object, no?
-       - better if it had a *list iterator* which pointed to the row object!!!
-
-    Really, the underlying model should expose an iterator object, and the
-    GtkTreeModel implementation just needs to use that as its iter and then
-    track whether the iter is in 'freefall' or not.
     '''
 
     class IterData(GtkTreeModelBasicShim.IterData):
@@ -635,8 +623,9 @@ class GtkTreeModelLazyShim(GtkTreeModelBasicShim):
             self.anchor_row_n = 0
             self.loose_row_n = None
 
-    #def __init__(self, data):
-    #    super(GtkTreeModelLazyShim, self).__init__(data)
+    def __init__(self, data, viewport_n_rows):
+        super(GtkTreeModelLazyShim, self).__init__(data)
+        self.viewport_n_rows = viewport_n_rows
 
     #def do_get_flags(self):
     # FIXME: override and don't set ITERS_PERSIST, I don't think it'll be
@@ -655,7 +644,7 @@ class GtkTreeModelLazyShim(GtkTreeModelBasicShim):
 
             if iter is not None:
                 iter_data.anchor_row_n += 1
-                if iter_data.anchor_row_n >= self.data.page_size * 1.5:
+                if iter_data.anchor_row_n >= int(self.viewport_n_rows * 1.5):
                     # Set the iter loose, it's travelled too far!
                     print("Set loose iter %s at row %i" % (iter, iter_data.anchor_row_n))
                     iter_data.loose_row_n = iter_data.anchor_row_n
