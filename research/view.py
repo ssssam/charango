@@ -73,6 +73,7 @@ class Page():
     changes.
     '''
     def __init__(self, offset=None):
+        assert isinstance(offset, int)
         self.offset = offset
 
         # FIXME: Make this a GSequence, perhaps
@@ -203,8 +204,7 @@ class PagedDataInterface():
         '''
         assert 0.0 <= position <= 1.0
 
-        estimated_start_row_n = position * self._estimated_n_rows
-        estimated_start_row_n -= estimated_start_row_n % self.page_size
+        estimated_start_row_n = int(position * self._estimated_n_rows)
 
         page = None
         for page in self._pages:
