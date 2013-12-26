@@ -133,9 +133,11 @@ class PagedDataInterface():
             index_after = self._pages.index(prev_page)+1
 
         if index_after > 0 and len(self._pages) > 0:
-            assert self._pages[index_after-1].offset < page.offset
+            prev_page = prev_page or self._pages[index_after-1]
+            assert page.offset >= prev_page.offset + len(prev_page._rows)
         if index_after < len(self._pages):
-            assert self._pages[index_after].offset > page.offset
+            next_page = self._pages[index_after]
+            assert page.offset + len(page._rows) <= next_page.offset
         self._pages.insert(index_after, page)
         print("store %s before %i (total %i)" % (page, index_after, len(self._pages)))
 
