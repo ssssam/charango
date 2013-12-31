@@ -6,10 +6,128 @@ from gi.repository import Gtk
 import collections
 import pytest
 
+# Awkward sources you could come up with.
 
-class ProfilingNumbersSource(view.NumbersSource):
-    def __init__(self, page_size):
-        super(ProfilingNumbersSource, self).__init__(page_size)
+
+class IdentitySource(view.PagedDataInterface):
+    '''
+    Data source in which the value of a row is its row number.
+
+    This is the only source which descends from PagedDataInterface directly
+    rather than PagedData.
+    '''
+    def __init__(self, n_rows, page_size, transform=None):
+        super(IdentitySource, self).__init__()
+        self.page_size = page_size
+        self.n_rows = n_rows
+        self.transform_func = transform
+
+    def columns(self):
+        return ["Value"]
+
+    # To do: dynamic resizing ....
+    #def set_n_rows(self, n_rows):
+    #    assert n_rows >= 0
+    #    self._n_rows = n_rows
+    #    self._estimated_n_rows = self._n_rows
+
+    def estimate_row_count(self):
+        return self.n_rows
+
+    def _make_page(self, offset):
+        if self.transform_func is not None:
+            def transform(n): return self.transform_func(n)
+        else:
+            def transform(n): return n
+
+        assert offset < self.n_rows
+        rows = []
+        for i in range(0, self.page_size):
+            if offset+i >= self.n_rows:
+                break
+            values = [transform(int(offset+i))]
+            rows.append(view.Row(i, values))
+
+        page = view.Page(offset=int(offset), rows=rows)
+        return page
+
+    def first_page(self):
+        return self._make_page(0)
+
+    def next_page(self, prev_page):
+        if prev_page.offset + len(prev_page._rows) >= self.n_rows:
+            return None
+        return self._make_page(prev_page.offset + self.page_size)
+
+    def get_page_for_position(self, position):
+        assert 0.0 <= position <= 1.0
+        if position == 1.0:
+            offset = self.n_rows - 1
+        else:
+            offset = self.n_rows * position
+        offset -= (offset % self.page_size)
+        return self._make_page(offset)
+
+
+class OverestimatingSource(IdentitySource):
+    def estimate_row_count(self):
+        return self._n_rows * 5.0
+
+
+class SourceTests:
+    @pytest.fixture()
+    def source(self):
+        source = view.IdentitySource(100, 10)
+        return source
+
+    def test_iterate_forwards(self, source):
+        page = None
+        for i in range(0, 10):
+            page = source.next_page(prev_page=page)
+            assert page.offset == i * 10
+        assert source.next_page(prev_page=page) == None
+
+    # We don't implement iterate backwards yet!
+
+    def test_get_page_for_position(self, source):
+        # How would you test this?
+        for i in range(0, 100):
+            page = source.get_page_for_position(100 / i)
+            assert page.offset <= i < (page.offset + len(page._rows))
+
+# To test _find_row() ...
+# 
+
+class TestFindRow():
+    def make_test_source(self, values, page_size=None):
+        page_size = page_size or len(values)
+        return view.ListSource(values, page_size)
+
+    def test_simple(self):
+        '''
+        Basic test of performing a binary search for a specific row.
+        '''
+        source = self.make_test_source([1,3,5,7,9])
+        def key(row): return row.values[0]
+        for n, value in enumerate([1,3,5,7,9]):
+            print("Locate %i" % value)
+            found_row, found_page, row_offset = source._find_row(value, key)
+            assert found_row.values == [value]
+            assert found_page == source.first_page()
+            assert row_offset == n
+        for n, value in enumerate([0,2,4,6,8,10]):
+            found_row, found_page, row_after_offset = source._find_row(value, key)
+            assert found_row == None
+            assert found_page == source.first_page()
+            assert row_after_offset == n
+
+
+
+##########
+
+class ProfilingNumbersSource(IdentitySource):
+    def __init__(self, n_rows, page_size):
+        super(ProfilingNumbersSource, self).__init__(n_rows, page_size)
         self.queried_pages = collections.Counter()
 
     def _make_page(self, offset):
@@ -26,6 +144,12 @@ class TestGtkTreeModelLazyShim:
     widgets or some such.
     '''
     def run_widget(self, widget):
+        def timeout():
+            Gtk.main_quit()
+        GLib.add_timeout_seconds(1, timeout)
+        print("ADDED TIMEOUT!")
+        assert False
+
         widget.connect('draw', Gtk.main_quit)
 
         scrolled_window = Gtk.ScrolledWindow()
@@ -39,8 +163,7 @@ class TestGtkTreeModelLazyShim:
 
     @pytest.fixture()
     def data(self):
-        data = ProfilingNumbersSource(10)
-        data.set_n_rows(100)
+        data = ProfilingNumbersSource(100, 10)
         return data
 
     @pytest.mark.parametrize(('fixed_height', 'expected_pages'), [
@@ -60,7 +183,7 @@ class TestGtkTreeModelLazyShim:
         (True, 3)
     ])
     def test_lazy_loading(self, data, fixed_height, expected_pages):
-        tree_model = view.GtkTreeModelLazyShim(data)
+        tree_model = view.GtkTreeModelLazyShim(data, viewport_n_rows=10)
         tree_view = uitests.create_gtk_tree_view_for(tree_model, fixed_height=fixed_height)
         self.run_widget(tree_view)
 

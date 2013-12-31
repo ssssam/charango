@@ -1,7 +1,9 @@
+#!/usr/bin/env python3
 # Charango interactive test cases
 
 from view import *
 
+from gi.repository import GLib
 from gi.repository import Gtk
 
 import sys
@@ -12,11 +14,12 @@ def create_gtk_tree_view_for(tree_model, fixed_height=False):
     Create a rough GtkTreeView to display `tree_model`.
     '''
     tree_view = Gtk.TreeView(tree_model)
+    assert False
 
     renderer = Gtk.CellRendererText()
     for index, title in enumerate(tree_model.data.columns()):
         column = Gtk.TreeViewColumn(title, renderer, text=index)
-        column.set_fixed_width(200)
+        column.set_fixed_width(600)
         column.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
         tree_view.append_column(column)
 
@@ -26,26 +29,30 @@ def create_gtk_tree_view_for(tree_model, fixed_height=False):
     return tree_view
 
 class UiTestApplication():
+    def __init__(self):
+        self.box = Gtk.Box(Gtk.Orientation.HORIZONTAL, 4)
+
+    def add_button(self, callback):
+        button = Gtk.Button('Tick')
+        button.connect('clicked', callback)
+        self.box.pack_start(button, True, False, 0)
+
     def run(self, data_source):
         self._data = data_source
         page = data_source.first_page()
 
-        #tree_model = GtkTreeModelBasicShim(data_source)
-        tree_model = GtkTreeModelLazyShim(data_source)
-        self.demo_window(tree_model)
-
-        #data._show_estimation()
-
-    def demo_window(self, tree_model):
-        window = Gtk.Window()
-        window.connect('delete-event', Gtk.main_quit)
+        tree_model = GtkTreeModelBasicShim(data_source)
+        #tree_model = GtkTreeModelLazyShim(data_source, 100)
 
         tree_view = create_gtk_tree_view_for(tree_model, fixed_height=True)
-
         scrolled_window = Gtk.ScrolledWindow()
         scrolled_window.add(tree_view)
-        scrolled_window.set_size_request(640, 480)
-        window.add(scrolled_window)
+        scrolled_window.set_size_request(640, 80)
+        self.box.pack_start(scrolled_window, True, True, 0)
+
+        window = Gtk.Window()
+        window.connect('delete-event', Gtk.main_quit)
+        window.add(self.box)
 
         window.show_all()
         Gtk.main()
@@ -83,9 +90,18 @@ def tracker_test_data():
 if __name__ == '__main__':
     install_debug_excepthook()
 
-    numbers = NumbersSource(20)
-    numbers.set_n_rows(100000)
+    #numbers = ListSource(range(0,1000), 100)
+
+    live_numbers = LiveNumbersSource(10, 10)
+    #GLib.timeout_add(500, live_numbers.tick)
 
     #data_source = numbers
-    data_source = tracker_test_data()
-    UiTestApplication().run(data_source)
+    #data_source = tracker_test_data()
+    data_source = live_numbers
+    app = UiTestApplication()
+
+    def clicked_cb(button):
+        live_numbers.tick()
+
+    app.add_button(clicked_cb)
+    app.run(data_source)
