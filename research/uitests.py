@@ -14,7 +14,6 @@ def create_gtk_tree_view_for(tree_model, fixed_height=False):
     Create a rough GtkTreeView to display `tree_model`.
     '''
     tree_view = Gtk.TreeView(tree_model)
-    assert False
 
     renderer = Gtk.CellRendererText()
     for index, title in enumerate(tree_model.data.columns()):

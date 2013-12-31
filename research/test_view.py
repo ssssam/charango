@@ -1,12 +1,29 @@
 import view
 import uitests
 
+from gi.repository import GLib
 from gi.repository import Gtk
 
 import collections
 import pytest
 
+@pytest.fixture(autouse=True)
+def debug_excepthook():
+    '''
+    Install debug exception handler.
+
+    This is important so that when exceptions are raised in Python functions
+    that are callbacks from GLib/GTK+/other C code, the debugger is started.
+    The default behaviour is to just dump the exception on stderr and continue
+    which can lead to infinite loops. If py.test is not invoked with the '-s'
+    option an infinite loop will still occur. FIXME: this could definitely
+    be improved upon!
+    '''
+    uitests.install_debug_excepthook()
+
 # Awkward sources you could come up with.
+
+
 
 
 class IdentitySource(view.PagedDataInterface):
@@ -46,7 +63,7 @@ class IdentitySource(view.PagedDataInterface):
             if offset+i >= self.n_rows:
                 break
             values = [transform(int(offset+i))]
-            rows.append(view.Row(i, values))
+            rows.append(view.Row(values))
 
         page = view.Page(offset=int(offset), rows=rows)
         return page
@@ -146,9 +163,7 @@ class TestGtkTreeModelLazyShim:
     def run_widget(self, widget):
         def timeout():
             Gtk.main_quit()
-        GLib.add_timeout_seconds(1, timeout)
-        print("ADDED TIMEOUT!")
-        assert False
+        GLib.timeout_add_seconds(1, timeout)
 
         widget.connect('draw', Gtk.main_quit)
 
