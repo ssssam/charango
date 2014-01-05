@@ -2,15 +2,8 @@
 # Python 3!
 
 # Weird issues:
-#  - if a row is added while you have the last row selected in view, the bottom
-#    row becomes double or triple. Seems to get requests that ignore the newly
-#    added row ... removing ITERS_PERSIST doesn't seem to fix ...
-#    another side of this is that the bottom row visible in the treeview isn't
-#    updated when row-inserted is emitted! Am I giving it the wrong number in
-#    the row-inserted signal or something? This may require tracing through the
-#    GtkTreeView code .... :(
-#  - also, the code doesn't work with latest PyGObject. Apparently I forgot to
-#    set __gtype_name__. Could bisect this!
+#  - Does not work in fixed height mode due to
+#    https://bugzilla.gnome.org/show_bug.cgi?id=721597
 
 # Steps to prototype:
 #  - adding & removing
@@ -377,7 +370,7 @@ class LiveNumbersSource(PagedData):
         '''
         Add a new row from the sequence.
         '''
-        n = self.random.randrange(0, self.max_n_rows)
+        n = self.max_n_rows - self._n_rows - 1#self.random.randrange(0, self.max_n_rows)
 
         if len(self._pages) == 0:
             page = Page(0)
@@ -583,8 +576,10 @@ class GInterfaceTraceMetaclass(gi.types.GObjectMeta):
             p_args = []
             p_args.extend([arg_to_str(a) for a in args[1:]])
             p_args.extend(["%s=%s" % (k, arg_to_str(v)) for k, v in kwargs])
-            print ("%s(%s)" % (method.__name__, ', '.join(p_args)))
-            return method(*args, **kwargs)
+            print ("%s(%s)" % (method.__name__, ', '.join(p_args)), end='')
+            result = method(*args, **kwargs)
+            print (" -> %s" % str(result))
+            return result
         return wrapper
 
     def __new__(cls, classname, bases, classdict):
@@ -595,8 +590,8 @@ class GInterfaceTraceMetaclass(gi.types.GObjectMeta):
         return type.__new__(cls,classname,bases,classdict)
 
 
-class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):
-                           # metaclass=GInterfaceTraceMetaclass):
+class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel,#):
+                            metaclass=GInterfaceTraceMetaclass):
     '''
     Basic GtkTreeView adapter for paged data models.
 
@@ -604,7 +599,9 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):
     GtkTreeView works, so you will probably want to use
     :class:`GtkTreeModelLazyShim` instead.
     '''
+
     __gtype_name__ = 'GtkTreeModelBasicShim'
+
     class IterData:
         # Would be nice to have separate terminology for the following
         # things:
@@ -709,10 +706,8 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):
         if iter is None:
             path = Gtk.TreePath.new_first()
         else:
-            path = Gtk.TreePath()
-            for i in range(0, 1):
-                container, page, row_offset = self._unpack_iter(iter)
-                path.prepend_index(row_offset + page.offset)
+            container, page, row_offset = self._unpack_iter(iter)
+            path = Gtk.TreePath(path=row_offset)
         return path
 
     def do_get_value(self, iter, column):

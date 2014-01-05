@@ -27,6 +27,7 @@ def create_gtk_tree_view_for(tree_model, fixed_height=False):
     tree_view.show()
     return tree_view
 
+
 class UiTestApplication():
     def __init__(self):
         self.box = Gtk.Box(Gtk.Orientation.HORIZONTAL, 4)
