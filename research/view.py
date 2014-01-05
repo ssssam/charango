@@ -7,6 +7,16 @@
 
 # Steps to prototype:
 #  - adding & removing
+#      -> adding is OK, next test removing!
+#      -> then test changed, and then make automated tests!
+#     how would the automated tests look? basically check that:
+#     - row-inserted / row-deleted / row-changed was emitted for the correct row
+#     - can you split pages up at all ? yes, of course ... just invalidate iterators,
+#       and split it out! you have to renumber the offset of all subsequent pages anyway!
+#       so, do a test with at least 3 pages and check that
+#         - pages don't exeed max-page-size
+#         - pages disappear when they have no rows left
+#         - pages are renumbered appropriately!
 #  - you're having a bad time with Tracker because you don't check and adjust
 #    the estimation on further page reads. Recalc after every page read?
 #  - also needs to try and find the end straight away
@@ -15,6 +25,7 @@
 #     a prime numbers one,
 #     one that adds and removes regularly
 #  - app with Tracker query on one side and list of results on other
+#  - GraphUpdated watching for Tracker ... that's a lot of work, it turns out!
 
 # Automated tests:
 # * test basic API with numbers source
@@ -344,16 +355,19 @@ class ListSource(PagedData):
         return None
 
 
-class LiveNumbersSource(PagedData):
+class LiveListSource(ListSource):
     '''
     Class which adds and removes numbers at random.
     '''
-    def __init__(self, max_page_size, max_n_rows):
-        super(LiveNumbersSource, self).__init__()
+    def __init__(self, max_page_size, max_n_rows, initial_value_list = [], order='random'):
+        super(LiveListSource, self).__init__(
+            value_list=initial_value_list, page_size=max_page_size)
         self.max_page_size = max_page_size
         self.max_n_rows = max_n_rows
         self.random = random.Random()
-        self._n_rows = 0
+
+        assert order in ['random', 'descending']
+        self.order = order
 
     def columns(self):
         return ['Value']
@@ -366,11 +380,14 @@ class LiveNumbersSource(PagedData):
         # Model begins empty.
         return None
 
-    def tick(self):
+    def add_row(self):
         '''
         Add a new row from the sequence.
         '''
-        n = self.max_n_rows - self._n_rows - 1#self.random.randrange(0, self.max_n_rows)
+        if self.order == 'descending':
+            n = self.max_n_rows - self._n_rows - 1
+        elif self.order == 'random':
+            n = self.random.randrange(0, self.max_n_rows)
 
         if len(self._pages) == 0:
             page = Page(0)

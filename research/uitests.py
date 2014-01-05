@@ -23,6 +23,8 @@ def create_gtk_tree_view_for(tree_model, fixed_height=False):
         tree_view.append_column(column)
 
     if fixed_height:
+        print("WARNING: DON'T use fixed height mode, see: "
+              "https://bugzilla.gnome.org/show_bug.cgi?id=721597")
         tree_view.set_fixed_height_mode(True)
     tree_view.show()
     return tree_view
@@ -41,10 +43,10 @@ class UiTestApplication():
         self._data = data_source
         page = data_source.first_page()
 
-        tree_model = GtkTreeModelBasicShim(data_source)
-        #tree_model = GtkTreeModelLazyShim(data_source, 100)
+        #tree_model = GtkTreeModelBasicShim(data_source)
+        tree_model = GtkTreeModelLazyShim(data_source, 100)
 
-        tree_view = create_gtk_tree_view_for(tree_model, fixed_height=True)
+        tree_view = create_gtk_tree_view_for(tree_model)
         scrolled_window = Gtk.ScrolledWindow()
         scrolled_window.add(tree_view)
         scrolled_window.set_size_request(640, 80)
@@ -92,7 +94,7 @@ if __name__ == '__main__':
 
     #numbers = ListSource(range(0,1000), 100)
 
-    live_numbers = LiveNumbersSource(10, 10)
+    live_numbers = LiveListSource(10, 10, initial_value_list=range(0,10))
     #GLib.timeout_add(500, live_numbers.tick)
 
     #data_source = numbers
@@ -101,7 +103,7 @@ if __name__ == '__main__':
     app = UiTestApplication()
 
     def clicked_cb(button):
-        live_numbers.tick()
+        live_numbers.add_row()
 
     app.add_button(clicked_cb)
     app.run(data_source)

@@ -24,14 +24,13 @@ def debug_excepthook():
 # Awkward sources you could come up with.
 
 
-
-
 class IdentitySource(view.PagedDataInterface):
     '''
     Data source in which the value of a row is its row number.
 
     This is the only source which descends from PagedDataInterface directly
-    rather than PagedData.
+    rather than PagedData (and probably the only possible source where that
+    makes sense).
     '''
     def __init__(self, n_rows, page_size, transform=None):
         super(IdentitySource, self).__init__()
@@ -97,14 +96,14 @@ class SourceTests:
         source = view.IdentitySource(100, 10)
         return source
 
-    def test_iterate_forwards(self, source):
+    def test_page_forwards(self, source):
         page = None
         for i in range(0, 10):
             page = source.next_page(prev_page=page)
             assert page.offset == i * 10
         assert source.next_page(prev_page=page) == None
 
-    # We don't implement iterate backwards yet!
+    # We don't implement page backwards yet!
 
     def test_get_page_for_position(self, source):
         # How would you test this?
@@ -150,6 +149,8 @@ class ProfilingNumbersSource(IdentitySource):
     def _make_page(self, offset):
         self.queried_pages[offset] += 1
         return super(ProfilingNumbersSource, self)._make_page(offset)
+
+
 
 
 class TestGtkTreeModelLazyShim:
