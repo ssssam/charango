@@ -85,11 +85,6 @@ class IdentitySource(view.PagedDataInterface):
         return self._make_page(offset)
 
 
-class OverestimatingSource(IdentitySource):
-    def estimate_row_count(self):
-        return self._n_rows * 5.0
-
-
 class SourceTests:
     @pytest.fixture()
     def source(self):
@@ -138,6 +133,76 @@ class TestFindRow():
             assert row_after_offset == n
 
 
+class EstimationTestSource(view.PagedData):
+    '''
+    This source assumes it has 3*page_size rows to begin with.
+
+    This class may have stuff in common with the TrackerSource which you could
+    move into a base class ... its own base class or PagedData ??
+    '''
+    def __init__(self, real_n_rows):
+        super(EstimationTestSource, self).__init__(query_size=10)
+        self.real_data = list(range(0, real_n_rows))
+        self._estimated_n_rows = self.query_size * 3
+
+    def estimate_row_count(self):
+        return self._estimated_n_rows
+
+    def _update_estimated_size(self, estimated_n_rows, known_n_rows):
+        super(EstimationTestSource, self)._update_estimated_size(estimated_n_rows, known_n_rows)
+        self._estimated_n_rows = estimated_n_rows
+
+    def _read_and_store_page(self, offset, prev_page=None):
+        if offset >= len(self.real_data):
+            raise IndexError
+        values = self.real_data[offset:offset+self.query_size]
+
+        rows = [view.Row([value]) for i, value in enumerate(values)]
+        page = view.Page(offset, rows)
+        self._store_page(page, prev_page=prev_page)
+        return page
+
+
+class TestSizeEstimation:
+    '''
+    Test where actual data is undersized compared to original estimate.
+    '''
+    @pytest.fixture()
+    def overestimated_source(self):
+        return EstimationTestSource(real_n_rows=16)
+
+    @pytest.fixture()
+    def underestimated_source(self):
+        return EstimationTestSource(real_n_rows=100)
+
+    def test_under_0_8(self, underestimated_source):
+        source = underestimated_source
+        assert source.estimate_row_count() == 30
+
+        page = source.get_page_for_position(0.8)
+        assert page.offset == 80
+        assert len(page._rows) == 10
+
+    def test_over_0_4(self, overestimated_source):
+        source = overestimated_source
+        assert source.estimate_row_count() == 30
+
+        page = source.get_page_for_position(0.4)
+        assert page.offset == 10
+        assert len(page._rows) == 6
+
+        assert source.estimate_row_count() == 16
+        source.get_page_for_position(0.4)
+
+    def test_over_0_8(self, overestimated_source):
+        source = overestimated_source
+        source.get_page_for_position(0.8)
+        source.get_page_for_position(0.8)
+
+    def test_over_1_0(self, overestimated_source):
+        source = overestimated_source
+        source.get_page_for_position(1.0)
+        source.get_page_for_position(1.0)
 
 ##########
 
@@ -149,7 +214,6 @@ class ProfilingNumbersSource(IdentitySource):
     def _make_page(self, offset):
         self.queried_pages[offset] += 1
         return super(ProfilingNumbersSource, self)._make_page(offset)
-
 
 
 

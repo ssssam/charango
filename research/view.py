@@ -65,6 +65,8 @@ import re
 import sys
 import weakref
 
+import pdb
+
 
 class Signal(object):
     '''
@@ -144,6 +146,7 @@ class PagedDataInterface():
 
     def __init__(self):
         self.row_inserted = Signal()
+        self.estimated_size_changed = Signal()
 
     def estimate_row_count(self):
         '''
@@ -188,7 +191,6 @@ class PagedDataInterface():
         '''
         raise NotImplementedError()
 
-
 class PagedData(PagedDataInterface):
     '''
     Base class on top of the abstract interface which provides some helpers.
@@ -196,10 +198,12 @@ class PagedData(PagedDataInterface):
     This base class is useful to any data source which is not just a simple
     wrapper on top of an existing list of values.
     '''
-    def __init__(self):
+    def __init__(self, query_size):
         super(PagedData, self).__init__()
+        assert query_size > 0
 
         # FIXME: make this a GSequence
+        self.query_size = query_size
         self._pages = []
 
     def _store_page(self, page, prev_page=None):
@@ -216,10 +220,11 @@ class PagedData(PagedDataInterface):
             index_after = self._pages.index(prev_page)+1
 
         if index_after > 0 and len(self._pages) > 0:
+            print("prev_page: %s, index_after %i" % (prev_page, index_after))
             prev_page = prev_page or self._pages[index_after-1]
             assert page.offset >= prev_page.offset + len(prev_page._rows)
         if index_after < len(self._pages):
-            next_page = self._pages[index_after]
+            next_page = self._pages[index_after + 1]
             assert page.offset + len(page._rows) <= next_page.offset
         self._pages.insert(index_after, page)
         print("store %s before %i (total %i)" % (page, index_after, len(self._pages)))
@@ -252,23 +257,87 @@ class PagedData(PagedDataInterface):
     # def prev_page():
     #   We'll need this eventually too!
 
+    def _update_estimated_size(self, estimated_n_rows, known_n_rows):
+        self.estimated_size_changed(estimated_n_rows, known_n_rows)
+
     def get_page_for_position(self, position):
         assert 0.0 <= position <= 1.0
 
-        n_rows = self.estimate_row_count()
-        if n_rows == 0:
+        original_estimate = estimated_n_rows = self.estimate_row_count()
+        if estimated_n_rows == 0:
             return None
-        estimated_start_row_n = int(position * n_rows)
+        estimated_row_n = min(int(position * estimated_n_rows), estimated_n_rows - 1)
+        print("%f * %i = %i" % (position, estimated_n_rows, estimated_row_n))
 
-        page = None
+        prev_page = None
         for page in self._pages:
             page_start = page.offset
             page_end = page_start + len(page._rows)
-            if page_start <= estimated_start_row_n < page_end:
+            if page_start <= estimated_row_n < page_end:
+                return page
+            if page_start > estimated_row_n:
                 break
         else:
-            prev_page = page
-            page = self._read_and_store_page(estimated_start_row_n, prev_page=prev_page)
+            prev_page = None if len(self._pages) == 0 else self._pages[self._pages.index(page)-1]
+
+        last_page = None
+        while True:
+            expected_offset = estimated_row_n - (estimated_row_n % self.query_size)
+            try:
+                page = self._read_and_store_page(expected_offset, prev_page=prev_page)
+                break
+            except IndexError:
+                if expected_offset == 0:
+                    # Source is actually empty!
+                    page = None
+                    break
+                if last_page is not None and expected_offset < last_page.offset:
+                    raise Exception("Failed to read page at offset %i" % expected_offset)
+                pass
+
+            # If reading the page failed, there must be less data than we
+            # estimated.
+            last_page = prev_page
+            if last_page is None:
+                known_n_rows = 0
+            else:
+                known_n_rows = last_page.offset + len(last_page._rows)
+            new_estimate = int(known_n_rows + ((estimated_n_rows - known_n_rows) / 2))
+            print("under expected size -- new estimated size %i (known %i, old estimate %i)" % (new_estimate, known_n_rows, estimated_n_rows))
+            estimated_n_rows = new_estimate
+            estimated_row_n = min(int(position * estimated_n_rows), estimated_n_rows - 1)
+
+        if page is None:
+            known_n_rows = estimated_n_rows = 0
+        else:
+            if page.offset + len(page._rows) < estimated_n_rows:
+                # We must have overestimated... but we know now; expected_offset.
+                known_n_rows = estimated_n_rows = page.offset + len(page._rows)
+
+            if estimated_row_n > estimated_n_rows - self.query_size:
+                # If at the last row, check if we found the end of the page correctly.
+                # Check that we actually found the end.
+                last_page = page
+                while last_page.offset + len(last_page._rows) >= estimated_n_rows:
+                    if len(last_page._rows) < self.query_size:
+                        break
+                    # FIXME: this is a linear search! Do a binary search !!!!
+                    try:
+                        last_page = self._read_and_store_page(
+                            last_page.offset + len(last_page._rows),
+                            prev_page=last_page)
+                    except IndexError:
+                        break
+                estimated_n_rows = known_n_rows = last_page.offset + len(last_page._rows)
+
+        # FIXME: Implementations may well want to do more checking and
+        # re-estimation after a read! There's no reason they can't handle
+        # that in _read_and_store_page() if they call _update_estimated_size()
+        # as we do, but that might require special handling by this function!
+
+        print("estimation now %i, original estimate was %i" % (estimated_n_rows, original_estimate))
+        if estimated_n_rows != original_estimate:
+            self._update_estimated_size(estimated_n_rows, known_n_rows)
 
         return page
 
@@ -313,7 +382,6 @@ class PagedData(PagedDataInterface):
                     return None, page, search_n + 1
                 page_range = page_range[page_range.index(page):]
 
-
             assert len(page_range) > 0
 
     def _insert_row(self, page, row, index_after):
@@ -330,8 +398,7 @@ class ListSource(PagedData):
     the whole thing straight away.
     '''
     def __init__(self, value_list, page_size):
-        super(ListSource, self).__init__()
-        self.page_size = page_size
+        super(ListSource, self).__init__(query_size=page_size)
 
         def make_row(value):
             return Row([value])
@@ -539,7 +606,7 @@ class TrackerQuery(PagedData):
 
         page = Page(offset, rows)
         page._root_n_matches = root_n_matches
-        self._store_page(page)
+        self._store_page(page, prev_page=prev_page)
         return page
 
     def _count_matches(self, term, pattern):
