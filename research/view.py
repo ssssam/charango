@@ -330,6 +330,12 @@ class PagedData(PagedDataInterface):
                         break
                 estimated_n_rows = known_n_rows = last_page.offset + len(last_page._rows)
 
+            # ---->
+            estimated_row_n = min(int(position * estimated_n_rows), estimated_n_rows - 1)
+            # now get page for this row number ... need to turn read_and_store_page() into
+            # something more like get_or_read_page() ....
+
+
         # FIXME: Implementations may well want to do more checking and
         # re-estimation after a read! There's no reason they can't handle
         # that in _read_and_store_page() if they call _update_estimated_size()
