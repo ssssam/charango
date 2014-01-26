@@ -2,6 +2,7 @@
 # Charango interactive test cases
 
 from view import *
+import test_view
 
 from gi.repository import GLib
 from gi.repository import Gtk
@@ -94,12 +95,13 @@ if __name__ == '__main__':
 
     #numbers = ListSource(range(0,1000), 100)
 
-    live_numbers = LiveListSource(10, 10, initial_value_list=range(0,10))
+    #live_numbers = LiveListSource(10, 10, initial_value_list=range(0,10))
     #GLib.timeout_add(500, live_numbers.tick)
 
     #data_source = numbers
     #data_source = tracker_test_data()
-    data_source = live_numbers
+    #data_source = live_numbers
+    data_source = test_view.EstimationTestSource(100)
     app = UiTestApplication()
 
     def clicked_cb(button):

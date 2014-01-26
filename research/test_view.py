@@ -145,6 +145,9 @@ class EstimationTestSource(view.PagedData):
         self.real_data = list(range(0, real_n_rows))
         self._estimated_n_rows = self.query_size * 3
 
+    def columns(self):
+        return ['Value']
+
     def estimate_row_count(self):
         return self._estimated_n_rows
 
@@ -163,23 +166,25 @@ class EstimationTestSource(view.PagedData):
         return page
 
 
+@pytest.fixture()
+def overestimated_source():
+    return EstimationTestSource(real_n_rows=16)
+
+@pytest.fixture()
+def underestimated_source():
+    return EstimationTestSource(real_n_rows=100)
+
+
 class TestSizeEstimation:
     '''
     Test where actual data is undersized compared to original estimate.
     '''
-    @pytest.fixture()
-    def overestimated_source(self):
-        return EstimationTestSource(real_n_rows=16)
-
-    @pytest.fixture()
-    def underestimated_source(self):
-        return EstimationTestSource(real_n_rows=100)
-
     def test_under_0_8(self, underestimated_source):
         source = underestimated_source
         assert source.estimate_row_count() == 30
 
         page = source.get_page_for_position(0.8)
+        assert source.estimate_row_count() == 100
         assert page.offset == 80
         assert len(page._rows) == 10
 
@@ -263,16 +268,35 @@ class TestGtkTreeModelLazyShim:
         (True, 3)
     ])
     def test_lazy_loading(self, data, fixed_height, expected_pages):
+        '''
+        Create a lazy GtkTreeModel over a 10 page 100 row data source.
+
+        The 'expected_pages' parameter marks how many of the pages of the
+        model the GtkTreeModel is expected to query.
+        '''
         tree_model = view.GtkTreeModelLazyShim(data, viewport_n_rows=10)
         tree_view = uitests.create_gtk_tree_view_for(tree_model, fixed_height=fixed_height)
         self.run_widget(tree_view)
 
         assert len(data.queried_pages.keys()) == expected_pages
 
+    def test_overestimated_source(self):
+        data = overestimated_source()
+
+        tree_model = view.GtkTreeModelLazyShim(data, viewport_n_rows=10)
+        tree_view = uitests.create_gtk_tree_view_for(tree_model, fixed_height=False)
+        self.run_widget(tree_view)
+
+    def test_underestimated_source(self):
+        data = underestimated_source()
+
+        tree_model = view.GtkTreeModelLazyShim(data, viewport_n_rows=10)
+        tree_view = uitests.create_gtk_tree_view_for(tree_model, fixed_height=False)
+        self.run_widget(tree_view)
 
 
 test_queries = [
-    ('SELECT ?class ?property ' 
+    ('SELECT ?class ?property '
      'WHERE {'
      '  ?class a rdf:Class .'
      '  ?property a rdfs:Property ;'

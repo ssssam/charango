@@ -173,6 +173,8 @@ class PagedDataInterface():
         This may involve an expensive database read. Therefore, we do not
         expose a standard Python iterator interface for pages because a
         'for page in data' loop might take hours.
+
+        Returns 'None' if 'prev_page' is the last page available.
         '''
         raise NotImplementedError()
 
@@ -251,8 +253,11 @@ class PagedData(PagedDataInterface):
         except IndexError:
             pass
 
-        page = self._read_and_store_page(expected_offset, prev_page=prev_page)
-        return page
+        try:
+            page = self._read_and_store_page(expected_offset, prev_page=prev_page)
+            return page
+        except IndexError:
+            return None
 
     # def prev_page():
     #   We'll need this eventually too!
@@ -260,15 +265,14 @@ class PagedData(PagedDataInterface):
     def _update_estimated_size(self, estimated_n_rows, known_n_rows):
         self.estimated_size_changed(estimated_n_rows, known_n_rows)
 
-    def get_page_for_position(self, position):
-        assert 0.0 <= position <= 1.0
+    def _get_or_read_page(self, position, estimated_row_n, estimated_n_rows, known_n_rows=0):
+        print("  _get_or_read_page: pos %0.2f, estimated row n %i out of %i "
+              "estimated and %i known rows" % (position, estimated_row_n,
+              estimated_n_rows, known_n_rows))
+        original_estimate = estimated_n_rows
 
-        original_estimate = estimated_n_rows = self.estimate_row_count()
-        if estimated_n_rows == 0:
-            return None
-        estimated_row_n = min(int(position * estimated_n_rows), estimated_n_rows - 1)
-        print("%f * %i = %i" % (position, estimated_n_rows, estimated_row_n))
-
+        # Look for the page in the list of pages that are currently in memory,
+        # and return it if we have it already loaded.
         prev_page = None
         for page in self._pages:
             page_start = page.offset
@@ -280,6 +284,7 @@ class PagedData(PagedDataInterface):
         else:
             prev_page = None if len(self._pages) == 0 else self._pages[self._pages.index(page)-1]
 
+        # If the page wasn't in memory, try and read it.
         last_page = None
         while True:
             expected_offset = estimated_row_n - (estimated_row_n % self.query_size)
@@ -330,20 +335,47 @@ class PagedData(PagedDataInterface):
                         break
                 estimated_n_rows = known_n_rows = last_page.offset + len(last_page._rows)
 
-            # ---->
             estimated_row_n = min(int(position * estimated_n_rows), estimated_n_rows - 1)
-            # now get page for this row number ... need to turn read_and_store_page() into
-            # something more like get_or_read_page() ....
+            print(" .. %f * %i = %i" % (position, estimated_n_rows, estimated_row_n))
 
+        print("estimation now %i, original estimate was %i" % (estimated_n_rows, original_estimate))
+        if estimated_n_rows != original_estimate:
+            self._update_estimated_size(estimated_n_rows, known_n_rows)
+
+        if page is None:
+            return None
+
+        return self._get_or_read_page(position, estimated_row_n, estimated_n_rows, known_n_rows)
+
+    def get_page_for_position(self, position):
+        '''
+        Return the page containing the row at index 'position * row_count'.
+
+        This API is intentionally inaccurate. It is intended to allow random
+        access to the data source without requiring knowledge of exactly how
+        many rows the data contains (in other words, it's for scrollbar-
+        access).
+
+        This function may lead to re-estimation of the row count as more pages
+        are read into memory.
+        '''
+        assert 0.0 <= position <= 1.0
+
+        # FIXME: this function is not very clearly written right now!
+
+        # Guess the row number based on the current idea of the data size.
+        estimated_n_rows = self.estimate_row_count()
+        if estimated_n_rows == 0:
+            return None
+        estimated_row_n = min(int(position * estimated_n_rows), estimated_n_rows - 1)
+        print("%f * %i = %i" % (position, estimated_n_rows, estimated_row_n))
+
+        page = self._get_or_read_page(position, estimated_row_n, estimated_n_rows)
 
         # FIXME: Implementations may well want to do more checking and
         # re-estimation after a read! There's no reason they can't handle
         # that in _read_and_store_page() if they call _update_estimated_size()
         # as we do, but that might require special handling by this function!
-
-        print("estimation now %i, original estimate was %i" % (estimated_n_rows, original_estimate))
-        if estimated_n_rows != original_estimate:
-            self._update_estimated_size(estimated_n_rows, known_n_rows)
 
         return page
 
@@ -754,7 +786,7 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel,#):
             return None
         rough_position = n / n_rows
         page = container.get_page_for_position(rough_position)
-        # FIXME: this method is great expect where you have a big source and you're on the
+        # FIXME: this method is great except where you have a big source and you're on the
         # boundry of a page. You'll need to go up or down a page or two to actually find
         # the one that contains 'n', presumably ... and in doing so you'll read more data,
         # which may change the estimation, so it needs to be done in a loop BUT that's OK!
