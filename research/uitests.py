@@ -45,12 +45,12 @@ class UiTestApplication():
         page = data_source.first_page()
 
         #tree_model = GtkTreeModelBasicShim(data_source)
-        tree_model = GtkTreeModelLazyShim(data_source, 100)
+        tree_model = GtkTreeModelLazyShim(data_source, 20)
 
         tree_view = create_gtk_tree_view_for(tree_model)
         scrolled_window = Gtk.ScrolledWindow()
         scrolled_window.add(tree_view)
-        scrolled_window.set_size_request(640, 80)
+        scrolled_window.set_size_request(640, 480)
         self.box.pack_start(scrolled_window, True, True, 0)
 
         window = Gtk.Window()
@@ -102,10 +102,11 @@ if __name__ == '__main__':
     #data_source = tracker_test_data()
     #data_source = live_numbers
     data_source = test_view.EstimationTestSource(100)
+    #data_source = test_view.EstimationTestSource(16)
     app = UiTestApplication()
 
     def clicked_cb(button):
         live_numbers.add_row()
 
-    app.add_button(clicked_cb)
+    #app.add_button(clicked_cb)
     app.run(data_source)

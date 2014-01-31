@@ -345,7 +345,7 @@ class PagedData(PagedDataInterface):
             print("  _get_or_read_page: end result: No page :(")
             known_n_rows = estimated_n_rows = 0
         else:
-            if page.offset + len(page._rows) < estimated_n_rows:
+            if page == last_page and page.offset + len(page._rows) < estimated_n_rows:
                 # We must have overestimated... but we know now; expected_offset.
                 known_n_rows = estimated_n_rows = page.offset + len(page._rows)
 
@@ -813,10 +813,14 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel,#):
     def _iter_nth_child(self, iter, n):
         assert iter is None
         container = self.data
+
         n_rows = container.estimate_row_count()
         if n_rows == 0:
             return None
         rough_position = n / n_rows
+
+        # Who is at fault here if n > n_rows?
+
         page = container.get_page_for_position(rough_position)
         # FIXME: this method is great except where you have a big source and you're on the
         # boundry of a page. You'll need to go up or down a page or two to actually find
