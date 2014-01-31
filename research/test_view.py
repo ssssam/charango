@@ -167,9 +167,14 @@ class EstimationTestSource(view.PagedData):
         self._store_page(page, prev_page=prev_page)
 
         known_rows = offset + len(rows)
-        if known_rows > self._estimated_n_rows:
+        if self._estimated_n_rows < len(self.real_data) and known_rows >= self._estimated_n_rows:
             # Wow! Looks like the data goes on longer than we thought!
-            self._update_estimated_size(known_rows, known_rows)
+            unknown_rows = len(self.real_data) - known_rows
+            estimated_n_rows = min(self._estimated_n_rows + (unknown_rows / 2),
+                    len(self.real_data))
+            print ("Wow! estimate was %i, now %i!" % (self._estimated_n_rows,
+                estimated_n_rows))
+            self._update_estimated_size(estimated_n_rows, known_rows)
         return page
 
 
