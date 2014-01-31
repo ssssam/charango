@@ -262,7 +262,7 @@ class PagedData(PagedDataInterface):
             assert page.offset >= expected_offset
             if page.offset == expected_offset:
                 return page
-        except NoDataError:
+        except IndexError:
             pass
 
         try:
