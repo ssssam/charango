@@ -5,11 +5,6 @@
 #  - Does not work in fixed height mode due to
 #    https://bugzilla.gnome.org/show_bug.cgi?id=721597
 
-# Cleanups:
-#  - read_and_store_page should perhaps not indicate "no data" by raising
-#  IndexError: the problem is that you might also get that error because the
-#  source's _read_and_store_page() function is broken.
-
 # Steps to prototype:
 #  - adding & removing
 #      -> adding is OK, next test removing!
@@ -71,6 +66,10 @@ import sys
 import weakref
 
 import pdb
+
+
+class NoDataError(Exception):
+    pass
 
 
 class Signal(object):
@@ -256,13 +255,13 @@ class PagedData(PagedDataInterface):
             assert page.offset >= expected_offset
             if page.offset == expected_offset:
                 return page
-        except IndexError:
+        except NoDataError:
             pass
 
         try:
             page = self._read_and_store_page(expected_offset, prev_page=prev_page)
             return page
-        except IndexError:
+        except NoDataError:
             return None
 
     # def prev_page():
@@ -313,10 +312,10 @@ class PagedData(PagedDataInterface):
                         (expected_offset, prev_page))
                 page = self._read_and_store_page(expected_offset, prev_page=prev_page)
                 break
-            except IndexError:
+            except NoDataError:
                 if expected_offset == 0:
                     # Source is actually empty!
-                    print("  _get_or_read_page: IndexError: Source is actually empty!")
+                    print("  _get_or_read_page: NoDataError: Source is actually empty!")
                     page = None
                     break
                 if last_page is not None and expected_offset < last_page.offset:
@@ -357,7 +356,7 @@ class PagedData(PagedDataInterface):
                         last_page = self._read_and_store_page(
                             last_page.offset + len(last_page._rows),
                             prev_page=last_page)
-                    except IndexError:
+                    except NoDataError:
                         break
                 estimated_n_rows = known_n_rows = last_page.offset + len(last_page._rows)
 

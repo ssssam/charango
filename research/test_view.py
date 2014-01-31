@@ -159,7 +159,7 @@ class EstimationTestSource(view.PagedData):
         print ("EstimationTestSource: _read_and_store_page(%i), real data %i" %
                 (offset, len(self.real_data)))
         if offset >= len(self.real_data):
-            raise IndexError
+            raise NoDataError
         values = self.real_data[offset:offset+self.query_size]
 
         rows = [view.Row([value]) for i, value in enumerate(values)]
