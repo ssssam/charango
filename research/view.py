@@ -274,6 +274,10 @@ class PagedData(PagedDataInterface):
     # def prev_page():
     #   We'll need this eventually too!
 
+    def _trace(self, format, *args):
+        #print(format % args)
+        pass
+
     def _update_estimated_size(self, estimated_n_rows, known_n_rows):
         self.estimated_size_changed(estimated_n_rows, known_n_rows)
 
@@ -286,8 +290,8 @@ class PagedData(PagedDataInterface):
         for page in self._pages:
             page_start = page.offset
             page_end = page_start + len(page._rows)
-            print("    _find_page: %s: %i <= %i < %i? %s" % (page, page_start,
-                row_n, page_end, page_start <= row_n < page_end))
+            self._trace("    _find_page: %s: %i <= %i < %i? %s", page, page_start,
+                row_n, page_end, page_start <= row_n < page_end)
             if page_start <= row_n < page_end:
                 # Found the page!
                 return prev_page, page
@@ -299,13 +303,13 @@ class PagedData(PagedDataInterface):
             return self._pages[-1], None
 
     def _get_or_read_page(self, position, estimated_row_n, estimated_n_rows, known_n_rows=0):
-        print("  _get_or_read_page: pos %0.2f, estimated row n %i out of %i "
+        self._trace("  _get_or_read_page: pos %0.2f, estimated row n %i out of %i "
               "estimated and %i known rows" % (position, estimated_row_n,
               estimated_n_rows, known_n_rows))
         original_estimate = estimated_n_rows
 
         prev_page, page = self._look_for_page(estimated_row_n)
-        print("  _get_or_read_page: look_for_page(%i) returned %s, %s" %
+        self._trace("  _get_or_read_page: look_for_page(%i) returned %s, %s" %
                 (estimated_row_n, prev_page, page))
         if page is not None:
             return page
@@ -315,14 +319,17 @@ class PagedData(PagedDataInterface):
         while True:
             expected_offset = estimated_row_n - (estimated_row_n % self.query_size)
             try:
-                print("  _get_or_read_page: Try to read page at %i (prev %s)" %
-                        (expected_offset, prev_page))
+                self._trace(
+                        "  _get_or_read_page: Try to read page at %i (prev %s)",
+                        expected_offset, prev_page)
                 page = self._read_and_store_page(expected_offset, prev_page=prev_page)
                 break
             except NoDataError:
                 if expected_offset == 0:
                     # Source is actually empty!
-                    print("  _get_or_read_page: NoDataError: Source is actually empty!")
+                    self._trace(
+                            "  _get_or_read_page: NoDataError: Source is "
+                            "actually empty!")
                     page = None
                     break
                 if last_page is not None and expected_offset < last_page.offset:
@@ -337,7 +344,10 @@ class PagedData(PagedDataInterface):
             else:
                 known_n_rows = last_page.offset + len(last_page._rows)
             new_estimate = int(known_n_rows + ((estimated_n_rows - known_n_rows) / 2))
-            print("under expected size -- new estimated size %i (known %i, old estimate %i)" % (new_estimate, known_n_rows, estimated_n_rows))
+            self._trace(
+                    "under expected size -- new estimated size %i (known %i, "
+                    "old estimate %i)", new_estimate, known_n_rows,
+                    estimated_n_rows)
             estimated_n_rows = new_estimate
             estimated_row_n = min(int(position * estimated_n_rows), estimated_n_rows - 1)
 
@@ -368,9 +378,11 @@ class PagedData(PagedDataInterface):
                 estimated_n_rows = known_n_rows = last_page.offset + len(last_page._rows)
 
             estimated_row_n = min(int(position * estimated_n_rows), estimated_n_rows - 1)
-            print(" .. %f * %i = %i" % (position, estimated_n_rows, estimated_row_n))
+            self._trace(" .. %f * %i = %i", position, estimated_n_rows,
+                    estimated_row_n)
 
-        print("estimation now %i, original estimate was %i" % (estimated_n_rows, original_estimate))
+        self._trace("estimation now %i, original estimate was %i",
+                estimated_n_rows, original_estimate)
         if estimated_n_rows != original_estimate:
             self._update_estimated_size(estimated_n_rows, known_n_rows)
 
@@ -400,7 +412,7 @@ class PagedData(PagedDataInterface):
         if estimated_n_rows == 0:
             return None
         estimated_row_n = min(int(position * estimated_n_rows), estimated_n_rows - 1)
-        print("%f * %i = %i" % (position, estimated_n_rows, estimated_row_n))
+        self._trace("%f * %i = %i", position, estimated_n_rows, estimated_row_n)
 
         page = self._get_or_read_page(position, estimated_row_n, estimated_n_rows)
 
@@ -438,7 +450,8 @@ class PagedData(PagedDataInterface):
                 return None, None, 0
             row = page.row(search_n - page.offset)
             found_value = key_func(row)
-            print("Cmp@%i[%i-%i] %s to target %s" % (search_n, range_min, range_max, target_value, found_value))
+            self._trace("Cmp@%i[%i-%i] %s to target %s", search_n, range_min,
+                    range_max, target_value, found_value)
             if found_value == target_value:
                 return row, page, search_n
             elif found_value > target_value:
@@ -744,8 +757,8 @@ class GInterfaceTraceMetaclass(gi.types.GObjectMeta):
         return type.__new__(cls,classname,bases,classdict)
 
 
-class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel,#):
-                            metaclass=GInterfaceTraceMetaclass):
+class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):
+                            #metaclass=GInterfaceTraceMetaclass):
     '''
     Basic GtkTreeView adapter for paged data models.
 
