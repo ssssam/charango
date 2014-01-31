@@ -156,10 +156,10 @@ class EstimationTestSource(view.PagedData):
         self._estimated_n_rows = estimated_n_rows
 
     def _read_and_store_page(self, offset, prev_page=None):
-        print ("EstimationTestSource: _read_and_store_page(%i), real data %i" %
-                (offset, len(self.real_data)))
+        print ("EstimationTestSource: _read_and_store_page(%i, prev_page=%s), "
+               "real data %i" % (offset, prev_page, len(self.real_data)))
         if offset >= len(self.real_data):
-            raise NoDataError
+            raise view.NoDataError
         values = self.real_data[offset:offset+self.query_size]
 
         rows = [view.Row([value]) for i, value in enumerate(values)]
@@ -194,9 +194,10 @@ class TestSizeEstimation:
         source = overestimated_source
         assert source.estimate_row_count() == 30
 
+        # Actually 16 rows, 0.4 * 16 = 6
         page = source.get_page_for_position(0.4)
-        assert page.offset == 10
-        assert len(page._rows) == 6
+        assert page.offset == 0
+        assert len(page._rows) == 10
 
         assert source.estimate_row_count() == 16
         source.get_page_for_position(0.4)

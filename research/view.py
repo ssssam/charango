@@ -214,8 +214,13 @@ class PagedData(PagedDataInterface):
         self._pages = []
 
     def _store_page(self, page, prev_page=None):
+        '''
+        Add 'page' to the internal cache of pages.
+        '''
         assert len(page._rows) > 0
 
+        # list.insert() puts the item in the list *before* the
+        # given index, so we need to calculate 'index_after'.
         if prev_page is None:
             index_after = 0
             for index_after, next_page in enumerate(self._pages):
@@ -226,13 +231,15 @@ class PagedData(PagedDataInterface):
         else:
             index_after = self._pages.index(prev_page)+1
 
+        # Check ordering is correct.
         if index_after > 0 and len(self._pages) > 0:
             print("prev_page: %s, index_after %i" % (prev_page, index_after))
             prev_page = prev_page or self._pages[index_after-1]
             assert page.offset >= prev_page.offset + len(prev_page._rows)
-        if index_after < len(self._pages):
+        if index_after + 1 < len(self._pages):
             next_page = self._pages[index_after + 1]
             assert page.offset + len(page._rows) <= next_page.offset
+
         self._pages.insert(index_after, page)
         print("store %s before %i (total %i)" % (page, index_after, len(self._pages)))
 
