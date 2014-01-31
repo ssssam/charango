@@ -352,18 +352,23 @@ class PagedData(PagedDataInterface):
             estimated_row_n = min(int(position * estimated_n_rows), estimated_n_rows - 1)
 
         if page is None:
-            print("  _get_or_read_page: end result: No page :(")
+            self._trace("  _get_or_read_page: end result: No page :(")
             known_n_rows = estimated_n_rows = 0
         else:
-            if page == last_page and page.offset + len(page._rows) < estimated_n_rows:
+            is_last_page = (page == self._pages[-1])
+            if is_last_page and page.offset + len(page._rows) < estimated_n_rows:
                 # We must have overestimated... but we know now; expected_offset.
                 known_n_rows = estimated_n_rows = page.offset + len(page._rows)
+                self._trace(
+                        "  _get_or_read_page: page is last page: must have %i "
+                        "rows", known_n_rows)
 
             if estimated_row_n > estimated_n_rows - self.query_size:
                 # If at the last row, check if we found the end of the page correctly.
                 # Check that we actually found the end.
-                print("  _get_or_read_page: within last page (%i > %i - %i)" %
-                        (estimated_row_n, estimated_n_rows, self.query_size))
+                self._trace(
+                        "  _get_or_read_page: within last page (%i > %i - %i)",
+                        estimated_row_n, estimated_n_rows, self.query_size)
                 last_page = page
                 while last_page.offset + len(last_page._rows) >= estimated_n_rows:
                     if len(last_page._rows) < self.query_size:
