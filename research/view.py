@@ -5,6 +5,11 @@
 #  - Does not work in fixed height mode due to
 #    https://bugzilla.gnome.org/show_bug.cgi?id=721597
 
+# Cleanups:
+#  - read_and_store_page should perhaps not indicate "no data" by raising
+#  IndexError: the problem is that you might also get that error because the
+#  source's _read_and_store_page() function is broken.
+
 # Steps to prototype:
 #  - adding & removing
 #      -> adding is OK, next test removing!
@@ -193,6 +198,7 @@ class PagedDataInterface():
         '''
         raise NotImplementedError()
 
+
 class PagedData(PagedDataInterface):
     '''
     Base class on top of the abstract interface which provides some helpers.
@@ -265,35 +271,52 @@ class PagedData(PagedDataInterface):
     def _update_estimated_size(self, estimated_n_rows, known_n_rows):
         self.estimated_size_changed(estimated_n_rows, known_n_rows)
 
+    def _look_for_page(self, row_n):
+        # Look for the page in the list of pages that are currently in memory,
+        # and return it if we have it already loaded.#
+        if len(self._pages) == 0:
+            return None, None
+        prev_page = None
+        for page in self._pages:
+            page_start = page.offset
+            page_end = page_start + len(page._rows)
+            print("    _find_page: %s: %i <= %i < %i? %s" % (page, page_start,
+                row_n, page_end, page_start <= row_n < page_end))
+            if page_start <= row_n < page_end:
+                # Found the page!
+                return prev_page, page
+            if page_start > row_n:
+                # The page we are looking for is not in memory
+                return prev_page, None
+        else:
+            # We fell off the bottom.
+            return self._pages[-1], None
+
     def _get_or_read_page(self, position, estimated_row_n, estimated_n_rows, known_n_rows=0):
         print("  _get_or_read_page: pos %0.2f, estimated row n %i out of %i "
               "estimated and %i known rows" % (position, estimated_row_n,
               estimated_n_rows, known_n_rows))
         original_estimate = estimated_n_rows
 
-        # Look for the page in the list of pages that are currently in memory,
-        # and return it if we have it already loaded.
-        prev_page = None
-        for page in self._pages:
-            page_start = page.offset
-            page_end = page_start + len(page._rows)
-            if page_start <= estimated_row_n < page_end:
-                return page
-            if page_start > estimated_row_n:
-                break
-        else:
-            prev_page = None if len(self._pages) == 0 else self._pages[self._pages.index(page)-1]
+        prev_page, page = self._look_for_page(estimated_row_n)
+        print("  _get_or_read_page: look_for_page(%i) returned %s, %s" %
+                (estimated_row_n, prev_page, page))
+        if page is not None:
+            return page
 
         # If the page wasn't in memory, try and read it.
         last_page = None
         while True:
             expected_offset = estimated_row_n - (estimated_row_n % self.query_size)
             try:
+                print("  _get_or_read_page: Try to read page at %i (prev %s)" %
+                        (expected_offset, prev_page))
                 page = self._read_and_store_page(expected_offset, prev_page=prev_page)
                 break
             except IndexError:
                 if expected_offset == 0:
                     # Source is actually empty!
+                    print("  _get_or_read_page: IndexError: Source is actually empty!")
                     page = None
                     break
                 if last_page is not None and expected_offset < last_page.offset:
@@ -313,6 +336,7 @@ class PagedData(PagedDataInterface):
             estimated_row_n = min(int(position * estimated_n_rows), estimated_n_rows - 1)
 
         if page is None:
+            print("  _get_or_read_page: end result: No page :(")
             known_n_rows = estimated_n_rows = 0
         else:
             if page.offset + len(page._rows) < estimated_n_rows:
@@ -322,6 +346,8 @@ class PagedData(PagedDataInterface):
             if estimated_row_n > estimated_n_rows - self.query_size:
                 # If at the last row, check if we found the end of the page correctly.
                 # Check that we actually found the end.
+                print("  _get_or_read_page: within last page (%i > %i - %i)" %
+                        (estimated_row_n, estimated_n_rows, self.query_size))
                 last_page = page
                 while last_page.offset + len(last_page._rows) >= estimated_n_rows:
                     if len(last_page._rows) < self.query_size:

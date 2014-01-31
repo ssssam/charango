@@ -156,6 +156,8 @@ class EstimationTestSource(view.PagedData):
         self._estimated_n_rows = estimated_n_rows
 
     def _read_and_store_page(self, offset, prev_page=None):
+        print ("EstimationTestSource: _read_and_store_page(%i), real data %i" %
+                (offset, len(self.real_data)))
         if offset >= len(self.real_data):
             raise IndexError
         values = self.real_data[offset:offset+self.query_size]
