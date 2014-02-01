@@ -1,14 +1,14 @@
 # Charango view experiment, 2013 edition
 # Python 3!
 
-# Weird issues:
+# Issues:
 #  - Does not work in fixed height mode due to
 #    https://bugzilla.gnome.org/show_bug.cgi?id=721597
+#  - 'End' key doesn't go to the end ... this is a limitation of using
+#    GtkTreeView (why would it expect the model to suddenly grow huge?), could
+#    hack around it by catching the 'end' key I imagine.
 
-# Steps to prototype:
-#  - make GtkTreeModelLazyShim handle estimated-size-changed messages,
-#    there's just a bug left where it doesn't quite let you go to the last few
-#    rows ...
+# Plan:
 #  - do some fun stuff!!!
 #       - tracker-sparql GUI
 #       - Spotify client
@@ -22,6 +22,7 @@
 #     a prime numbers one,
 #     one that adds and removes regularly
 #  - app with Tracker query on one side and list of results on other
+#  - do a talk proposal for GUADEC!
 #  - GraphUpdated watching for Tracker ... that's a lot of work, it turns out!
 
 # Automated tests:
@@ -283,7 +284,14 @@ class PagedData(PagedDataInterface):
         unless it's actually sure this it the case. It's the responsibility of
         the source to check when the last page is read whether there is any more
         data and to reestimate accordingly when there is.
+
+        You also cannot have fewer estimated rows than known rows, because at
+        the moment all sources know the accurate offset of the pages they have
+        queried and therefore the row count up to the last known page is
+        accurate. This could change if one day a source comes along that doesn't
+        need to query using accurate offsets, of course.
         '''
+        assert estimated_n_rows >= known_n_rows
         self.estimated_size_changed(estimated_n_rows, known_n_rows)
 
     def _look_for_page(self, row_n):
@@ -990,17 +998,16 @@ class GtkTreeModelLazyShim(GtkTreeModelBasicShim):
                 (estimated_n_rows, known_n_rows))
         delta = estimated_n_rows - self.data_estimated_n_rows
 
-        path = Gtk.TreePath(self.data_estimated_n_rows)
-
         if delta < 0:
+            path = Gtk.TreePath(estimated_n_rows + 1)
             print("Emitted row-deleted .. %i times" % abs(delta))
             for i in range(0, abs(delta)):
                 self.emit('row-deleted', path)
-                path.previous()
         elif delta > 0:
             last_page = self.data.get_page_for_position(1.0)
             position = last_page.offset + len(last_page._rows)
             print("Emitted row-inserted %i times at row %i" % (delta, position))
+            path = Gtk.TreePath(self.data_estimated_n_rows)
             iter = self._create_iter(self.data, last_page, position)
             for i in range(0, delta):
                 self.emit('row-inserted', path, iter)
