@@ -170,7 +170,8 @@ class EstimationTestSource(view.PagedData):
         if self._estimated_n_rows < len(self.real_data) and known_rows >= self._estimated_n_rows:
             # Wow! Looks like the data goes on longer than we thought!
             unknown_rows = len(self.real_data) - known_rows
-            estimated_n_rows = min(self._estimated_n_rows + (unknown_rows / 2),
+            estimated_n_rows = min(
+                    self._estimated_n_rows + (unknown_rows // 2),
                     len(self.real_data))
             print ("Wow! estimate was %i, now %i!" % (self._estimated_n_rows,
                 estimated_n_rows))

@@ -6,17 +6,14 @@
 #    https://bugzilla.gnome.org/show_bug.cgi?id=721597
 
 # Steps to prototype:
-#  - adding & removing
-#      -> adding is OK, next test removing!
-#      -> then test changed, and then make automated tests!
-#     how would the automated tests look? basically check that:
-#     - row-inserted / row-deleted / row-changed was emitted for the correct row
-#     - can you split pages up at all ? yes, of course ... just invalidate iterators,
-#       and split it out! you have to renumber the offset of all subsequent pages anyway!
-#       so, do a test with at least 3 pages and check that
-#         - pages don't exeed max-page-size
-#         - pages disappear when they have no rows left
-#         - pages are renumbered appropriately!
+#  - make GtkTreeModelLazyShim handle estimated-size-changed messages,
+#    there's just a bug left where it doesn't quite let you go to the last few
+#    rows ...
+#  - do some fun stuff!!!
+#       - tracker-sparql GUI
+#       - Spotify client
+#       - filesystem browser
+#       - could you do 'all tweets ever' ?
 #  - you're having a bad time with Tracker because you don't check and adjust
 #    the estimation on further page reads. Recalc after every page read?
 #  - also needs to try and find the end straight away
@@ -279,6 +276,14 @@ class PagedData(PagedDataInterface):
         pass
 
     def _update_estimated_size(self, estimated_n_rows, known_n_rows):
+        '''
+        Signal to views that the estimated size has changed.
+
+        The source must be careful not to pass estimated_n_rows == known_n_rows
+        unless it's actually sure this it the case. It's the responsibility of
+        the source to check when the last page is read whether there is any more
+        data and to reestimate accordingly when there is.
+        '''
         self.estimated_size_changed(estimated_n_rows, known_n_rows)
 
     def _look_for_page(self, row_n):
@@ -474,7 +479,7 @@ class PagedData(PagedDataInterface):
 
     def _insert_row(self, page, row, index_after):
         page._rows.insert(index_after, row)
-        self.row_inserted(page, index_after)
+        self.emit('row-inserted', page, index_after)
 
 
 class ListSource(PagedData):
@@ -762,8 +767,8 @@ class GInterfaceTraceMetaclass(gi.types.GObjectMeta):
         return type.__new__(cls,classname,bases,classdict)
 
 
-class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):
-                            #metaclass=GInterfaceTraceMetaclass):
+class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel,
+                            metaclass=GInterfaceTraceMetaclass):
     '''
     Basic GtkTreeView adapter for paged data models.
 
@@ -835,9 +840,8 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):
         n_rows = container.estimate_row_count()
         if n_rows == 0:
             return None
-        rough_position = n / n_rows
 
-        # Who is at fault here if n > n_rows?
+        rough_position = n / n_rows
 
         page = container.get_page_for_position(rough_position)
         # FIXME: this method is great except where you have a big source and you're on the
@@ -845,8 +849,8 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):
         # the one that contains 'n', presumably ... and in doing so you'll read more data,
         # which may change the estimation, so it needs to be done in a loop BUT that's OK!
         row_offset = n - page.offset
-        if page:
-            print("Got page at offset %i for rough position %f, n %i offset %i" % (page.offset, rough_position, n, row_offset))
+        #if page:
+        #    print("Got page at offset %i for rough position %f, n %i offset %i" % (page.offset, rough_position, n, row_offset))
         if page is None or row_offset >= len(page._rows):
             print("No page for n %i" % n)
             return None
@@ -964,11 +968,44 @@ class GtkTreeModelLazyShim(GtkTreeModelBasicShim):
 
     def __init__(self, data, viewport_n_rows):
         super(GtkTreeModelLazyShim, self).__init__(data)
+        data.estimated_size_changed = self.handle_size_estimate_changed
         self.viewport_n_rows = viewport_n_rows
+
+        self.data_estimated_n_rows = data.estimate_row_count()
+
+        self.initial_populate_complete = False
 
     #def do_get_flags(self):
     # FIXME: override and don't set ITERS_PERSIST, I don't think it'll be
     # true once you start adding and removing rows!
+
+    def handle_size_estimate_changed(self, estimated_n_rows, known_n_rows):
+        if not self.initial_populate_complete:
+            # No need for signals yet as the GtkTreeView's first iterator is
+            # still on the move.
+            print("estimated_size changed: still in initial population phase")
+            self.data_estimated_n_rows = estimated_n_rows
+            return
+        print("!!! estimated_size changed: %i estimated, %i known" %
+                (estimated_n_rows, known_n_rows))
+        delta = estimated_n_rows - self.data_estimated_n_rows
+
+        path = Gtk.TreePath(self.data_estimated_n_rows)
+
+        if delta < 0:
+            print("Emitted row-deleted .. %i times" % abs(delta))
+            for i in range(0, abs(delta)):
+                self.emit('row-deleted', path)
+                path.previous()
+        elif delta > 0:
+            last_page = self.data.get_page_for_position(1.0)
+            position = last_page.offset + len(last_page._rows)
+            print("Emitted row-inserted %i times at row %i" % (delta, position))
+            iter = self._create_iter(self.data, last_page, position)
+            for i in range(0, delta):
+                self.emit('row-inserted', path, iter)
+
+        self.data_estimated_n_rows = estimated_n_rows
 
     def _iter_next(self, iter):
         iter_data = self._get_iter_data(iter)
@@ -978,6 +1015,9 @@ class GtkTreeModelLazyShim(GtkTreeModelBasicShim):
             if iter_data.loose_row_n >= self.data.estimate_row_count():
                 self._invalidate_iter(iter)
                 iter = None
+                # Would there be some benefit to disabling the 'loose iter'
+                # behaviour after the initial one has gone past?
+                self.initial_populate_complete = True
         else:
             iter = super(GtkTreeModelLazyShim, self)._iter_next(iter)
 
