@@ -97,6 +97,59 @@ class Signal(object):
         self.__slots.clear()
 
 
+class TraceMetaclass(type):
+    '''
+    Metaclass which traces method calls.
+    '''
+    @staticmethod
+    def should_trace(name):
+        return not name.startswith('_')
+
+    @classmethod
+    def arg_to_str(cls, arg, **kwargs):
+        return str(arg)
+
+    @classmethod
+    def _trace_call(cls, method):
+        def wrapper(*args, **kwargs):
+            obj = args[0]
+
+            p_args = []
+            p_args.extend([cls.arg_to_str(a, obj=obj)
+                for a in args[1:]])
+            p_args.extend(["%s=%s" % (k, cls.arg_to_str(v, obj=obj))
+                for k, v in kwargs.items()])
+            print ("+ %s(%s)" % (method.__name__, ', '.join(p_args)), end='')
+            result = method(*args, **kwargs)
+            print (" -> %s" % str(result))
+            return result
+        return wrapper
+
+    def __new__(cls, classname, bases, classdict):
+        for name, value in list(classdict.items()):
+            if inspect.isfunction(value) and TraceMetaclass.should_trace(name):
+                classdict['_Metaclass_%s' % name] = value
+                classdict[name] = cls._trace_call(value)
+        return type.__new__(cls,classname,bases,classdict)
+
+
+class GInterfaceTraceMetaclass(gi.types.GObjectMeta, TraceMetaclass):
+    '''
+    Metaclass which traces methods that implement GObject interface functions.
+    '''
+    @classmethod
+    def arg_to_str(cls, arg, obj, **kwargs):
+        if isinstance(arg, Gtk.TreeIter):
+            iter_data = obj._get_iter_data(arg)
+            return str(iter_data)
+        else:
+            return TraceMetaclass.arg_to_str(arg)
+
+    @staticmethod
+    def should_trace(name):
+        return name.startswith('do_')
+
+
 class Row():
     '''
     Base class single row in a Charango model.
@@ -131,7 +184,7 @@ class Page():
         return self._rows[n]
 
 
-class PagedDataInterface():
+class PagedDataInterface():#metaclass=TraceMetaclass):
     '''
     Lazy data model.
 
@@ -738,45 +791,8 @@ class TrackerQuery(PagedData):
 
 
 
-class GInterfaceTraceMetaclass(gi.types.GObjectMeta):
-    '''
-    Metaclass which traces methods that implement GObject interface functions.
-    '''
-    @staticmethod
-    def _trace_call(method):
-        def wrapper(*args, **kwargs):
-            assert method.__name__.startswith('do_')
-
-            obj = args[0]
-            def arg_to_str(arg):
-                if isinstance(arg, Gtk.TreeIter):
-                    try:
-                        container, page, row_offset = obj._unpack_iter(arg)
-                        return "<iter: p%i r%i>" % (page.offset, row_offset)
-                    except KeyError:
-                        return "<iter: invalid>"
-                else:
-                    return str(arg)
-
-            p_args = []
-            p_args.extend([arg_to_str(a) for a in args[1:]])
-            p_args.extend(["%s=%s" % (k, arg_to_str(v)) for k, v in kwargs])
-            print ("%s(%s)" % (method.__name__, ', '.join(p_args)), end='')
-            result = method(*args, **kwargs)
-            print (" -> %s" % str(result))
-            return result
-        return wrapper
-
-    def __new__(cls, classname, bases, classdict):
-        for name, value in list(classdict.items()):
-            if inspect.isfunction(value) and name.startswith('do_'):
-                classdict['_GInterfaceTraceMetaclass_%s' % name] = value
-                classdict[name] = GInterfaceTraceMetaclass._trace_call(value)
-        return type.__new__(cls,classname,bases,classdict)
-
-
-class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel,
-                            metaclass=GInterfaceTraceMetaclass):
+class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):
+                            #metaclass=GInterfaceTraceMetaclass):
     '''
     Basic GtkTreeView adapter for paged data models.
 
@@ -797,6 +813,9 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel,
             self.container = container
             self.page = page
             self.row_offset = row_offset
+
+        def __str__(self):
+            return "<iter: p%i r%i>" % (self.page.offset, self.row_offset)
 
     def __init__(self, data):
         super(GtkTreeModelBasicShim, self).__init__()
@@ -973,6 +992,13 @@ class GtkTreeModelLazyShim(GtkTreeModelBasicShim):
             # of row_offset.
             self.anchor_row_n = 0
             self.loose_row_n = None
+
+        def __str__(self):
+            if self.loose_row_n is not None:
+                return "<iter: p%i r+%i>" % (self.page.offset,
+                        self.loose_row_n)
+            else:
+                return super(GtkTreeModelLazyShim.IterData, self).__str__()
 
     def __init__(self, data, viewport_n_rows):
         super(GtkTreeModelLazyShim, self).__init__(data)
