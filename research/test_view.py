@@ -169,6 +169,7 @@ class EstimationTestSource(view.PagedData):
         known_rows = offset + len(rows)
         if self._estimated_n_rows < len(self.real_data) and known_rows >= self._estimated_n_rows:
             # Wow! Looks like the data goes on longer than we thought!
+            assert known_rows <= len(self.real_data)
             unknown_rows = len(self.real_data) - known_rows
             increase = max(unknown_rows // 2, self.query_size)
             estimated_n_rows = min(
@@ -224,7 +225,6 @@ class TestSizeEstimation:
         source.get_page_for_position(1.0)
         source.get_page_for_position(1.0)
 
-##########
 
 class ProfilingNumbersSource(IdentitySource):
     def __init__(self, n_rows, page_size):
@@ -332,6 +332,27 @@ class TestGtkTreeModelLazyShim(GtkModelTestSuite):
         # If this is a proper lazy source, it won't have queried all the pages
         # yet!
         assert data.estimate_row_count() == 30
+
+    def test_overestimation_nth_child(self):
+        '''
+        Test handling of estimated size changes inside _iter_nth_child().
+
+        Querying the last row when we know there
+        '''
+        data = EstimationTestSource(1000)
+        tree_model = view.GtkTreeModelLazyShim(data, 20)
+
+        iter = tree_model.get_iter(Gtk.TreePath(0))
+        while iter is not None:
+            iter = tree_model.iter_next(iter)
+
+        # It doesn't matter exactly how many rows the EstimationTestSource has
+        # revealed already, but we shouldn't have queried all the data yet!
+        assert data.estimate_row_count() < 1000
+
+        # Quering the last row is going to trigger re-estimation, so this tests
+        # the loop inside _iter_nth_child().
+        iter = tree_model.get_iter(Gtk.TreePath(data.estimate_row_count()))
 
 
 test_queries = [

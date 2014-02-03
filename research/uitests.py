@@ -101,7 +101,7 @@ if __name__ == '__main__':
     #data_source = numbers
     #data_source = tracker_test_data()
     #data_source = live_numbers
-    data_source = test_view.EstimationTestSource(100)
+    data_source = test_view.EstimationTestSource(1000)
     #data_source = test_view.EstimationTestSource(16)
     app = UiTestApplication()
 

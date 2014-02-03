@@ -7,6 +7,14 @@
 #  - 'End' key doesn't go to the end ... this is a limitation of using
 #    GtkTreeView (why would it expect the model to suddenly grow huge?), could
 #    hack around it by catching the 'end' key I imagine.
+#  - It's possible with Underestimation1000 test to get a blank row at the
+#    bottom and a GtkTreeView assertion failure. Seems to be triggered by lot
+#    of scrolling back and forth before you get to the bottom. iter_next(r=999)
+#    correctly returns None and this is when the GtkTreeView seems to complain
+#    that it thought there should be another row forthcoming.
+#    -> May
+#  - The 'assert False' in iter_nth_child() is actually triggered now; see the
+#    log in page-inaccuracy; probably worth writing a test case.
 
 # Plan:
 #  - do some fun stuff!!!
@@ -26,14 +34,7 @@
 #  - GraphUpdated watching for Tracker ... that's a lot of work, it turns out!
 
 # Automated tests:
-# * test basic API with numbers source
-# - test caching level with numbers source ?
-# - now, you need an awkward source that estimates that it has twice as much
-#   data as it has and stuff like that.
-# * Add lazy model to GtkTreeView with & without fixed height & fixed widths,
-#   make sure that after loading only a couple of pages are in memory.
-# - Jump scrollbar and make sure only a few other pages are in memory.
-# - Jump to end and ""
+# - test coverage ...
 
 # Goal: dynamic views.
 #
@@ -421,19 +422,18 @@ class PagedData(PagedDataInterface):
             self._trace("  _get_or_read_page: end result: No page :(")
             known_n_rows = estimated_n_rows = 0
         else:
-            is_last_page = (page == self._pages[-1])
-            if is_last_page and page.offset + len(page._rows) < estimated_n_rows:
-                # We must have overestimated... but we know now; expected_offset.
-                known_n_rows = estimated_n_rows = page.offset + len(page._rows)
-                self._trace(
-                        "  _get_or_read_page: page is last page: must have %i "
-                        "rows", known_n_rows)
+            #is_last_known_page = (page == self._pages[-1])
+            #if is_last_known_page and page.offset + len(page._rows) < known_n_rows:
+            #    # We must have overestimated... but we know now; expected_offset.
+            #    known_n_rows = estimated_n_rows = page.offset + len(page._rows)
+            #    self._trace(
+            #            "  _get_or_read_page: page is last page: must have %i "
+            #            "rows", known_n_rows)
 
             if estimated_row_n > estimated_n_rows - self.query_size:
-                # If at the last row, check if we found the end of the page correctly.
-                # Check that we actually found the end.
                 self._trace(
-                        "  _get_or_read_page: within last page (%i > %i - %i)",
+                        "  _get_or_read_page: we are within the last page (%i > "
+                        "%i - %i), will search for the last row (inefficiently)",
                         estimated_row_n, estimated_n_rows, self.query_size)
                 last_page = page
                 while last_page.offset + len(last_page._rows) >= estimated_n_rows:
@@ -791,8 +791,8 @@ class TrackerQuery(PagedData):
 
 
 
-class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):
-                            #metaclass=GInterfaceTraceMetaclass):
+class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel, #):
+                            metaclass=GInterfaceTraceMetaclass):
     '''
     Basic GtkTreeView adapter for paged data models.
 
@@ -810,6 +810,7 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):
         #   - offset of page relative to container (offset?)
         #   - offset of row relative to container  (row_n?)
         def __init__(self, container, page, row_offset):
+            assert row_offset >= 0
             self.container = container
             self.page = page
             self.row_offset = row_offset
@@ -864,24 +865,36 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):
         assert iter is None
         container = self.data
 
-        n_rows = container.estimate_row_count()
+        n_rows = self.data_estimated_n_rows
         if n_rows == 0:
             return None
+
+        # GtkTreeView should not query a row beyond the rows it knows about.
+        assert n <= n_rows
 
         rough_position = n / n_rows
 
         page = container.get_page_for_position(rough_position)
-        # FIXME: this method is great except where you have a big source and you're on the
-        # boundry of a page. You'll need to go up or down a page or two to actually find
-        # the one that contains 'n', presumably ... and in doing so you'll read more data,
-        # which may change the estimation, so it needs to be done in a loop BUT that's OK!
-        row_offset = n - page.offset
-        #if page:
-        #    print("Got page at offset %i for rough position %f, n %i offset %i" % (page.offset, rough_position, n, row_offset))
-        if page is None or row_offset >= len(page._rows):
+
+        if page:
+            print("Got page at offset %i for rough position %f (n %i)" % (page.offset, rough_position, n))
+
+        if not page:
             print("No page for n %i" % n)
             return None
-        return self._create_iter(container, page, row_offset)
+        elif page.offset <= n < page.offset + len(page._rows):
+            # We found the page!
+            row_offset = n - page.offset
+            return self._create_iter(container, page, row_offset)
+        elif n_rows != self.data_estimated_n_rows:
+            # Our request caused the estimated size to change, so start again.
+            return self._iter_nth_child(iter, n)
+        else:
+            # FIXME: this doesn't seem to happen now, but it might do with *huge*
+            # sources and a small page size (where floating point imprecision
+            # error in 'position' is > page_size), you'll just have to go back o
+            # forwards til you get to the correct page.
+            assert False
 
     def _iter_next(self, iter):
         container, page, row_offset = self._unpack_iter(iter)
