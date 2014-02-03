@@ -2,8 +2,11 @@
 # Python 3!
 
 # Issues:
-#  - Does not work in fixed height mode due to
-#    https://bugzilla.gnome.org/show_bug.cgi?id=721597
+#  - There are bugs in fixed height mode due to
+#    https://bugzilla.gnome.org/show_bug.cgi?id=721597,
+#    however without fixed height mode the TreeView will
+#    query every row of the model right after loading which
+#    kind of defeats the point.
 #  - 'End' key doesn't go to the end ... this is a limitation of using
 #    GtkTreeView (why would it expect the model to suddenly grow huge?), could
 #    hack around it by catching the 'end' key I imagine.
@@ -35,6 +38,8 @@
 
 # Automated tests:
 # - test coverage ...
+# - tests for the Tracker query pager. How would those work?
+#   you'd need a mock TrackerSparqlConnection.
 
 # Goal: dynamic views.
 #
@@ -487,11 +492,15 @@ class PagedData(PagedDataInterface):
 
         page = self._get_or_read_page(position, estimated_row_n, estimated_n_rows)
 
-        # FIXME: Implementations may well want to do more checking and
-        # re-estimation after a read! There's no reason they can't handle
-        # that in _read_and_store_page() if they call _update_estimated_size()
-        # as we do, but that might require special handling by this function!
+        # Should the code from _iter_nth_child() actually have been here all
+        # along ???
 
+        self._trace("had %i rows, now %i", self.estimate_row_count(), estimated_n_rows)
+        if self.estimate_row_count() != estimated_n_rows:
+            # Size changed during read.
+            return self.get_page_for_position(position)
+
+        assert page.offset <= estimated_row_n < page.offset + len(page._rows)
         return page
 
     def _find_row(self, target_value, key_func):
@@ -684,15 +693,18 @@ class TrackerQuery(PagedData):
         self.query = query
         self.root_term = root_term
         self.root_pattern = root_pattern
+
+        # FIXME: super.page_size and self.read_size are the same thing ...
+        # I'm not sure what to call it.
         self.read_size = 100
 
-        super(TrackerQuery, self).__init__()
+        super(TrackerQuery, self).__init__(query_size=read_size)
 
         self._estimated_n_rows = None
 
     def columns(self):
         # FIXME: don't hardcode
-        return ['Class', 'Property']
+        return ["Class", "Property"]
 
     def estimate_row_count(self):
         if self._estimated_n_rows is not None:
@@ -714,7 +726,7 @@ class TrackerQuery(PagedData):
         # how far off we are. Basically we want to do a binary search for the
         # last page, up to a certain error margin / number of tries.
 
-        self._estimated_n_rows = root_to_row_ratio * self._root_n_matches
+        self._estimated_n_rows = int(root_to_row_ratio * self._root_n_matches)
         return self._estimated_n_rows
 
     def _read_and_store_page(self, offset, prev_page=None):
@@ -749,7 +761,7 @@ class TrackerQuery(PagedData):
             for i in range(0, n_columns):
                 values.append(cursor.get_string(i)[0])
 
-            rows.append(Row(page_row_n, values))
+            rows.append(Row(values))
             page_row_n += 1
 
         # FIXME: if last page, set a flag? Is there a way to spot the last
@@ -791,14 +803,13 @@ class TrackerQuery(PagedData):
 
 
 
-class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel, #):
-                            metaclass=GInterfaceTraceMetaclass):
+class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):
+                      #metaclass=GInterfaceTraceMetaclass):
     '''
     Basic GtkTreeView adapter for paged data models.
 
-    This class will query all data from the model on load, due to the way
-    GtkTreeView works, so you will probably want to use
-    :class:`GtkTreeModelLazyShim` instead.
+    This class will allow GtkTreeView to query all data from the model on load,
+    so you will probably want to use :class:`GtkTreeModelLazyShim` instead.
     '''
 
     __gtype_name__ = 'GtkTreeModelBasicShim'
@@ -865,7 +876,7 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel, #):
         assert iter is None
         container = self.data
 
-        n_rows = self.data_estimated_n_rows
+        n_rows = container.estimate_row_count()
         if n_rows == 0:
             return None
 
@@ -886,7 +897,7 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel, #):
             # We found the page!
             row_offset = n - page.offset
             return self._create_iter(container, page, row_offset)
-        elif n_rows != self.data_estimated_n_rows:
+        elif n_rows != container.estimate_row_count():
             # Our request caused the estimated size to change, so start again.
             return self._iter_nth_child(iter, n)
         else:

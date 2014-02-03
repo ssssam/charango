@@ -23,10 +23,7 @@ def create_gtk_tree_view_for(tree_model, fixed_height=False):
         column.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
         tree_view.append_column(column)
 
-    if fixed_height:
-        print("WARNING: DON'T use fixed height mode, see: "
-              "https://bugzilla.gnome.org/show_bug.cgi?id=721597")
-        tree_view.set_fixed_height_mode(True)
+    tree_view.set_fixed_height_mode(fixed_height)
     tree_view.show()
     return tree_view
 

@@ -160,7 +160,10 @@ class EstimationTestSource(view.PagedData):
                "real data %i" % (offset, prev_page, len(self.real_data)))
         if offset >= len(self.real_data):
             raise view.NoDataError
-        values = self.real_data[offset:offset+self.query_size]
+
+        # How do you know if you're at the tail end easily?
+        slice_end = min(offset+self.query_size, len(self.real_data))
+        values = self.real_data[offset:slice_end]
 
         rows = [view.Row([value]) for i, value in enumerate(values)]
         page = view.Page(offset, rows)
@@ -178,6 +181,9 @@ class EstimationTestSource(view.PagedData):
             print ("Wow! estimate was %i, now %i!" % (self._estimated_n_rows,
                 estimated_n_rows))
             self._update_estimated_size(estimated_n_rows, known_rows)
+        elif known_rows == len(self.real_data):
+            # Not as much data as we thought!
+            self._update_estimated_size(known_rows, known_rows)
         return page
 
 
@@ -262,7 +268,7 @@ class GtkModelTestSuite:
 class TestGtkTreeModelBasicShim(GtkModelTestSuite):
     @pytest.mark.parametrize(('fixed_height', 'expected_pages'), [
         (False, 10),
-        #(True, 10) fixed height mode disabled due to GTK+ bug
+        (True, 10),
     ])
     def test_loading(self, profiling_source, fixed_height, expected_pages):
         '''
@@ -294,16 +300,12 @@ class TestGtkTreeModelBasicShim(GtkModelTestSuite):
 
 class TestGtkTreeModelLazyShim(GtkModelTestSuite):
     @pytest.mark.parametrize(('fixed_height', 'expected_pages'), [
-        (False, 4),
-        #(True, 3) fixed height mode disabled due to GTK+ bug
+        #(False, 4), # This value seems to be unpredictable ...
+        (True, 3),
     ])
     def test_lazy_loading(self, profiling_source, fixed_height, expected_pages):
         '''
         Create a lazy GtkTreeModel over a 10 page 100 row data source.
-
-        These tests are not perfect! Sometimes more or less pages are queried.
-        Probably partly because we need to run xnest or disable all inputs to the
-        widgets or some such.
 
         The 'expected_pages' parameter marks how many of the pages of the
         model the GtkTreeModel is expected to query.
