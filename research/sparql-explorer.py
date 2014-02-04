@@ -1,5 +1,10 @@
 # SPARQL Explorer UI
 
+# Interesting ideas!
+#  - select all resources of a certain type ... of course.
+#  - your crazy music browser sparql ideas.
+#  - play with SKOS ? to try to link to M.O?
+
 import view
 
 from gi.repository import Gio

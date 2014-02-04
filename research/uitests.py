@@ -30,7 +30,19 @@ def create_gtk_tree_view_for(tree_model, fixed_height=False):
 
 class UiTestApplication():
     def __init__(self):
-        self.box = Gtk.Box(Gtk.Orientation.HORIZONTAL, 4)
+        box = Gtk.Box(Gtk.Orientation.HORIZONTAL, 4)
+
+        scrolled_window = Gtk.ScrolledWindow()
+        scrolled_window.set_size_request(640, 480)
+        box.pack_start(scrolled_window, True, True, 0)
+
+        window = Gtk.Window()
+        window.connect('delete-event', Gtk.main_quit)
+        window.add(box)
+
+        self.window = window
+        self.box = box
+        self.view_container = scrolled_window
 
     def add_button(self, callback):
         button = Gtk.Button('Tick')
@@ -45,16 +57,9 @@ class UiTestApplication():
         tree_model = GtkTreeModelLazyShim(data_source, 20)
 
         tree_view = create_gtk_tree_view_for(tree_model)
-        scrolled_window = Gtk.ScrolledWindow()
-        scrolled_window.add(tree_view)
-        scrolled_window.set_size_request(640, 480)
-        self.box.pack_start(scrolled_window, True, True, 0)
+        self.view_container.add(tree_view)
 
-        window = Gtk.Window()
-        window.connect('delete-event', Gtk.main_quit)
-        window.add(self.box)
-
-        window.show_all()
+        self.window.show_all()
         Gtk.main()
 
 
@@ -87,23 +92,49 @@ def tracker_test_data():
     return data
 
 
+def lazy_read_demo(app):
+    '''
+    Demo of lazily reading a source of 1000 rows.
+
+    This source deliberately reveals its contents incrementally to demonstrate
+    how this looks.
+    '''
+    data_source = test_view.EstimationTestSource(1000)
+    app.run(data_source)
+
+
+def add_row_test(app):
+    '''
+    Test adding items dynamically
+
+    The list adds one of its items at random on each click.
+    '''
+    data_source = LiveListSource(10, 10)
+
+    def clicked_cb(button):
+        data_source.add_row()
+
+    app.add_button(clicked_cb)
+
+    # Make sure there's some scrolling, to highlight
+    # https://bugzilla.gnome.org/show_bug.cgi?id=721597
+    app.view_container.set_size_request(640, 80)
+
+    app.run(data_source)
+
+
 if __name__ == '__main__':
     install_debug_excepthook()
 
     #numbers = ListSource(range(0,1000), 100)
 
-    #live_numbers = LiveListSource(10, 10, initial_value_list=range(0,10))
     #GLib.timeout_add(500, live_numbers.tick)
 
     #data_source = numbers
     #data_source = tracker_test_data()
     #data_source = live_numbers
-    data_source = test_view.EstimationTestSource(1000)
     #data_source = test_view.EstimationTestSource(16)
     app = UiTestApplication()
 
-    def clicked_cb(button):
-        live_numbers.add_row()
-
-    #app.add_button(clicked_cb)
-    app.run(data_source)
+    #lazy_read_demo(app)
+    add_row_test(app)

@@ -20,11 +20,19 @@
 #    log in page-inaccuracy; probably worth writing a test case.
 
 # Plan:
+#  - fix overestimation with Tracker source
+#     - need to write a test, which will require changes to estimationtestsource
+#     so that you can have 1000 estimated rows and ~660 real rows.
 #  - do some fun stuff!!!
 #       - tracker-sparql GUI
-#       - Spotify client
+#       - Spotify client ?
 #       - filesystem browser
+#       - Generic sparql endpoint browser ?
+#           - dbpedia? or do musicbrainz have one still?
 #       - could you do 'all tweets ever' ?
+#  - links or nested trees so you can click on a class and get all instances
+#    of that class, or click on a resource or get all properties of that
+#    resource.
 #  - you're having a bad time with Tracker because you don't check and adjust
 #    the estimation on further page reads. Recalc after every page read?
 #  - also needs to try and find the end straight away
@@ -493,7 +501,8 @@ class PagedData(PagedDataInterface):
         page = self._get_or_read_page(position, estimated_row_n, estimated_n_rows)
 
         # Should the code from _iter_nth_child() actually have been here all
-        # along ???
+        # along ??? I think not, because the row_n here and the one in that
+        # function are theoretically decoupled.
 
         self._trace("had %i rows, now %i", self.estimate_row_count(), estimated_n_rows)
         if self.estimate_row_count() != estimated_n_rows:
@@ -549,7 +558,7 @@ class PagedData(PagedDataInterface):
 
     def _insert_row(self, page, row, index_after):
         page._rows.insert(index_after, row)
-        self.emit('row-inserted', page, index_after)
+        self.row_inserted(page, index_after)
 
 
 class ListSource(PagedData):
@@ -803,8 +812,8 @@ class TrackerQuery(PagedData):
 
 
 
-class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel):
-                      #metaclass=GInterfaceTraceMetaclass):
+class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel,
+                            metaclass=GInterfaceTraceMetaclass):
     '''
     Basic GtkTreeView adapter for paged data models.
 
