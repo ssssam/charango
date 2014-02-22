@@ -25,6 +25,8 @@
 #     so that you can have 1000 estimated rows and ~660 real rows.
 #  - do some fun stuff!!!
 #       - tracker-sparql GUI
+#           - this requires writing a parser for SPARQL so that you can
+#             determine the root term ...
 #       - Spotify client ?
 #       - filesystem browser
 #       - Generic sparql endpoint browser ?
