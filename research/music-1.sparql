@@ -1,0 +1,64 @@
+# I think the key with SPARQL is that you have to start *inside out*, bottom
+# up ... even though the query processor will be working top down. That's only
+# because your ordering is top down, though. If you wanted to sort by track
+# title, it would not need to start with the artist name. So:
+#   - the *primary sort key* is what you use to estimate row counts.
+#     calling it "root" is probably misleading, because it forces you to
+#     think about the query the wrong way round. call it PSK? or toplevel?
+#     and, you can find it out by parsing the ORDER BY clause.
+
+SELECT
+    COALESCE(?album_artist_name, ?rec_artist_name) AS ?artist_name
+    ?rec_artist_name
+    ?rec_name ?album_name ?track_number
+WHERE {
+    ?rec_artist nmm:artistName ?rec_artist_name .
+
+    {
+        SELECT
+            ?rec_name ?rec_artist
+            ?album_name
+            ?album_artist_name
+            ?track_number
+        WHERE {
+            {
+                # Get ?album_artist_name, which will be "Various Artists" in
+                # some cases. It would be nice to abstract the logic of this
+                # into a function somehow.
+                {
+                    SELECT
+                        ?album
+                        IF(
+                            COUNT(?album_artist) > 2,
+                            "Various Artists", ?album_artist_name)
+                        AS ?album_artist_name
+                    WHERE {
+                        ?album a nmm:MusicAlbum ;
+                            nmm:albumArtist ?album_artist .
+                        ?album_artist nmm:artistName ?album_artist_name .
+                    }
+                    GROUP BY ?album
+                }
+
+                ?album nie:title ?album_name .
+
+                ?track a nmm:MusicPiece ;
+                    nmm:musicAlbum ?album ;
+                    nmm:performer ?rec_artist ;
+                    nie:title ?rec_name ;
+                    nmm:trackNumber ?track_number .
+            }
+            UNION
+            # Tracks by that are not on any albums.
+            {
+                ?rec a nmm:MusicPiece ; nie:title ?rec_name .
+                ?rec nmm:performer ?rec_artist .
+                FILTER (NOT EXISTS { ?rec nmm:musicAlbum ?rec_album })
+            }
+        }
+    }
+}
+# Unbound values sort first, so this results in
+# all the tracks which are not an album coming *above* those
+# which are.
+ORDER BY ?artist_name ?album_name ?track_number
