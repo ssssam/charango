@@ -136,5 +136,5 @@ if __name__ == '__main__':
     #data_source = test_view.EstimationTestSource(16)
     app = UiTestApplication()
 
-    #lazy_read_demo(app)
-    add_row_test(app)
+    lazy_read_demo(app)
+    #add_row_test(app)

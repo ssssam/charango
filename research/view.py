@@ -299,6 +299,7 @@ class PagedData(PagedDataInterface):
             index_after = self._pages.index(prev_page)+1
 
         # Check ordering is correct.
+        # FIXME: prev_page might === page !!!!!
         if index_after > 0 and len(self._pages) > 0:
             print("prev_page: %s, index_after %i" % (prev_page, index_after))
             prev_page = prev_page or self._pages[index_after-1]
@@ -342,8 +343,8 @@ class PagedData(PagedDataInterface):
     #   We'll need this eventually too!
 
     def _trace(self, format, *args):
-        #print(format % args)
-        pass
+        print(format % args)
+        #pass
 
     def _update_estimated_size(self, estimated_n_rows, known_n_rows):
         '''
@@ -395,6 +396,14 @@ class PagedData(PagedDataInterface):
                 (estimated_row_n, prev_page, page))
         if page is not None:
             return page
+
+        # If page is None, we either overestimated the row count, or the page
+        # exists but we've not yet read it in.
+
+    # this doesn't work where we've *overestimated* ! We have:
+    #   page == None
+    #   prev_page = the last page
+    # so h
 
         # If the page wasn't in memory, try and read it.
         last_page = None
@@ -502,6 +511,8 @@ class PagedData(PagedDataInterface):
         estimated_row_n = min(int(position * estimated_n_rows), estimated_n_rows - 1)
         self._trace("%f * %i = %i", position, estimated_n_rows, estimated_row_n)
 
+        # Get the page object for the position the user entered ... I guess
+        # this should never be none ???
         page = self._get_or_read_page(position, estimated_row_n, estimated_n_rows)
 
         # Should the code from _iter_nth_child() actually have been here all
@@ -720,6 +731,15 @@ class TrackerQuery(PagedData):
         return ["Class", "Property"]
 
     def estimate_row_count(self):
+        '''Return estimated row count.
+
+        Currently this is calculated once, and then updated by the superclass
+        _get_page_for_position() method whenever it is found to differ from
+        reality. We have to watch these changes by overriding the
+        _update_estimated_size() callback. There's probably a neater way to
+        implement this.
+
+        '''
         if self._estimated_n_rows is not None:
             return self._estimated_n_rows
 
@@ -741,6 +761,12 @@ class TrackerQuery(PagedData):
 
         self._estimated_n_rows = int(root_to_row_ratio * self._root_n_matches)
         return self._estimated_n_rows
+
+    def _update_estimated_size(self, estimated_n_rows, known_n_rows):
+        self._estimated_n_rows = estimated_n_rows
+
+        superclass = super(TrackerQuery, self)
+        superclass._update_estimated_size(estimated_n_rows, known_n_rows)
 
     def _read_and_store_page(self, offset, prev_page=None):
         '''
@@ -894,7 +920,7 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel,
             return None
 
         # GtkTreeView should not query a row beyond the rows it knows about.
-        assert n <= n_rows
+        assert n < n_rows
 
         rough_position = n / n_rows
 
@@ -911,8 +937,14 @@ class GtkTreeModelBasicShim(GObject.Object, Gtk.TreeModel,
             row_offset = n - page.offset
             return self._create_iter(container, page, row_offset)
         elif n_rows != container.estimate_row_count():
-            # Our request caused the estimated size to change, so start again.
-            return self._iter_nth_child(iter, n)
+            # Our request caused the estimated size to change. Currently
+            # GtkTreeView will crash if we return a row with an index that
+            # doesn't match the one it asked for, because it doesn't expect
+            # row-deleted or row-inserted signals to happen randomly any time
+            # it queries the GtkTreeModel, so its internal copy of the data
+            # won't be updated until the main loop has run again.
+            print("Query triggered size estimation change. Returning None.")
+            return None
         else:
             # FIXME: this doesn't seem to happen now, but it might do with *huge*
             # sources and a small page size (where floating point imprecision
@@ -1039,7 +1071,7 @@ class GtkTreeModelLazyShim(GtkTreeModelBasicShim):
 
     def __init__(self, data, viewport_n_rows):
         super(GtkTreeModelLazyShim, self).__init__(data)
-        data.estimated_size_changed = self.handle_size_estimate_changed
+        data.estimated_size_changed.connect(self.handle_size_estimate_changed)
         self.viewport_n_rows = viewport_n_rows
 
         self.data_estimated_n_rows = data.estimate_row_count()
@@ -1061,10 +1093,14 @@ class GtkTreeModelLazyShim(GtkTreeModelBasicShim):
                 (estimated_n_rows, known_n_rows))
         delta = estimated_n_rows - self.data_estimated_n_rows
 
+        self.data_estimated_n_rows = estimated_n_rows
+
         if delta < 0:
-            path = Gtk.TreePath(estimated_n_rows + 1)
-            print("Emitted row-deleted .. %i times" % abs(delta))
-            for i in range(0, abs(delta)):
+            path = Gtk.TreePath(estimated_n_rows)
+            print("Emitted row-deleted .. %i times (estimated %i rows, data "
+                  "estimated %i)" % (abs(delta), estimated_n_rows,
+                                     self.data_estimated_n_rows))
+            for i in range(0, abs(delta) + 1):
                 self.emit('row-deleted', path)
         elif delta > 0:
             last_page = self.data.get_page_for_position(1.0)
@@ -1074,8 +1110,6 @@ class GtkTreeModelLazyShim(GtkTreeModelBasicShim):
             iter = self._create_iter(self.data, last_page, position)
             for i in range(0, delta):
                 self.emit('row-inserted', path, iter)
-
-        self.data_estimated_n_rows = estimated_n_rows
 
     def _iter_next(self, iter):
         iter_data = self._get_iter_data(iter)
