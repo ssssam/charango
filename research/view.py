@@ -405,6 +405,8 @@ class PagedData(PagedDataInterface):
                         "  _get_or_read_page: Try to read page at %i (prev %s)",
                         expected_offset, prev_page)
                 page = self._read_and_store_page(expected_offset, prev_page=prev_page)
+                # That function may raise NoDataError, but cannot return None
+                assert page is not None
                 break
             except NoDataError:
                 if expected_offset == 0:
@@ -779,7 +781,7 @@ class TrackerQuery(PagedData):
         # page if it happens to finish at LIMIT rows?
 
         if len(rows) == 0:
-            return None
+            raise NoDataError
 
         page = Page(offset, rows)
         page._root_n_matches = root_n_matches
