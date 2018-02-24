@@ -1,90 +1,10 @@
 Charango 0.3.0
 --------------
 
-Charango is a GObject library that provides an object oriented RDF data
-model & view. Although it is not tied to a specific data store, it is
-intended to be used with Tracker.
+This project was an attempt at representing RDF data nicely using the
+GLib/GObject type system.
 
-RDF is a way of storing information about resources, in the form
-subject/predicate/object. Normally, the resources are classed and so the
-data can be mapped on top the standard instance/property/value model.
-This provides a simple and intuitive way of working with the data.
-
-See the examples/ directory and ./DESIGN for more information.
-
-
-Building
---------
-
-Charango must be compiled with Vala 0.13 or later.
-
-It depends on the Redland and Raptor RDF libraries.
-
-
-Overview
---------
-
-Since the GObject and RDF typing systems are incompatible (RDF's is much more
-flexible that GType), all resources are represented as Charango.Entity, with
-the type accessibled through the rdf:type predicate.
-
-Some resource classes have special meanings inside Charango, such as
-rdfs:Property and rdfs:Class. For these there are "concept classes" which are
-simply subclasses of Charango.Entity which expose extra helpers and
-functionality such as accessors for important properties. It's simple to
-implement your own concept classes.
-
-
-Philosophical Q & A
--------------------
-
-* Why is Charango a good ORM, and not dumb like the Ruby one?
-  => ActiveRecord, like most ORM's, is dumb because:
-     - it exposes all sorts of state: new records, read-only records,
-       select_all which for some reason returns just ids, partial reads
-       where you then have a record which only has some fields filled, etc.
-     - the query interface is basically SQL made slightly more complicated. The
-       abstraction gains almost nothing (they say compatibility between db's, but
-       since it's only complicated things where they're incompatible and only
-       simple things that are wrapped, that's a non-starter)
-     - inefficient: lots of ways to read everything from the db and then discard
-       most of it
-     - storing properties as class members/methods is fun and sexy, but results in
-       ugly namespace classes so in practice it's not a very good idea.
-  => Charango is different.
-     - happy to coexist with SPARQL, rather than pretend it does not exist.
-     - simply an optional layer on top of the existing store so that things that
-       act like objects are treated as such
-     - transactional access only, so less inefficiencies, no confusion over locking,
-     - views run at a lower level if possible
-     - it's basically a convenience layer
-     - possibility of making it more efficient; for example the initial Tracker
-       implementation will query objects using SPARQL which is then rewritten as
-       SQL and then converted to VM code before actually returning the objects.
-       Hopefully you can link into tracker and at least avoid the SPARQL layer.
-
-* How does Charango relate to libmodel?
-  => Charango solves specific problems
-    - I want to store my data according to desktop and web standards, but
-      my only real option (Tracker) currently requires me to generate
-      SPARQL. A far simpler API to access resources and their properties
-      is ... expose the resources, and their properties. There's no
-      reason SPARQL API can't coexist with Charango.
-    - I want to have live, structured tree views on the data, which puts
-      a lot of constraints on the data store.
-  => libmodel is slightly weird, and nobody uses it
-    - making primitive types descend from GObject seems enourmously wasteful
-    - Rob mentioned that what you want, when communicating with
-      tracker-store, is just a key/value hash. That's basically what
-      Charango does, but conceptually a key/value hash suggests (to me)
-      unstructured data.
-    - the aim of killing GtkTreeModel is a noble one.
-    - perhaps libmodel is too decoupled from how your data is actually
-      stored. Charango is a better and more efficient way to model RDF
-      Schema because it directly represents how the data is stored.
-  => there's no reason Charango couldn't run on top of libmodel if there
-     was reason to (and the reason would be Gtk widgets displaying data
-     in libmodel formats easily). The only overlap really is the type
-     system (always the way). In fact, Charango resources could inherit
-     from ModelDictionary and enforce the ontology, it would be a pretty
-     happy marriage.
+Its spiritual successor is the
+[TrackerResource class](https://developer.gnome.org/libtracker-sparql/stable/TrackerResource.html)
+from [libtracker-sparql](https://developer.gnome.org/libtracker-sparql/stable/),
+part of the [Tracker](https://wiki.gnome.org/Projects/Tracker) desktop indexer.
